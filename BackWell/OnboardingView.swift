@@ -58,6 +58,7 @@ struct OnboardingView: View {
     @State private var selectedAreas: Set<String> = []
     @State private var selectedConditions: Set<String> = []
     @State private var selectedGoal = ""
+    @State private var showPaywall = false
 
     var hasValidConditions: Bool {
         !selectedConditions.isEmpty &&
@@ -150,7 +151,8 @@ struct OnboardingView: View {
                             if currentStep < totalSteps - 1 {
                                 currentStep += 1
                             } else {
-                                // Navigate to main app
+                                // Show paywall
+                                showPaywall = true
                             }
                         }
                     }) {
@@ -177,6 +179,9 @@ struct OnboardingView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 50)
             }
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
         }
     }
 }

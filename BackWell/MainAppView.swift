@@ -1,0 +1,33 @@
+//
+//  MainAppView.swift
+//  BackWell
+//
+//  Created by standard on 1/17/26.
+//
+
+import SwiftUI
+
+struct MainAppView: View {
+    @State private var selectedTab = 0
+
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house.fill")
+                }
+                .tag(0)
+
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .tag(1)
+        }
+        .accentColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+    }
+}
+
+#Preview {
+    MainAppView()
+}

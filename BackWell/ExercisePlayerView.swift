@@ -461,37 +461,38 @@ struct MentalComponentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 20) {
             Spacer()
 
             ZStack {
                 Circle()
                     .fill(Color.white.opacity(0.6))
-                    .frame(width: 140, height: 140)
+                    .frame(width: 110, height: 110)
 
                 Image(systemName: typeIcon)
-                    .font(.system(size: 60))
+                    .font(.system(size: 50))
                     .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
             }
 
             Text(typeTitle)
-                .font(.system(size: 28, weight: .semibold))
+                .font(.system(size: 24, weight: .semibold))
                 .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
                 .multilineTextAlignment(.center)
 
             Text(String(format: "%d:%02d", timeRemaining / 60, timeRemaining % 60))
-                .font(.system(size: 56, weight: .bold, design: .rounded))
+                .font(.system(size: 48, weight: .bold, design: .rounded))
                 .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
 
             Text(mentalComponent.guidance)
-                .font(.system(size: 18, weight: .regular))
+                .font(.system(size: 15, weight: .regular))
                 .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
                 .multilineTextAlignment(.center)
-                .lineSpacing(6)
-                .padding(.horizontal, 32)
-                .padding(24)
+                .lineSpacing(4)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(18)
+                .frame(maxWidth: .infinity)
                 .background(
-                    RoundedRectangle(cornerRadius: 20)
+                    RoundedRectangle(cornerRadius: 16)
                         .fill(Color.white.opacity(0.6))
                 )
                 .padding(.horizontal, 24)

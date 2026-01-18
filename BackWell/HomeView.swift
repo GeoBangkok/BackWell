@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var currentDay = 1 // Track user's current day
     @State private var completedDays: Set<Int> = [] // Days completed
+    @State private var selectedDayProgram: DayProgram? = nil
 
     let columns = [
         GridItem(.flexible()),
@@ -19,7 +20,7 @@ struct HomeView: View {
     ]
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 // Same calming gradient
                 LinearGradient(
@@ -89,7 +90,7 @@ struct HomeView: View {
                                 )
                                 .onTapGesture {
                                     if day <= currentDay {
-                                        // Navigate to day's exercises
+                                        selectedDayProgram = ExerciseDatabase.getDay(day)
                                     }
                                 }
                             }
@@ -148,6 +149,18 @@ struct HomeView: View {
                 }
             }
             .navigationBarHidden(true)
+            .navigationDestination(item: $selectedDayProgram) { dayProgram in
+                ExercisePlayerView(dayProgram: dayProgram)
+                    .navigationBarBackButtonHidden(true)
+                    .onDisappear {
+                        // Mark day as completed when player is dismissed
+                        completedDays.insert(dayProgram.day)
+                        // Move to next day if current
+                        if dayProgram.day == currentDay && currentDay < 28 {
+                            currentDay += 1
+                        }
+                    }
+            }
         }
     }
 }

@@ -8,8 +8,7 @@
 import SwiftUI
 
 struct PaywallView: View {
-    @Environment(\.dismiss) var dismiss
-    @State private var showMainApp = false
+    let onContinue: () -> Void
 
     var body: some View {
         ZStack {
@@ -26,29 +25,9 @@ struct PaywallView: View {
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header with back and close buttons
-                HStack {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 22))
-                            .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
-                    }
-
-                    Spacer()
-
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 22))
-                            .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
-                    }
-                }
-                .padding(.horizontal, 28)
-                .padding(.top, 24)
-                .padding(.bottom, 20)
+                // Header spacer
+                Spacer()
+                    .frame(height: 60)
 
                 ScrollView {
                     VStack(spacing: 0) {
@@ -104,9 +83,7 @@ struct PaywallView: View {
                         .padding(.bottom, 20)
 
                         // CTA Button
-                        Button(action: {
-                            showMainApp = true
-                        }) {
+                        Button(action: onContinue) {
                             Text("Start Free Trial")
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundColor(.white)
@@ -159,9 +136,6 @@ struct PaywallView: View {
                     }
                 }
             }
-        }
-        .fullScreenCover(isPresented: $showMainApp) {
-            MainAppView()
         }
     }
 
@@ -233,5 +207,5 @@ struct TimelineItem: View {
 }
 
 #Preview {
-    PaywallView()
+    PaywallView(onContinue: {})
 }

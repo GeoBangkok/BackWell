@@ -25,8 +25,8 @@ struct BackWellApp: App {
 
     var body: some Scene {
         WindowGroup {
-            LoginView()
+            AppRootView()
+                .modelContainer(sharedModelContainer)
         }
-        .modelContainer(sharedModelContainer)
     }
 }

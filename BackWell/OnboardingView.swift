@@ -58,7 +58,7 @@ struct OnboardingView: View {
     @State private var selectedAreas: Set<String> = []
     @State private var selectedConditions: Set<String> = []
     @State private var selectedGoal = ""
-    @State private var showPaywall = false
+    let onContinue: () -> Void
 
     var hasValidConditions: Bool {
         !selectedConditions.isEmpty &&
@@ -151,8 +151,8 @@ struct OnboardingView: View {
                             if currentStep < totalSteps - 1 {
                                 currentStep += 1
                             } else {
-                                // Show paywall
-                                showPaywall = true
+                                // Move to paywall
+                                onContinue()
                             }
                         }
                     }) {
@@ -179,9 +179,6 @@ struct OnboardingView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 50)
             }
-        }
-        .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView()
         }
     }
 }
@@ -674,5 +671,5 @@ struct ChallengeFeature: View {
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView(onContinue: {})
 }

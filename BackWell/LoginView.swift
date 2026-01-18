@@ -9,7 +9,7 @@ import SwiftUI
 
 struct LoginView: View {
     @State private var isPulsating = false
-    @State private var showOnboarding = false
+    let onContinue: () -> Void
 
     var body: some View {
         ZStack {
@@ -43,9 +43,7 @@ struct LoginView: View {
                 Spacer()
 
                 // Gentle pulsating button
-                Button(action: {
-                    showOnboarding = true
-                }) {
+                Button(action: onContinue) {
                     Text("Get Back Relief Today")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.white)
@@ -82,9 +80,6 @@ struct LoginView: View {
         .onAppear {
             startPulsating()
         }
-        .fullScreenCover(isPresented: $showOnboarding) {
-            OnboardingView()
-        }
     }
     
     private func startPulsating() {
@@ -95,5 +90,5 @@ struct LoginView: View {
 }
 
 #Preview {
-    LoginView()
+    LoginView(onContinue: {})
 }

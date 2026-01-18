@@ -18,6 +18,7 @@ struct ExercisePlayerView: View {
     @State private var isPaused = false
     @State private var showingMentalComponent = false
     @State private var sessionComplete = false
+    @State private var showingIntro = true
     @State private var timer: Timer?
 
     var currentExercise: Exercise? {
@@ -58,7 +59,11 @@ struct ExercisePlayerView: View {
                         .padding(.bottom, 8)
 
                     Group {
-                        if sessionComplete {
+                        if showingIntro {
+                            DayIntroView(dayProgram: dayProgram, onStart: {
+                                showingIntro = false
+                            })
+                        } else if sessionComplete {
                             CompletionView(dayProgram: dayProgram)
                         } else if showingMentalComponent, let mental = currentMental {
                             MentalComponentView(
@@ -77,7 +82,7 @@ struct ExercisePlayerView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
 
-                    if !sessionComplete, !showingMentalComponent, currentExercise != nil {
+                    if !showingIntro, !sessionComplete, !showingMentalComponent, currentExercise != nil {
                         ExerciseControls(
                             isPlaying: $isPlaying,
                             isPaused: $isPaused,
@@ -604,6 +609,132 @@ struct CompletionView: View {
             .padding(.horizontal, 32)
             .padding(.bottom, 40)
         }
+    }
+}
+
+// MARK: - Day Intro View
+struct DayIntroView: View {
+    let dayProgram: DayProgram
+    let onStart: () -> Void
+
+    var body: some View {
+        VStack(spacing: 20) {
+            Spacer()
+
+            // Day badge
+            ZStack {
+                Circle()
+                    .fill(Color.white.opacity(0.6))
+                    .frame(width: 100, height: 100)
+                    .shadow(color: Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2), radius: 10, x: 0, y: 5)
+
+                VStack(spacing: 2) {
+                    Text("DAY")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+
+                    Text("\(dayProgram.day)")
+                        .font(.system(size: 36, weight: .bold))
+                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                }
+            }
+
+            // Title and theme
+            VStack(spacing: 8) {
+                Text(dayProgram.title)
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                    .multilineTextAlignment(.center)
+
+                Text(dayProgram.theme)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.1))
+                    )
+            }
+
+            // Info cards
+            VStack(spacing: 12) {
+                // Target Areas
+                InfoCard(
+                    icon: "figure.walk",
+                    title: "Target Areas",
+                    description: dayProgram.targetAreas
+                )
+
+                // Daily Goal
+                InfoCard(
+                    icon: "target",
+                    title: "Today's Goal",
+                    description: dayProgram.dailyGoal
+                )
+            }
+            .padding(.horizontal, 24)
+
+            Spacer()
+
+            // Start button
+            Button(action: onStart) {
+                HStack {
+                    Image(systemName: "play.fill")
+                    Text("Begin Day \(dayProgram.day)")
+                }
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .frame(height: 56)
+                .background(
+                    RoundedRectangle(cornerRadius: 28)
+                        .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
+                )
+            }
+            .padding(.horizontal, 32)
+            .padding(.bottom, 40)
+        }
+    }
+}
+
+// MARK: - Info Card
+struct InfoCard: View {
+    let icon: String
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2))
+                    .frame(width: 40, height: 40)
+
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+
+                Text(description)
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .lineSpacing(3)
+            }
+
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.7))
+        )
     }
 }
 

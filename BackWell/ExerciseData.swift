@@ -54,6 +54,8 @@ struct DayProgram: Identifiable, Hashable {
     let title: String
     let theme: String
     let mentalFocus: String
+    let targetAreas: String // Which sections of back we're working
+    let dailyGoal: String // General aim and how it helps
     let exercises: [Exercise]
     let mentalComponents: [MentalComponent]
     let completionMessage: String
@@ -76,6 +78,8 @@ class ExerciseDatabase {
             title: "Welcome to Relief",
             theme: "Gentle Introduction",
             mentalFocus: "Beginning Your Journey",
+            targetAreas: "Lower Back, Full Spine",
+            dailyGoal: "Start your healing journey with gentle movements that reduce tension and introduce your body to safe, effective back relief. Today focuses on creating awareness and beginning the process of pain reduction through breath and gentle stretches.",
             exercises: [
                 Exercise(name: "Deep Breathing", duration: 60, instructions: ["Lie on your back", "Place hands on belly", "Breathe deeply into your abdomen", "Feel your back relax into the floor"], icon: "wind", focusArea: "Relaxation"),
                 Exercise(name: "Pelvic Tilts", duration: 45, instructions: ["Lie on back, knees bent", "Gently tilt pelvis up", "Press lower back to floor", "Release slowly"], icon: "figure.flexibility", focusArea: "Lower Back"),
@@ -96,6 +100,8 @@ class ExerciseDatabase {
             title: "Building Awareness",
             theme: "Body Connection",
             mentalFocus: "Listening to Your Body",
+            targetAreas: "Mind-Body Connection, Core",
+            dailyGoal: "Develop awareness of how your body moves and where you hold tension. Today's exercises help you connect breath with movement, building the foundation for lasting back health through conscious movement patterns.",
             exercises: [
                 Exercise(name: "Breathing with Awareness", duration: 60, instructions: ["Focus on natural breath", "Notice where you feel tension", "Breathe into tight areas", "Release on exhale"], icon: "lungs.fill", focusArea: "Mind-Body"),
                 Exercise(name: "Gentle Pelvic Tilts", duration: 45, instructions: ["Same as yesterday", "Focus on quality over quantity", "Notice the movement", "Control the pace"], icon: "figure.flexibility", focusArea: "Lower Back"),
@@ -116,6 +122,8 @@ class ExerciseDatabase {
             title: "Gentle Strength",
             theme: "Core Activation",
             mentalFocus: "Building Confidence",
+            targetAreas: "Core, Glutes, Stability",
+            dailyGoal: "Activate your core muscles safely to provide natural support for your back. These gentle strengthening exercises build the foundation for long-term back health and pain prevention.",
             exercises: [
                 Exercise(name: "Diaphragmatic Breathing", duration: 60, instructions: ["Hand on belly, hand on chest", "Breathe so belly rises first", "Chest stays relatively still", "Strengthen core connection"], icon: "wind", focusArea: "Core Connection"),
                 Exercise(name: "Dead Bug Prep", duration: 40, instructions: ["Lie on back, knees up", "Hover one foot off floor", "Keep back pressed down", "Alternate legs"], icon: "figure.core.training", focusArea: "Core"),
@@ -136,6 +144,8 @@ class ExerciseDatabase {
             title: "Flow and Release",
             theme: "Movement Medicine",
             mentalFocus: "Embracing Movement",
+            targetAreas: "Full Spine, Upper Back, Glutes",
+            dailyGoal: "Learn to synchronize breath with movement for a flowing practice that releases tension throughout your spine. This rhythmic approach enhances mobility while building mind-body connection.",
             exercises: [
                 Exercise(name: "Breath Flow", duration: 45, instructions: ["Match movement to breath", "Inhale as you prepare", "Exhale as you move", "Find your rhythm"], icon: "wind.circle.fill", focusArea: "Flow State"),
                 Exercise(name: "Cat-Cow Flow", duration: 60, instructions: ["Hands and knees", "Inhale: cow (arch)", "Exhale: cat (round)", "Flow continuously"], icon: "figure.yoga", focusArea: "Spine Mobility"),
@@ -156,6 +166,8 @@ class ExerciseDatabase {
             title: "Opening Up",
             theme: "Hip Release",
             mentalFocus: "Letting Go",
+            targetAreas: "Hips, Hip Flexors, Lower Back",
+            dailyGoal: "Release deep hip tension that often contributes to lower back pain. Opening tight hips creates space and reduces strain on your lumbar spine.",
             exercises: [
                 Exercise(name: "Mindful Breathing", duration: 45, instructions: ["Breathe into your hips", "Imagine tension melting", "Each exhale releases more", "Feel the opening"], icon: "wind", focusArea: "Hip Awareness"),
                 Exercise(name: "Figure 4 Stretch", duration: 50, instructions: ["Ankle over opposite knee", "Gently pull leg toward chest", "Feel hip opening", "Switch sides"], icon: "figure.flexibility", focusArea: "Hips"),
@@ -176,6 +188,8 @@ class ExerciseDatabase {
             title: "Core Connection",
             theme: "Stability Building",
             mentalFocus: "Inner Strength",
+            targetAreas: "Core, Deep Stabilizers, Full Spine",
+            dailyGoal: "Strengthen your deep core stabilizers that provide natural support and protection for your back. A strong core is the foundation of a healthy, pain-free spine.",
             exercises: [
                 Exercise(name: "Core Breathing", duration: 45, instructions: ["Feel core engage on exhale", "Gentle, not forced", "Connection, not tension", "Build awareness"], icon: "wind.circle", focusArea: "Core"),
                 Exercise(name: "Dead Bug", duration: 45, instructions: ["Opposite arm and leg extend", "Keep back pressed down", "Move with control", "Alternate slowly"], icon: "figure.core.training", focusArea: "Core Stability"),
@@ -196,6 +210,8 @@ class ExerciseDatabase {
             title: "Week One Victory",
             theme: "Integration & Rest",
             mentalFocus: "Celebrating Progress",
+            targetAreas: "Full Body Integration, Recovery",
+            dailyGoal: "Integrate all the movements from Week 1 while celebrating your commitment and progress. This recovery-focused day allows your body to adapt and prepare for the strength-building ahead.",
             exercises: [
                 Exercise(name: "Gratitude Breathing", duration: 60, instructions: ["Breathe in: 'I am grateful'", "Breathe out: 'I am healing'", "Feel the truth of this", "Celebrate yourself"], icon: "heart.circle.fill", focusArea: "Gratitude"),
                 Exercise(name: "Gentle Flow", duration: 60, instructions: ["Cat-cow at your pace", "Pelvic tilts", "Child's pose", "Move intuitively"], icon: "figure.yoga", focusArea: "Full Body"),
@@ -217,6 +233,8 @@ class ExerciseDatabase {
             title: "Level Up",
             theme: "Progressive Strength",
             mentalFocus: "Embracing Challenge",
+            targetAreas: "Core, Glutes, Stability Muscles",
+            dailyGoal: "Progress to more challenging variations that build serious strength in your core and stabilizers. These advanced movements create resilience and lasting back protection.",
             exercises: [
                 Exercise(name: "Power Breathing", duration: 45, instructions: ["Strong, controlled breaths", "Feel your power", "Energy building", "Confidence growing"], icon: "wind.snow", focusArea: "Energy"),
                 Exercise(name: "Advanced Dead Bug", duration: 50, instructions: ["Lower arm and leg together", "Controlled movement", "Back stays down", "Full range of motion"], icon: "figure.core.training", focusArea: "Core"),
@@ -237,6 +255,8 @@ class ExerciseDatabase {
             title: "Postural Power",
             theme: "Alignment Focus",
             mentalFocus: "Standing Tall",
+            targetAreas: "Upper Back, Shoulders, Thoracic Spine",
+            dailyGoal: "Correct postural imbalances and strengthen the muscles that keep you upright. Good posture reduces back strain and prevents future pain from developing.",
             exercises: [
                 Exercise(name: "Posture Awareness Breathing", duration: 45, instructions: ["Sit or stand tall", "Breathe into good posture", "Shoulders back and down", "Feel your spine lengthen"], icon: "figure.stand", focusArea: "Posture"),
                 Exercise(name: "Wall Angels", duration: 50, instructions: ["Back against wall", "Arms slide up and down", "Maintain contact with wall", "Open chest and shoulders"], icon: "figure.flexibility", focusArea: "Upper Back"),
@@ -257,6 +277,8 @@ class ExerciseDatabase {
             title: "Dynamic Stability",
             theme: "Controlled Movement",
             mentalFocus: "Grace Under Pressure",
+            targetAreas: "Glutes, Obliques, Full Body Balance",
+            dailyGoal: "Develop stability during movement, not just static positions. This translates directly to safer, more controlled movement in your daily activities.",
             exercises: [
                 Exercise(name: "Mindful Movement Prep", duration: 40, instructions: ["Center yourself", "Feel grounded", "Prepare to move with control", "Breathe confidence"], icon: "figure.mind.and.body", focusArea: "Centering"),
                 Exercise(name: "Single Leg Bridge", duration: 50, instructions: ["Bridge with one leg extended", "Hold stable", "Glutes engaged", "Alternate legs"], icon: "figure.strengthtraining.traditional", focusArea: "Glutes & Balance"),
@@ -277,6 +299,8 @@ class ExerciseDatabase {
             title: "Endurance Builder",
             theme: "Sustained Strength",
             mentalFocus: "Mental Toughness",
+            targetAreas: "Core Endurance, Back Extensors, Legs",
+            dailyGoal: "Build muscular endurance so your back support muscles can maintain proper form throughout your entire day. Endurance prevents the fatigue that leads to poor posture and pain.",
             exercises: [
                 Exercise(name: "Endurance Breathing", duration: 45, instructions: ["Steady, rhythmic breath", "Build mental stamina", "Consistent pace", "Prepare for challenge"], icon: "wind", focusArea: "Mental Prep"),
                 Exercise(name: "Extended Plank Hold", duration: 40, instructions: ["Knees or toes", "Hold with good form", "Breathe through it", "Mental strength building"], icon: "figure.strengthtraining.traditional", focusArea: "Core Endurance"),
@@ -297,6 +321,8 @@ class ExerciseDatabase {
             title: "Functional Movement",
             theme: "Real-World Strength",
             mentalFocus: "Practical Power",
+            targetAreas: "Full Back, Legs, Rotational Muscles",
+            dailyGoal: "Train movements you use every day like bending, lifting, and reaching. These functional patterns ensure your back stays safe during real-world activities.",
             exercises: [
                 Exercise(name: "Functional Breathing", duration: 40, instructions: ["Breathe as you move", "Natural rhythm", "Real-world connection", "Movement is life"], icon: "wind.circle", focusArea: "Integration"),
                 Exercise(name: "Squat to Stand", duration: 50, instructions: ["From chair or bench", "Stand up fully", "Sit down controlled", "Daily life movement"], icon: "figure.strengthtraining.functional", focusArea: "Legs & Back"),
@@ -317,6 +343,8 @@ class ExerciseDatabase {
             title: "Power Day",
             theme: "Peak Performance",
             mentalFocus: "Unleashing Potential",
+            targetAreas: "Core Power, Glutes, Full Body",
+            dailyGoal: "Push your limits with dynamic, powerful movements that showcase how far you've come. This challenging day builds explosive strength and unshakeable confidence in your body.",
             exercises: [
                 Exercise(name: "Power Prep Breathing", duration: 45, instructions: ["Quick, energizing breaths", "Build internal fire", "Feel your power", "Ready to dominate"], icon: "bolt.fill", focusArea: "Energy"),
                 Exercise(name: "Dynamic Bird Dog", duration: 50, instructions: ["Full extension", "Hold briefly", "Quick transitions", "Maximum engagement"], icon: "figure.core.training", focusArea: "Core Power"),
@@ -337,6 +365,8 @@ class ExerciseDatabase {
             title: "Week Two Champion",
             theme: "Strength Integration",
             mentalFocus: "Owning Your Progress",
+            targetAreas: "Full Body Strength, Integration",
+            dailyGoal: "Celebrate two weeks of dedication by performing all your strongest movements with confidence. This integration day solidifies your strength gains and prepares you for the flexibility-focused week ahead.",
             exercises: [
                 Exercise(name: "Champion's Breathing", duration: 60, instructions: ["Breathe like a champion", "You've earned this title", "Two weeks of consistency", "Feel the pride"], icon: "crown.fill", focusArea: "Confidence"),
                 Exercise(name: "Full Body Flow", duration: 70, instructions: ["Cat-cow flow", "Bird dog both sides", "Bridges with control", "Your strongest versions"], icon: "figure.yoga", focusArea: "Integration"),
@@ -358,6 +388,8 @@ class ExerciseDatabase {
             title: "Opening New Doors",
             theme: "Flexibility Focus",
             mentalFocus: "Expanding Possibilities",
+            targetAreas: "Hip Flexors, Hamstrings, Full Posterior Chain",
+            dailyGoal: "Begin Week 3 by addressing the tight muscles that restrict movement and contribute to back pain. Increased flexibility creates freedom of movement and reduces strain on your spine.",
             exercises: [
                 Exercise(name: "Expansive Breathing", duration: 60, instructions: ["Breathe into all areas", "Feel your body expand", "Creating space", "Opening to possibilities"], icon: "wind", focusArea: "Expansion"),
                 Exercise(name: "Deep Hip Flexor Stretch", duration: 60, instructions: ["Low lunge position", "Feel deep hip opening", "Hold and breathe", "Both sides"], icon: "figure.flexibility", focusArea: "Hip Flexors"),
@@ -378,6 +410,8 @@ class ExerciseDatabase {
             title: "Tension Release",
             theme: "Letting Go Deeply",
             mentalFocus: "Emotional Release",
+            targetAreas: "Deep Hips, Spine, Full Body Release",
+            dailyGoal: "Release both physical and emotional tension stored in your body through deep, sustained stretches. The hips and back often hold stress, and today's practice helps you let it all go.",
             exercises: [
                 Exercise(name: "Release Breathing", duration: 60, instructions: ["Sigh out loud on exhale", "Let go audibly", "Release stored tension", "Sound is healing"], icon: "wind.snow", focusArea: "Emotional Release"),
                 Exercise(name: "Supine Twist Deep Hold", duration: 60, instructions: ["Hold twist for full time", "Breathe into it", "Allow deep release", "Each side"], icon: "figure.yoga", focusArea: "Spine Release"),
@@ -398,6 +432,8 @@ class ExerciseDatabase {
             title: "Flow State",
             theme: "Fluid Movement",
             mentalFocus: "Being Present",
+            targetAreas: "Full Spine, Full Body Movement",
+            dailyGoal: "Experience the meditative quality of continuous, flowing movement where breath and motion become one. This flow state reduces stress and promotes healing through mindful movement.",
             exercises: [
                 Exercise(name: "Flow Breathing", duration: 60, instructions: ["Breath and movement unite", "No separation", "Pure flow state", "Present moment awareness"], icon: "water.waves", focusArea: "Presence"),
                 Exercise(name: "Sun Salutation (Modified)", duration: 90, instructions: ["Flow through positions", "Match breath to movement", "Continuous motion", "Find your rhythm"], icon: "figure.yoga", focusArea: "Full Body Flow"),
@@ -418,6 +454,8 @@ class ExerciseDatabase {
             title: "Thoracic Freedom",
             theme: "Upper Back Mobility",
             mentalFocus: "Opening the Heart",
+            targetAreas: "Thoracic Spine, Shoulders, Chest",
+            dailyGoal: "Unlock mobility in your mid-back and shoulders to improve posture and reduce upper back pain. A mobile thoracic spine is essential for overall spinal health and stress relief.",
             exercises: [
                 Exercise(name: "Heart Opening Breathing", duration: 60, instructions: ["Breathe into your chest", "Feel heart space expand", "Shoulders back naturally", "Emotional opening"], icon: "heart.circle", focusArea: "Heart Space"),
                 Exercise(name: "Thoracic Extensions", duration: 50, instructions: ["Over foam roller or pillow", "Gentle backbend", "Arms overhead", "Upper back opening"], icon: "figure.flexibility", focusArea: "Thoracic Spine"),
@@ -438,6 +476,8 @@ class ExerciseDatabase {
             title: "Lower Body Liberation",
             theme: "Hip & Leg Mobility",
             mentalFocus: "Grounding & Release",
+            targetAreas: "Hips, Hip Rotators, Calves, Hamstrings",
+            dailyGoal: "Free up your entire lower body to create a stable foundation for your spine. Mobile hips and legs allow for proper movement patterns that protect your back.",
             exercises: [
                 Exercise(name: "Grounding Breathing", duration: 60, instructions: ["Breathe down into legs", "Feel connection to earth", "Roots growing deep", "Stable and grounded"], icon: "leaf.fill", focusArea: "Grounding"),
                 Exercise(name: "Deep Lunge Series", duration: 70, instructions: ["Low lunge variations", "Hold each deeply", "Hip flexor opening", "Feel the release"], icon: "figure.flexibility", focusArea: "Hip Flexors"),
@@ -458,6 +498,8 @@ class ExerciseDatabase {
             title: "Full Body Freedom",
             theme: "Complete Mobility",
             mentalFocus: "Wholeness",
+            targetAreas: "Full Body Mobility, Complete Spine",
+            dailyGoal: "Experience total body mobility by stretching and mobilizing every major area from head to toe. This comprehensive practice creates balanced flexibility throughout your entire system.",
             exercises: [
                 Exercise(name: "Whole Body Breathing", duration: 60, instructions: ["Breathe into every cell", "Full body awareness", "Complete integration", "You are whole"], icon: "wind.circle.fill", focusArea: "Wholeness"),
                 Exercise(name: "Full Sun Salutation", duration: 90, instructions: ["Complete flow sequence", "Every part moves", "Breath guides all", "Integrated movement"], icon: "figure.yoga", focusArea: "Full Body"),
@@ -478,6 +520,8 @@ class ExerciseDatabase {
             title: "Week Three Victory",
             theme: "Flexibility Celebration",
             mentalFocus: "Embracing Change",
+            targetAreas: "Full Body Flexibility, Integration",
+            dailyGoal: "Celebrate three weeks of transformation with your most open, free-moving practice yet. This milestone day showcases the incredible flexibility and mobility you've developed.",
             exercises: [
                 Exercise(name: "Transformation Breathing", duration: 70, instructions: ["Reflect on three weeks", "Feel how much has changed", "Breathe gratitude", "Celebrate transformation"], icon: "sparkles", focusArea: "Transformation"),
                 Exercise(name: "Freedom Flow", duration: 100, instructions: ["Move completely freely", "Your favorite stretches", "Intuitive movement", "Express your freedom"], icon: "figure.dance", focusArea: "Free Movement"),
@@ -499,6 +543,8 @@ class ExerciseDatabase {
             title: "Building Habits",
             theme: "Sustainable Practice",
             mentalFocus: "Long-term Commitment",
+            targetAreas: "Core Maintenance, Hips, Posture",
+            dailyGoal: "Establish a sustainable daily routine with the most essential exercises for long-term back health. These key movements will become the foundation of your lifelong practice.",
             exercises: [
                 Exercise(name: "Commitment Breathing", duration: 60, instructions: ["Breathe into your future", "See yourself continuing", "This is who you are now", "Committed to wellness"], icon: "heart.fill", focusArea: "Commitment"),
                 Exercise(name: "Essential Core Work", duration: 60, instructions: ["Dead bug, bird dog, planks", "Your foundation exercises", "These are your staples", "Master the basics"], icon: "figure.core.training", focusArea: "Core Maintenance"),
@@ -519,6 +565,8 @@ class ExerciseDatabase {
             title: "Minimum Effective Dose",
             theme: "Efficiency",
             mentalFocus: "Quality Over Quantity",
+            targetAreas: "Essential Core, Key Stretches, Critical Posture",
+            dailyGoal: "Learn which exercises provide maximum benefit in minimum time for busy days. This efficient practice ensures you can maintain back health even when time is limited.",
             exercises: [
                 Exercise(name: "Focused Breathing", duration: 50, instructions: ["Less time, more focus", "Each breath counts", "Quality attention", "Efficient practice"], icon: "target", focusArea: "Focus"),
                 Exercise(name: "Power Core Circuit", duration: 70, instructions: ["Best core exercises only", "Perfect form", "Maximum benefit", "Minimal time"], icon: "figure.core.training", focusArea: "Efficient Core"),
@@ -539,6 +587,8 @@ class ExerciseDatabase {
             title: "Real Life Integration",
             theme: "Living Your Practice",
             mentalFocus: "Movement as Lifestyle",
+            targetAreas: "Lifestyle Movement, Everyday Posture, Micro-Mobility",
+            dailyGoal: "Transform your practice from a scheduled workout into a lifestyle by integrating back-healthy movements into everyday activities. Your entire day becomes an opportunity for wellness.",
             exercises: [
                 Exercise(name: "Life Breathing", duration: 50, instructions: ["Breathe like this all day", "Not just during practice", "Every breath matters", "Life is practice"], icon: "wind", focusArea: "Lifestyle Integration"),
                 Exercise(name: "Chair Exercises", duration: 60, instructions: ["Work-friendly movements", "At your desk", "In daily life", "Always accessible"], icon: "figure.stand", focusArea: "Office Wellness"),
@@ -559,6 +609,8 @@ class ExerciseDatabase {
             title: "Prevention Protocol",
             theme: "Staying Pain-Free",
             mentalFocus: "Proactive Wellness",
+            targetAreas: "Preventive Spine Care, Hip Maintenance, Core Protection",
+            dailyGoal: "Learn the daily maintenance routine that prevents back pain from returning. These proactive exercises keep you pain-free by addressing issues before they become problems.",
             exercises: [
                 Exercise(name: "Prevention Breathing", duration: 50, instructions: ["Breathe to prevent pain", "Before tension builds", "Proactive, not reactive", "Prevention is power"], icon: "shield.fill", focusArea: "Prevention"),
                 Exercise(name: "Daily Spine Care", duration: 70, instructions: ["Cat-cow every day", "Spine mobility daily", "Prevent stiffness", "Daily maintenance"], icon: "figure.yoga", focusArea: "Spine Prevention"),
@@ -579,6 +631,8 @@ class ExerciseDatabase {
             title: "Teaching Moment",
             theme: "Sharing Your Knowledge",
             mentalFocus: "Helping Others",
+            targetAreas: "Full Understanding, Teaching Fundamentals",
+            dailyGoal: "Deepen your understanding by practicing with teaching in mind, cementing your knowledge so you can help others. When you can teach something, you truly master it.",
             exercises: [
                 Exercise(name: "Teaching Breathing", duration: 50, instructions: ["Could you teach this?", "Understand it deeply", "Help others breathe", "Share the gift"], icon: "person.2.fill", focusArea: "Teaching"),
                 Exercise(name: "Explainable Exercises", duration: 70, instructions: ["Do each as if teaching", "Understand why it works", "Could you explain it?", "Deep knowledge"], icon: "book.fill", focusArea: "Understanding"),
@@ -599,6 +653,8 @@ class ExerciseDatabase {
             title: "Confidence Day",
             theme: "Owning Your Transformation",
             mentalFocus: "Self-Assurance",
+            targetAreas: "Peak Performance, Advanced Movement, Mastery",
+            dailyGoal: "Demonstrate your complete transformation with your most advanced, confident practice. This powerful session proves to yourself just how capable and strong you've become.",
             exercises: [
                 Exercise(name: "Confident Breathing", duration: 60, instructions: ["Breathe with confidence", "You've earned this", "Strong, sure breaths", "Confidence in every inhale"], icon: "sparkles", focusArea: "Confidence"),
                 Exercise(name: "Power Demonstration", duration: 80, instructions: ["Show your strongest work", "Advanced variations", "You are capable", "Demonstrate mastery"], icon: "bolt.fill", focusArea: "Power Display"),
@@ -619,6 +675,8 @@ class ExerciseDatabase {
             title: "The Final Day - Your New Beginning",
             theme: "Completion & Continuation",
             mentalFocus: "Transformation Complete",
+            targetAreas: "Complete Integration, Lifelong Wellness",
+            dailyGoal: "Complete your 28-day journey by celebrating everything you've accomplished while committing to ongoing back health. This final practice launches you into a lifetime of pain-free movement.",
             exercises: [
                 Exercise(name: "Journey Breathing", duration: 90, instructions: ["Breathe in your whole journey", "Day 1 to now", "Feel every moment", "This is who you are now"], icon: "heart.circle.fill", focusArea: "Reflection"),
                 Exercise(name: "Victory Flow", duration: 120, instructions: ["Your favorite movements", "Everything you've learned", "Freedom in motion", "This is your flow"], icon: "figure.dance", focusArea: "Celebration"),

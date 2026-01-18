@@ -48,7 +48,7 @@ struct PaywallView: View {
                     TimelineItem(
                         icon: "calendar",
                         iconColor: Color(red: 0.3, green: 0.6, blue: 0.7),
-                        title: "Today: Start Your Free Trial",
+                        title: "Today: Start Your Free Trial Now",
                         description: "Get instant access to hundreds of exercises and your personalized 28-day challenge.",
                         isFirst: true
                     )

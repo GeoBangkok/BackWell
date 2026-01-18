@@ -137,7 +137,7 @@ struct HomeView: View {
                                     )
 
                                     ExerciseCategoryCard(
-                                        title: "Flexibility & Mobility",
+                                        title: "Flexibility + Mobility",
                                         exerciseCount: 52,
                                         icon: "figure.flexibility"
                                     )

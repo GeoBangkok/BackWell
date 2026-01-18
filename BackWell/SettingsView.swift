@@ -10,6 +10,10 @@ import SwiftUI
 struct SettingsView: View {
     @State private var notificationsEnabled = true
     @State private var reminderTime = Date()
+    @State private var showRestoreAlert = false
+    @State private var restoreMessage = ""
+
+    @ObservedObject private var storeManager = StoreManager.shared
 
     var body: some View {
         NavigationView {
@@ -124,11 +128,31 @@ struct SettingsView: View {
                                 .padding(.horizontal, 24)
 
                             VStack(spacing: 0) {
-                                SettingsRow(
-                                    icon: "crown.fill",
-                                    title: "Manage Subscription",
-                                    hasChevron: true
-                                )
+                                // Subscription Status
+                                HStack(spacing: 16) {
+                                    Image(systemName: "crown.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                        .frame(width: 32)
+
+                                    Text("Subscription Status")
+                                        .font(.system(size: 16, weight: .regular))
+                                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+
+                                    Spacer()
+
+                                    Text(storeManager.isSubscribed ? "Active" : "Free Trial")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(storeManager.isSubscribed ? Color.green : Color.orange)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .fill((storeManager.isSubscribed ? Color.green : Color.orange).opacity(0.15))
+                                        )
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 16)
 
                                 Divider()
                                     .padding(.leading, 64)
@@ -138,6 +162,17 @@ struct SettingsView: View {
                                     title: "Restore Purchases",
                                     hasChevron: true
                                 )
+                                .onTapGesture {
+                                    Task {
+                                        await storeManager.restorePurchases()
+                                        if storeManager.isSubscribed {
+                                            restoreMessage = "Purchases restored successfully!"
+                                        } else if let error = storeManager.errorMessage {
+                                            restoreMessage = error
+                                        }
+                                        showRestoreAlert = true
+                                    }
+                                }
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
@@ -205,6 +240,11 @@ struct SettingsView: View {
                 }
             }
             .navigationBarHidden(true)
+            .alert("Restore Purchases", isPresented: $showRestoreAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(restoreMessage)
+            }
         }
     }
 }

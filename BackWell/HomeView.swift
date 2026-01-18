@@ -11,6 +11,9 @@ struct HomeView: View {
     @State private var currentDay = 1 // Track user's current day
     @State private var completedDays: Set<Int> = [] // Days completed
     @State private var selectedDayProgram: DayProgram? = nil
+    @State private var showSubscriptionRequired = false
+
+    @ObservedObject private var storeManager = StoreManager.shared
 
     let columns = [
         GridItem(.flexible()),
@@ -90,7 +93,13 @@ struct HomeView: View {
                                 )
                                 .onTapGesture {
                                     if day <= currentDay {
-                                        selectedDayProgram = ExerciseDatabase.getDay(day)
+                                        // Check if user has access to this day
+                                        if storeManager.hasAccessToDay(day) {
+                                            selectedDayProgram = ExerciseDatabase.getDay(day)
+                                        } else {
+                                            // Show subscription required alert
+                                            showSubscriptionRequired = true
+                                        }
                                     }
                                 }
                             }
@@ -160,6 +169,11 @@ struct HomeView: View {
                             currentDay += 1
                         }
                     }
+            }
+            .alert("Subscription Required", isPresented: $showSubscriptionRequired) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Days 4-28 require an active subscription. Subscribe to continue your journey!")
             }
         }
     }

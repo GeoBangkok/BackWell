@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9A41A10A2F1CE7F5007B7380 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9A41A1092F1CE7F5007B7380 /* SuperwallKit */; };
+		9AF8C67E2F1CEF0500B6CBEE /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9AF8C67D2F1CEF0500B6CBEE /* SuperwallKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9AE5A9342F1BC02900F47A83 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A41A10A2F1CE7F5007B7380 /* SuperwallKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -59,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9AF8C67E2F1CEF0500B6CBEE /* SuperwallKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,7 @@
 			);
 			name = BackWell;
 			packageProductDependencies = (
+				9A41A1092F1CE7F5007B7380 /* SuperwallKit */,
 			);
 			productName = BackWell;
 			productReference = 9AE5A9242F1BC02700F47A83 /* BackWell.app */;
@@ -135,6 +143,7 @@
 			);
 			name = BackWellTests;
 			packageProductDependencies = (
+				9AF8C67D2F1CEF0500B6CBEE /* SuperwallKit */,
 			);
 			productName = BackWellTests;
 			productReference = 9AE5A9332F1BC02900F47A83 /* BackWellTests.xctest */;
@@ -195,6 +204,9 @@
 			);
 			mainGroup = 9AE5A91B2F1BC02700F47A83;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9A41A1082F1CE7F5007B7380 /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9AE5A9252F1BC02700F47A83 /* Products */;
 			projectDirPath = "";
@@ -588,6 +600,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9A41A1082F1CE7F5007B7380 /* XCRemoteSwiftPackageReference "Superwall-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/superwall/Superwall-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 4.12.5;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9A41A1092F1CE7F5007B7380 /* SuperwallKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A41A1082F1CE7F5007B7380 /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
+			productName = SuperwallKit;
+		};
+		9AF8C67D2F1CEF0500B6CBEE /* SuperwallKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9A41A1082F1CE7F5007B7380 /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
+			productName = SuperwallKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9AE5A91C2F1BC02700F47A83 /* Project object */;
 }

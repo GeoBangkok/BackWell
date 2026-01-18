@@ -10,6 +10,9 @@ import SwiftUI
 struct PaywallView: View {
     let onContinue: () -> Void
 
+    @ObservedObject private var storeManager = StoreManager.shared
+    @State private var showError: Bool = false
+
     var body: some View {
         ZStack {
             // Calming gradient background - matches onboarding
@@ -83,7 +86,14 @@ struct PaywallView: View {
                         .padding(.bottom, 20)
 
                         // CTA Button
-                        Button(action: onContinue) {
+                        Button(action: {
+                            Task {
+                                await storeManager.purchase()
+                                if storeManager.isSubscribed {
+                                    onContinue()
+                                }
+                            }
+                        }) {
                             Text("Start Free Trial")
                                 .font(.system(size: 17, weight: .semibold))
                                 .foregroundColor(.white)
@@ -94,6 +104,7 @@ struct PaywallView: View {
                                         .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
                                 )
                         }
+                        .disabled(storeManager.isLoading)
                         .padding(.horizontal, 28)
 
                         // Pricing text
@@ -115,13 +126,21 @@ struct PaywallView: View {
                             }
 
                             Button(action: {
-                                // Restore action
+                                Task {
+                                    await storeManager.restorePurchases()
+                                    if storeManager.isSubscribed {
+                                        onContinue()
+                                    } else if let error = storeManager.errorMessage {
+                                        showError = true
+                                    }
+                                }
                             }) {
                                 Text("Restore")
                                     .font(.system(size: 13, weight: .regular))
                                     .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
                                     .underline()
                             }
+                            .disabled(storeManager.isLoading)
 
                             Button(action: {
                                 // Terms action
@@ -136,6 +155,26 @@ struct PaywallView: View {
                     }
                 }
             }
+
+            // Loading overlay
+            if storeManager.isLoading {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .tint(Color(red: 0.3, green: 0.6, blue: 0.7))
+            }
+        }
+        .alert("Error", isPresented: $showError) {
+            Button("OK", role: .cancel) {
+                showError = false
+            }
+        } message: {
+            Text(storeManager.errorMessage ?? "An error occurred")
+        }
+        .onAppear {
+            // Paywall appeared
         }
     }
 

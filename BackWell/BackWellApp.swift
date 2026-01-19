@@ -63,7 +63,7 @@ final class DiagnosticSuperwallDelegate: SuperwallDelegate {
 
         // Log product IDs for additional verification
         for product in paywallInfo.products {
-            print("SW_PRODUCT – id: \(product.productIdentifier)")
+            print("SW_PRODUCT – id: \(product.id)")
         }
     }
 

@@ -13,7 +13,10 @@ import SuperwallKit
 struct BackWellApp: App {
 
     init() {
-        Superwall.configure(apiKey: "pk_RFmV5ZDuvTQSuZgr_mIDf")
+        Superwall.configure(
+            apiKey: "pk_RFmV5ZDuvTQSuZgr_mIDf",
+            purchaseController: SuperwallPurchaseController()
+        )
     }
 
     var sharedModelContainer: ModelContainer = {

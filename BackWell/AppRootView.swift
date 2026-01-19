@@ -31,8 +31,12 @@ struct AppRootView: View {
                 })
             case .onboarding:
                 OnboardingView(onContinue: {
+                    // Checkpoint 2: Log when paywall event is fired
+                    let eventName = "onboarding_complete"
+                    print("SW_EVENT_FIRED – event: \(eventName)")
+
                     // Register Superwall placement - this triggers the paywall
-                    Superwall.shared.register(placement: "onboarding_complete") {
+                    Superwall.shared.register(placement: eventName) {
                         // This handler is called when paywall is dismissed (purchased, skipped, or closed)
                         DispatchQueue.main.async {
                             currentScreen = .main

@@ -13,9 +13,10 @@ final class SuperwallPurchaseController: PurchaseController {
 
     // MARK: - PurchaseController Protocol
 
-    func purchase(product: SKProduct) async -> PurchaseResult {
-        // Convert SKProduct to StoreKit 2 product and purchase
+    @MainActor
+    func purchase(product: StoreProduct) async -> PurchaseResult {
         do {
+            // Get the StoreKit 2 product using the product identifier
             let products = try await Product.products(for: [product.productIdentifier])
 
             guard let storeKitProduct = products.first else {
@@ -49,6 +50,7 @@ final class SuperwallPurchaseController: PurchaseController {
         }
     }
 
+    @MainActor
     func restorePurchases() async -> RestorationResult {
         do {
             try await AppStore.sync()

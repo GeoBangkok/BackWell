@@ -8,6 +8,7 @@
 import Foundation
 import Combine
 import StoreKit
+import SuperwallKit
 
 class StoreManager: ObservableObject {
     static let shared = StoreManager()
@@ -124,6 +125,8 @@ class StoreManager: ObservableObject {
 
         await MainActor.run {
             isSubscribed = validSubscription
+            // Sync subscription status with Superwall for tracking
+            Superwall.shared.subscriptionStatus = validSubscription ? .active(Set()) : .inactive
         }
     }
 

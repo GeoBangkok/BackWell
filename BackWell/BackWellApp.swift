@@ -7,9 +7,15 @@
 
 import SwiftUI
 import SwiftData
+import SuperwallKit
 
 @main
 struct BackWellApp: App {
+
+    init() {
+        Superwall.configure(apiKey: "pk_RFmV5ZDuvTQSuZgr_mIDf")
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Item.self,

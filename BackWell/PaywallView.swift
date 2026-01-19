@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SuperwallKit
 
 struct PaywallView: View {
     let onContinue: () -> Void
@@ -174,7 +175,8 @@ struct PaywallView: View {
             Text(storeManager.errorMessage ?? "An error occurred")
         }
         .onAppear {
-            // Paywall appeared
+            // Track paywall view with Superwall
+            Superwall.shared.register(placement: "custom_paywall_view")
         }
     }
 

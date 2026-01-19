@@ -6,12 +6,12 @@
 //
 
 import SwiftUI
+import SuperwallKit
 
 enum AppScreen {
     case login
     case disclaimer
     case onboarding
-    case paywall
     case main
 }
 
@@ -31,11 +31,13 @@ struct AppRootView: View {
                 })
             case .onboarding:
                 OnboardingView(onContinue: {
-                    currentScreen = .paywall
-                })
-            case .paywall:
-                PaywallView(onContinue: {
-                    currentScreen = .main
+                    // Register Superwall placement - this triggers the paywall
+                    Superwall.shared.register(placement: "onboarding_complete") {
+                        // This handler is called when paywall is dismissed (purchased, skipped, or closed)
+                        DispatchQueue.main.async {
+                            currentScreen = .main
+                        }
+                    }
                 })
             case .main:
                 MainAppView()

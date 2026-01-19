@@ -33,45 +33,53 @@ class StoreManager: ObservableObject {
 
     // MARK: - Purchase Methods
 
+    @MainActor
     func purchase() async {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
+        isLoading = true
+        errorMessage = nil
+
+        print("🛒 Starting purchase flow...")
 
         do {
+            print("🔍 Fetching product: \(productID)")
             guard let product = try await fetchProduct() else {
+                print("❌ Product not found: \(productID)")
                 throw StoreError.productNotFound
             }
 
+            print("✅ Product found: \(product.displayName) - \(product.displayPrice)")
+            print("🛍️ Initiating purchase...")
+
             let result = try await product.purchase()
+
+            print("📋 Purchase result received: \(result)")
 
             switch result {
             case .success(let verification):
+                print("✅ Purchase successful, verifying...")
                 let transaction = try checkVerified(verification)
                 await transaction.finish()
                 await checkSubscriptionStatus()
+                print("✅ Transaction finished and status updated")
 
             case .userCancelled:
+                print("🚫 User cancelled purchase")
                 break
 
             case .pending:
-                await MainActor.run {
-                    errorMessage = "Purchase is pending approval"
-                }
+                print("⏳ Purchase pending approval")
+                errorMessage = "Purchase is pending approval"
 
             @unknown default:
+                print("❓ Unknown purchase result")
                 break
             }
         } catch {
-            await MainActor.run {
-                errorMessage = error.localizedDescription
-            }
+            print("❌ Purchase error: \(error.localizedDescription)")
+            errorMessage = error.localizedDescription
         }
 
-        await MainActor.run {
-            isLoading = false
-        }
+        isLoading = false
     }
 
     func restorePurchases() async {
@@ -143,7 +151,12 @@ class StoreManager: ObservableObject {
     // MARK: - Private Helpers
 
     private func fetchProduct() async throws -> StoreKit.Product? {
+        print("📦 Requesting products from App Store for: [\(productID)]")
         let products = try await StoreKit.Product.products(for: [productID])
+        print("📦 Received \(products.count) products from App Store")
+        for product in products {
+            print("   - \(product.id): \(product.displayName) (\(product.displayPrice))")
+        }
         return products.first
     }
 

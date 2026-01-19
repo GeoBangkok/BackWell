@@ -92,6 +92,8 @@ struct PaywallView: View {
                                 await storeManager.purchase()
                                 if storeManager.isSubscribed {
                                     onContinue()
+                                } else if storeManager.errorMessage != nil {
+                                    showError = true
                                 }
                             }
                         }) {
@@ -181,6 +183,12 @@ struct PaywallView: View {
         .onAppear {
             // Track paywall view with Superwall
             Superwall.shared.register(placement: "custom_paywall_view")
+            print("📱 PaywallView appeared")
+        }
+        .onChange(of: storeManager.errorMessage) { _, newValue in
+            if newValue != nil {
+                showError = true
+            }
         }
     }
 

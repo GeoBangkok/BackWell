@@ -173,6 +173,20 @@ struct SettingsView: View {
                                         showRestoreAlert = true
                                     }
                                 }
+
+                                Divider()
+                                    .padding(.leading, 64)
+
+                                SettingsRow(
+                                    icon: "creditcard.fill",
+                                    title: "Manage Subscription",
+                                    hasChevron: true
+                                )
+                                .onTapGesture {
+                                    if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 16)

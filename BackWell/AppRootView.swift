@@ -9,6 +9,7 @@ import SwiftUI
 
 enum AppScreen {
     case login
+    case disclaimer
     case onboarding
     case paywall
     case main
@@ -22,6 +23,10 @@ struct AppRootView: View {
             switch currentScreen {
             case .login:
                 LoginView(onContinue: {
+                    currentScreen = .disclaimer
+                })
+            case .disclaimer:
+                MedicalDisclaimerView(onAccept: {
                     currentScreen = .onboarding
                 })
             case .onboarding:

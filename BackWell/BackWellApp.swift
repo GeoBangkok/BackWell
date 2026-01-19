@@ -17,6 +17,8 @@ struct BackWellApp: App {
             apiKey: "pk_RFmV5ZDuvTQSuZgr_mIDf",
             purchaseController: SuperwallPurchaseController()
         )
+        // Set initial subscription status - required when using PurchaseController
+        Superwall.shared.subscriptionStatus = .inactive
     }
 
     var sharedModelContainer: ModelContainer = {

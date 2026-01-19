@@ -160,7 +160,7 @@ struct ExercisePlayerView: View {
 
                 // How to Perform - compact version
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("How to Perform")
+                    Text("How to Perform!")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
 

@@ -28,6 +28,13 @@ struct LoginView: View {
             VStack(spacing: 0) {
                 Spacer()
 
+                // Logo
+                Image("BackWellLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 120, height: 80)
+                    .padding(.bottom, 24)
+
                 // App Name
                 Text("BackWell")
                     .font(.system(size: 44, weight: .light, design: .rounded))

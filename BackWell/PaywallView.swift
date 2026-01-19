@@ -118,7 +118,9 @@ struct PaywallView: View {
                         // Footer links
                         HStack(spacing: 40) {
                             Button(action: {
-                                // Privacy action
+                                if let url = URL(string: "https://backwelll.lovable.app/privacy") {
+                                    UIApplication.shared.open(url)
+                                }
                             }) {
                                 Text("Privacy")
                                     .font(.system(size: 13, weight: .regular))
@@ -144,7 +146,9 @@ struct PaywallView: View {
                             .disabled(storeManager.isLoading)
 
                             Button(action: {
-                                // Terms action
+                                if let url = URL(string: "https://backwelll.lovable.app/terms") {
+                                    UIApplication.shared.open(url)
+                                }
                             }) {
                                 Text("Terms")
                                     .font(.system(size: 13, weight: .regular))

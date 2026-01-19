@@ -212,6 +212,11 @@ struct SettingsView: View {
                                     title: "Terms of Service",
                                     hasChevron: true
                                 )
+                                .onTapGesture {
+                                    if let url = URL(string: "https://backwelll.lovable.app/terms") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
 
                                 Divider()
                                     .padding(.leading, 64)
@@ -221,6 +226,11 @@ struct SettingsView: View {
                                     title: "Privacy Policy",
                                     hasChevron: true
                                 )
+                                .onTapGesture {
+                                    if let url = URL(string: "https://backwelll.lovable.app/privacy") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
                             }
                             .background(
                                 RoundedRectangle(cornerRadius: 16)

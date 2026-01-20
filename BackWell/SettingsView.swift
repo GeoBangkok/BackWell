@@ -12,6 +12,8 @@ struct SettingsView: View {
     @State private var reminderTime = Date()
     @State private var showRestoreAlert = false
     @State private var restoreMessage = ""
+    @State private var showSupportView = false
+    @State private var showLogoutAlert = false
 
     @ObservedObject private var storeManager = StoreManager.shared
 
@@ -199,6 +201,9 @@ struct SettingsView: View {
                                     title: "Help & FAQ",
                                     hasChevron: true
                                 )
+                                .onTapGesture {
+                                    showSupportView = true
+                                }
 
                                 Divider()
                                     .padding(.leading, 64)
@@ -208,6 +213,9 @@ struct SettingsView: View {
                                     title: "Contact Support",
                                     hasChevron: true
                                 )
+                                .onTapGesture {
+                                    showSupportView = true
+                                }
 
                                 Divider()
                                     .padding(.leading, 64)
@@ -244,11 +252,32 @@ struct SettingsView: View {
                             .padding(.horizontal, 24)
                         }
 
+                        // Log Out Button
+                        Button(action: {
+                            showLogoutAlert = true
+                        }) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
+                                    .font(.system(size: 18))
+                                Text("Log Out")
+                                    .font(.system(size: 16, weight: .medium))
+                            }
+                            .foregroundColor(.red)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.6))
+                            )
+                        }
+                        .padding(.horizontal, 24)
+                        .padding(.top, 8)
+
                         // App Version
                         Text("BackWell v1.0.0")
                             .font(.system(size: 13, weight: .regular))
                             .foregroundColor(Theme.textMuted)
-                            .padding(.top, 20)
+                            .padding(.top, 12)
 
                         Spacer(minLength: 40)
                     }
@@ -259,6 +288,118 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(restoreMessage)
+            }
+            .alert("Log Out", isPresented: $showLogoutAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Log Out", role: .destructive) {
+                    // Reset app state - return to login
+                    NotificationCenter.default.post(name: NSNotification.Name("LogOut"), object: nil)
+                }
+            } message: {
+                Text("Are you sure you want to log out?")
+            }
+            .sheet(isPresented: $showSupportView) {
+                SupportView()
+            }
+        }
+    }
+}
+
+// MARK: - Support View
+struct SupportView: View {
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        ZStack {
+            Theme.backgroundGradient
+                .ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                // Header
+                HStack {
+                    Button(action: { dismiss() }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(Theme.textMuted)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 24)
+                .padding(.top, 20)
+
+                Spacer()
+
+                // Icon
+                ZStack {
+                    Circle()
+                        .fill(Theme.teal.opacity(0.15))
+                        .frame(width: 100, height: 100)
+
+                    Image(systemName: "envelope.fill")
+                        .font(.system(size: 44))
+                        .foregroundColor(Theme.teal)
+                }
+
+                // Title
+                Text("Contact Support")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Theme.textPrimary)
+
+                // Description
+                Text("Need help? Have questions or feedback?\nWe'd love to hear from you!")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(Theme.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+
+                // Email Card
+                VStack(spacing: 16) {
+                    Text("Email us at:")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Theme.textMuted)
+
+                    Button(action: {
+                        if let url = URL(string: "mailto:george@atlasremoteservices.com") {
+                            UIApplication.shared.open(url)
+                        }
+                    }) {
+                        Text("george@atlasremoteservices.com")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundColor(Theme.teal)
+                    }
+
+                    Text("We typically respond within 24-48 hours")
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundColor(Theme.textMuted)
+                }
+                .padding(24)
+                .frame(maxWidth: .infinity)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.white.opacity(0.7))
+                )
+                .padding(.horizontal, 24)
+
+                Spacer()
+
+                // Send Email Button
+                Button(action: {
+                    if let url = URL(string: "mailto:george@atlasremoteservices.com?subject=BackWell%20Support") {
+                        UIApplication.shared.open(url)
+                    }
+                }) {
+                    Text("Send Email")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(
+                            RoundedRectangle(cornerRadius: 27)
+                                .fill(Theme.teal)
+                        )
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 40)
             }
         }
     }

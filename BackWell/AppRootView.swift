@@ -48,6 +48,11 @@ struct AppRootView: View {
             }
         }
         .animation(.easeInOut, value: currentScreen)
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("LogOut"))) { _ in
+            withAnimation {
+                currentScreen = .login
+            }
+        }
     }
 }
 

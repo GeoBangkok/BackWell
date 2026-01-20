@@ -208,6 +208,18 @@ struct ExercisePlayerView: View {
     }
 
     func completeExercise() {
+        // Track exercise completion before moving to next
+        if let exercise = currentExercise {
+            let subscriptionStatus = StoreManager.shared.isSubscribed ? "active" : "inactive"
+            FacebookEventTracker.shared.trackExerciseCompleted(
+                day: dayProgram.day,
+                exerciseIndex: currentExerciseIndex,
+                totalExercises: dayProgram.exercises.count,
+                exerciseName: exercise.name,
+                duration: exercise.duration,
+                subscriptionStatus: subscriptionStatus
+            )
+        }
         moveToNextComponent()
     }
 
@@ -219,6 +231,20 @@ struct ExercisePlayerView: View {
             } else {
                 stopTimer()
                 isPlaying = false
+
+                // Track exercise completion when timer reaches 0
+                if let exercise = currentExercise {
+                    let subscriptionStatus = StoreManager.shared.isSubscribed ? "active" : "inactive"
+                    FacebookEventTracker.shared.trackExerciseCompleted(
+                        day: dayProgram.day,
+                        exerciseIndex: currentExerciseIndex,
+                        totalExercises: dayProgram.exercises.count,
+                        exerciseName: exercise.name,
+                        duration: exercise.duration,
+                        subscriptionStatus: subscriptionStatus
+                    )
+                }
+
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     moveToNextComponent()
                 }
@@ -247,6 +273,13 @@ struct ExercisePlayerView: View {
                 if currentExerciseIndex < dayProgram.exercises.count {
                     timeRemaining = dayProgram.exercises[currentExerciseIndex].duration
                 } else {
+                    // Track day completion before showing completion screen
+                    let subscriptionStatus = StoreManager.shared.isSubscribed ? "active" : "inactive"
+                    FacebookEventTracker.shared.trackDayCompleted(
+                        day: dayProgram.day,
+                        totalCompletedDays: dayProgram.day, // Will be updated in HomeView
+                        subscriptionStatus: subscriptionStatus
+                    )
                     sessionComplete = true
                 }
             }
@@ -265,6 +298,13 @@ struct ExercisePlayerView: View {
                     showingMentalComponent = true
                     timeRemaining = dayProgram.mentalComponents[currentMentalIndex].duration
                 } else {
+                    // Track day completion before showing completion screen
+                    let subscriptionStatus = StoreManager.shared.isSubscribed ? "active" : "inactive"
+                    FacebookEventTracker.shared.trackDayCompleted(
+                        day: dayProgram.day,
+                        totalCompletedDays: dayProgram.day, // Will be updated in HomeView
+                        subscriptionStatus: subscriptionStatus
+                    )
                     sessionComplete = true
                 }
             }

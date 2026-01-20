@@ -20,6 +20,13 @@ class StoreManager: ObservableObject {
     private let productID = "backwell_unlimited_weekly_9_99"
     private var updateListenerTask: Task<Void, Error>?
 
+    // Track if we've ever logged a Subscribe event (for first purchase only)
+    private let hasLoggedSubscribeKey = "has_logged_subscribe_event"
+    private var hasLoggedSubscribe: Bool {
+        get { UserDefaults.standard.bool(forKey: hasLoggedSubscribeKey) }
+        set { UserDefaults.standard.set(newValue, forKey: hasLoggedSubscribeKey) }
+    }
+
     private init() {
         updateListenerTask = listenForTransactions()
         Task {
@@ -61,6 +68,29 @@ class StoreManager: ObservableObject {
                 await transaction.finish()
                 await checkSubscriptionStatus()
                 print("✅ Transaction finished and status updated")
+
+                // Track Facebook Purchase event - CRITICAL for ROAS optimization
+                // This is the ONLY money event Meta needs
+                let price = Double(truncating: product.price as NSDecimalNumber)
+                FacebookEventTracker.shared.trackPurchase(
+                    productID: productID,
+                    price: price,
+                    currency: "USD",
+                    isRenewal: false
+                    // No currentDay - purchase from onboarding, before program starts
+                )
+
+                // Track Subscribe event ONLY on first-ever purchase
+                // Use UserDefaults flag for clean, reliable first-purchase detection
+                if !hasLoggedSubscribe {
+                    FacebookEventTracker.shared.trackSubscribe(
+                        productID: productID,
+                        price: price
+                        // No currentDay - first purchase from onboarding
+                    )
+                    hasLoggedSubscribe = true
+                    print("📊 First purchase - Subscribe event tracked")
+                }
 
             case .userCancelled:
                 print("🚫 User cancelled purchase")
@@ -176,6 +206,19 @@ class StoreManager: ObservableObject {
                     let transaction = try self.checkVerified(result)
                     await transaction.finish()
                     await self.checkSubscriptionStatus()
+
+                    // Track renewal purchases for Facebook
+                    // Only fires Purchase event (NOT Subscribe - that's first purchase only)
+                    if transaction.productID == self.productID {
+                        FacebookEventTracker.shared.trackPurchase(
+                            productID: transaction.productID,
+                            price: 9.99, // Weekly price
+                            currency: "USD",
+                            isRenewal: true
+                            // No currentDay - renewal happens in background, no day context
+                        )
+                        print("📊 Renewal purchase tracked for \(transaction.productID)")
+                    }
                 } catch {
                     print("Transaction failed verification: \(error)")
                 }

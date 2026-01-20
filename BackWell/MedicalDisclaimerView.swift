@@ -113,6 +113,13 @@ struct MedicalDisclaimerView: View {
                 )
             }
         }
+        .onAppear {
+            // Track ViewContent for medical disclaimer
+            FacebookEventTracker.shared.trackViewContent(
+                contentType: "disclaimer",
+                contentID: "medical_disclaimer"
+            )
+        }
     }
 }
 

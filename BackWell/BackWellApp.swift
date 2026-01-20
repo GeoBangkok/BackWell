@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import SuperwallKit
+import FacebookCore
 
 @main
 struct BackWellApp: App {
@@ -15,6 +16,13 @@ struct BackWellApp: App {
     private let superwallDelegate = DiagnosticSuperwallDelegate()
 
     init() {
+        // Initialize Facebook SDK for event tracking
+        ApplicationDelegate.shared.application(
+            UIApplication.shared,
+            didFinishLaunchingWithOptions: nil
+        )
+        print("📊 Facebook SDK initialized")
+
         Superwall.configure(
             apiKey: "pk_RFmV5ZDuvTQSuZgr_mIDf",
             purchaseController: SuperwallPurchaseController()
@@ -56,6 +64,10 @@ struct BackWellApp: App {
 
 final class DiagnosticSuperwallDelegate: SuperwallDelegate {
 
+    // Guard against duplicate PaywallViewed events (paywall re-renders)
+    private var lastTrackedPaywallID: String?
+    private var lastTrackedPaywallTime: Date?
+
     func didPresentPaywall(withInfo paywallInfo: PaywallInfo) {
         // Checkpoint 3a: Paywall presented successfully with products
         let productCount = paywallInfo.products.count
@@ -64,6 +76,30 @@ final class DiagnosticSuperwallDelegate: SuperwallDelegate {
         // Log product IDs for additional verification
         for product in paywallInfo.products {
             print("SW_PRODUCT – id: \(product.id)")
+        }
+
+        // Track Facebook event when paywall ACTUALLY shows (not just when register() is called)
+        // Guard: Only fire once per unique paywall session (prevent re-render spam)
+        let shouldTrack: Bool
+        if let lastID = lastTrackedPaywallID,
+           let lastTime = lastTrackedPaywallTime,
+           lastID == paywallInfo.identifier,
+           Date().timeIntervalSince(lastTime) < 60 {
+            // Same paywall within 60 seconds = re-render, don't track
+            shouldTrack = false
+            print("⚠️ Skipping duplicate PaywallViewed (re-render)")
+        } else {
+            shouldTrack = true
+        }
+
+        if shouldTrack {
+            FacebookEventTracker.shared.trackPaywallViewed(
+                placement: paywallInfo.name,
+                paywallID: paywallInfo.identifier
+            )
+            lastTrackedPaywallID = paywallInfo.identifier
+            lastTrackedPaywallTime = Date()
+            print("📊 FB Event: PaywallViewed - placement: \(paywallInfo.name)")
         }
     }
 

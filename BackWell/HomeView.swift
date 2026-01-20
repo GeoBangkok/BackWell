@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var completedDays: Set<Int> = [] // Days completed
     @State private var selectedDayProgram: DayProgram? = nil
     @State private var showSubscriptionRequired = false
+    @State private var dayStartTime: Date? = nil // Track session length
 
     @ObservedObject private var storeManager = StoreManager.shared
 
@@ -86,8 +87,14 @@ struct HomeView: View {
                                     if day <= currentDay {
                                         // Check if user has access to this day
                                         if storeManager.hasAccessToDay(day) {
+                                            dayStartTime = Date() // Track session start
                                             selectedDayProgram = ExerciseDatabase.getDay(day)
                                         } else {
+                                            // Track subscription prompt
+                                            FacebookEventTracker.shared.trackSubscriptionPrompt(
+                                                day: day,
+                                                triggerPoint: "day_card_tap"
+                                            )
                                             // Show subscription required alert
                                             showSubscriptionRequired = true
                                         }
@@ -155,6 +162,40 @@ struct HomeView: View {
                     .onDisappear {
                         // Mark day as completed when player is dismissed
                         completedDays.insert(dayProgram.day)
+
+                        // Determine subscription status
+                        // If subscribed: "active"
+                        // If in Days 1-3 and not subscribed: "trial"
+                        // Otherwise: "inactive" (shouldn't happen due to hasAccessToDay gate)
+                        let subscriptionStatus: String
+                        if storeManager.isSubscribed {
+                            subscriptionStatus = "active"
+                        } else if dayProgram.day <= 3 {
+                            subscriptionStatus = "trial"
+                        } else {
+                            subscriptionStatus = "inactive"
+                        }
+
+                        // Track Day 1 completion as ACTIVATION (best early optimization event)
+                        // This fires when user FINISHES Day 1 routine, not when they start it
+                        if dayProgram.day == 1 {
+                            let sessionLength = dayStartTime.map { Int(Date().timeIntervalSince($0)) } ?? 0
+                            FacebookEventTracker.shared.trackActivation(
+                                currentDay: 1,
+                                sessionLengthSeconds: sessionLength,
+                                subscriptionStatus: subscriptionStatus
+                            )
+                        }
+
+                        // Track milestone achievements
+                        if [3, 7, 14, 28].contains(dayProgram.day) {
+                            FacebookEventTracker.shared.trackAchievedLevel(
+                                day: dayProgram.day,
+                                totalCompletedDays: completedDays.count,
+                                subscriptionStatus: subscriptionStatus
+                            )
+                        }
+
                         // Move to next day if current
                         if dayProgram.day == currentDay && currentDay < 28 {
                             currentDay += 1

@@ -140,8 +140,18 @@ struct OnboardingView: View {
                     Button(action: {
                         withAnimation {
                             if currentStep < totalSteps - 1 {
+                                // Track onboarding step completion before moving forward
+                                // PRIVACY: Only tracks funnel progress, NOT health data
+                                FacebookEventTracker.shared.trackOnboardingStep(
+                                    step: currentStep + 1,
+                                    totalSteps: totalSteps
+                                )
                                 currentStep += 1
                             } else {
+                                // Track CompleteRegistration before moving to paywall
+                                // PRIVACY: Does NOT send health data to Meta
+                                FacebookEventTracker.shared.trackCompleteRegistration()
+
                                 // Move to paywall
                                 onContinue()
                             }
@@ -161,6 +171,13 @@ struct OnboardingView: View {
                 .padding(.horizontal, 32)
                 .padding(.bottom, 50)
             }
+        }
+        .onAppear {
+            // Track ViewContent for onboarding start
+            FacebookEventTracker.shared.trackViewContent(
+                contentType: "onboarding",
+                contentID: "onboarding_start"
+            )
         }
     }
 }

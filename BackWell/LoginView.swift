@@ -61,6 +61,11 @@ struct LoginView: View {
         }
         .onAppear {
             startPulsating()
+            // Track ViewContent for login screen
+            FacebookEventTracker.shared.trackViewContent(
+                contentType: "login_screen",
+                contentID: "app_launch"
+            )
         }
     }
 

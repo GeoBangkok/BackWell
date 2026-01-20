@@ -8,6 +8,11 @@
 
 /* Begin PBXBuildFile section */
 		9A41A10A2F1CE7F5007B7380 /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9A41A1092F1CE7F5007B7380 /* SuperwallKit */; };
+		9AAF75242F1FBC3D00CAF53A /* FacebookAEM in Frameworks */ = {isa = PBXBuildFile; productRef = 9AAF75232F1FBC3D00CAF53A /* FacebookAEM */; };
+		9AAF75262F1FBC3D00CAF53A /* FacebookBasics in Frameworks */ = {isa = PBXBuildFile; productRef = 9AAF75252F1FBC3D00CAF53A /* FacebookBasics */; };
+		9AAF75282F1FBC3D00CAF53A /* FacebookCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9AAF75272F1FBC3D00CAF53A /* FacebookCore */; };
+		9AAF752A2F1FBC3D00CAF53A /* FacebookGamingServices in Frameworks */ = {isa = PBXBuildFile; productRef = 9AAF75292F1FBC3D00CAF53A /* FacebookGamingServices */; };
+		9AAF752C2F1FBC3D00CAF53A /* FacebookLogin in Frameworks */ = {isa = PBXBuildFile; productRef = 9AAF752B2F1FBC3D00CAF53A /* FacebookLogin */; };
 		9AF8C67E2F1CEF0500B6CBEE /* SuperwallKit in Frameworks */ = {isa = PBXBuildFile; productRef = 9AF8C67D2F1CEF0500B6CBEE /* SuperwallKit */; };
 /* End PBXBuildFile section */
 
@@ -57,7 +62,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9AAF75262F1FBC3D00CAF53A /* FacebookBasics in Frameworks */,
+				9AAF75242F1FBC3D00CAF53A /* FacebookAEM in Frameworks */,
+				9AAF752C2F1FBC3D00CAF53A /* FacebookLogin in Frameworks */,
 				9A41A10A2F1CE7F5007B7380 /* SuperwallKit in Frameworks */,
+				9AAF752A2F1FBC3D00CAF53A /* FacebookGamingServices in Frameworks */,
+				9AAF75282F1FBC3D00CAF53A /* FacebookCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -120,6 +130,11 @@
 			name = BackWell;
 			packageProductDependencies = (
 				9A41A1092F1CE7F5007B7380 /* SuperwallKit */,
+				9AAF75232F1FBC3D00CAF53A /* FacebookAEM */,
+				9AAF75252F1FBC3D00CAF53A /* FacebookBasics */,
+				9AAF75272F1FBC3D00CAF53A /* FacebookCore */,
+				9AAF75292F1FBC3D00CAF53A /* FacebookGamingServices */,
+				9AAF752B2F1FBC3D00CAF53A /* FacebookLogin */,
 			);
 			productName = BackWell;
 			productReference = 9AE5A9242F1BC02700F47A83 /* BackWell.app */;
@@ -206,6 +221,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				9A41A1082F1CE7F5007B7380 /* XCRemoteSwiftPackageReference "Superwall-iOS" */,
+				9AAF75222F1FBC3D00CAF53A /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9AE5A9252F1BC02700F47A83 /* Products */;
@@ -622,6 +638,14 @@
 				minimumVersion = 4.12.5;
 			};
 		};
+		9AAF75222F1FBC3D00CAF53A /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/facebook/facebook-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 14.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -629,6 +653,31 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 9A41A1082F1CE7F5007B7380 /* XCRemoteSwiftPackageReference "Superwall-iOS" */;
 			productName = SuperwallKit;
+		};
+		9AAF75232F1FBC3D00CAF53A /* FacebookAEM */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AAF75222F1FBC3D00CAF53A /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookAEM;
+		};
+		9AAF75252F1FBC3D00CAF53A /* FacebookBasics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AAF75222F1FBC3D00CAF53A /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookBasics;
+		};
+		9AAF75272F1FBC3D00CAF53A /* FacebookCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AAF75222F1FBC3D00CAF53A /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookCore;
+		};
+		9AAF75292F1FBC3D00CAF53A /* FacebookGamingServices */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AAF75222F1FBC3D00CAF53A /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookGamingServices;
+		};
+		9AAF752B2F1FBC3D00CAF53A /* FacebookLogin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9AAF75222F1FBC3D00CAF53A /* XCRemoteSwiftPackageReference "facebook-ios-sdk" */;
+			productName = FacebookLogin;
 		};
 		9AF8C67D2F1CEF0500B6CBEE /* SuperwallKit */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -13,38 +13,22 @@ struct LoginView: View {
 
     var body: some View {
         ZStack {
-            // Calming gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.95, green: 0.97, blue: 0.98),
-                    Color(red: 0.88, green: 0.94, blue: 0.96),
-                    Color(red: 0.82, green: 0.91, blue: 0.94)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Theme.backgroundGradient
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
 
-                // Logo
-                Image("BackWellLogo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 120, height: 80)
-                    .padding(.bottom, 24)
-
                 // App Name
                 Text("BackWell")
-                    .font(.system(size: 44, weight: .light, design: .rounded))
-                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .foregroundColor(Theme.textPrimary)
                     .padding(.bottom, 8)
 
                 // Tagline
                 Text("Your path to relief")
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(Theme.textSecondary)
                     .padding(.bottom, 60)
 
                 Spacer()
@@ -58,18 +42,9 @@ struct LoginView: View {
                         .frame(height: 56)
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            Color(red: 0.3, green: 0.6, blue: 0.7),
-                                            Color(red: 0.25, green: 0.55, blue: 0.65)
-                                        ]),
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
+                                .fill(Theme.buttonGradient)
                         )
-                        .shadow(color: Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.3), radius: 8, x: 0, y: 4)
+                        .shadow(color: Theme.teal.opacity(0.3), radius: 8, x: 0, y: 4)
                         .scaleEffect(isPulsating ? 1.02 : 1.0)
                 }
                 .padding(.horizontal, 32)
@@ -77,8 +52,8 @@ struct LoginView: View {
 
                 // Reassuring text
                 Text("Clinically designed for your comfort")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65).opacity(0.8))
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(Theme.textMuted)
                     .padding(.bottom, 80)
 
                 Spacer()
@@ -88,7 +63,7 @@ struct LoginView: View {
             startPulsating()
         }
     }
-    
+
     private func startPulsating() {
         withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
             isPulsating = true

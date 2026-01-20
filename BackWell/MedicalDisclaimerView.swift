@@ -12,17 +12,8 @@ struct MedicalDisclaimerView: View {
 
     var body: some View {
         ZStack {
-            // Calming gradient background
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.95, green: 0.97, blue: 0.98),
-                    Color(red: 0.88, green: 0.94, blue: 0.96),
-                    Color(red: 0.82, green: 0.91, blue: 0.94)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Theme.backgroundGradient
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 Spacer()
@@ -33,19 +24,19 @@ struct MedicalDisclaimerView: View {
                         // Icon
                         ZStack {
                             Circle()
-                                .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.15))
+                                .fill(Theme.teal.opacity(0.15))
                                 .frame(width: 80, height: 80)
 
                             Image(systemName: "heart.text.square.fill")
                                 .font(.system(size: 40))
-                                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                .foregroundColor(Theme.teal)
                         }
                         .padding(.top, 20)
 
                         // Title
                         Text("Medical Disclaimer")
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                            .foregroundColor(Theme.textPrimary)
                             .multilineTextAlignment(.center)
 
                         // Disclaimer content
@@ -81,7 +72,7 @@ struct MedicalDisclaimerView: View {
                         // Acknowledgment text
                         Text("By continuing, you acknowledge that you have read and understood this disclaimer.")
                             .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                            .foregroundColor(Theme.textMuted)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 32)
                             .padding(.top, 8)
@@ -102,7 +93,7 @@ struct MedicalDisclaimerView: View {
                             .frame(height: 54)
                             .background(
                                 RoundedRectangle(cornerRadius: 27)
-                                    .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                    .fill(Theme.teal)
                             )
                     }
                     .padding(.horizontal, 28)
@@ -111,8 +102,8 @@ struct MedicalDisclaimerView: View {
                 .background(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color(red: 0.82, green: 0.91, blue: 0.94).opacity(0),
-                            Color(red: 0.82, green: 0.91, blue: 0.94)
+                            Color(red: 0.78, green: 0.90, blue: 0.92).opacity(0),
+                            Color(red: 0.78, green: 0.90, blue: 0.92)
                         ]),
                         startPoint: .top,
                         endPoint: .bottom
@@ -134,16 +125,16 @@ struct DisclaimerSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 14))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
 
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textPrimary)
             }
 
             Text(content)
                 .font(.system(size: 14, weight: .regular))
-                .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                .foregroundColor(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 .lineSpacing(3)
         }

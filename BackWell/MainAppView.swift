@@ -24,7 +24,7 @@ struct MainAppView: View {
                 }
                 .tag(1)
         }
-        .accentColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+        .accentColor(Theme.teal)
     }
 }
 

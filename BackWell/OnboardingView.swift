@@ -71,24 +71,15 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            // Same calming gradient
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 0.95, green: 0.97, blue: 0.98),
-                    Color(red: 0.88, green: 0.94, blue: 0.96),
-                    Color(red: 0.82, green: 0.91, blue: 0.94)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            Theme.backgroundGradient
+                .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Progress indicator
                 HStack(spacing: 8) {
                     ForEach(0..<totalSteps, id: \.self) { step in
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(step <= currentStep ? Color(red: 0.3, green: 0.6, blue: 0.7) : Color.gray.opacity(0.3))
+                            .fill(step <= currentStep ? Theme.teal : Color.gray.opacity(0.3))
                             .frame(height: 3)
                     }
                 }
@@ -136,12 +127,12 @@ struct OnboardingView: View {
                         }) {
                             Text("Back")
                                 .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                .foregroundColor(Theme.teal)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 52)
                                 .background(
                                     RoundedRectangle(cornerRadius: 14)
-                                        .stroke(Color(red: 0.3, green: 0.6, blue: 0.7), lineWidth: 2)
+                                        .stroke(Theme.teal, lineWidth: 2)
                                 )
                         }
                     }
@@ -163,16 +154,7 @@ struct OnboardingView: View {
                             .frame(height: 52)
                             .background(
                                 RoundedRectangle(cornerRadius: 14)
-                                    .fill(
-                                        LinearGradient(
-                                            gradient: Gradient(colors: [
-                                                Color(red: 0.3, green: 0.6, blue: 0.7),
-                                                Color(red: 0.25, green: 0.55, blue: 0.65)
-                                            ]),
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
+                                    .fill(Theme.buttonGradient)
                             )
                     }
                 }
@@ -191,12 +173,12 @@ struct WelcomeStep: View {
 
             Text("You're Not Alone")
                 .font(.system(size: 32, weight: .semibold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
                 .multilineTextAlignment(.center)
 
             Text("80% of adults experience back pain at some point in their lives.")
                 .font(.system(size: 18, weight: .regular))
-                .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
@@ -226,30 +208,30 @@ struct PainAssessmentStep: View {
 
             Text("Let's Understand Your Pain")
                 .font(.system(size: 28, weight: .semibold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
                 .multilineTextAlignment(.center)
 
             VStack(alignment: .leading, spacing: 12) {
                 Text("Current pain level")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textSecondary)
 
                 HStack {
                     Text("Mild")
                         .font(.system(size: 14))
-                        .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                        .foregroundColor(Theme.textMuted)
 
                     Slider(value: $painLevel, in: 1...10, step: 1)
-                        .accentColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                        .accentColor(Theme.teal)
 
                     Text("Severe")
                         .font(.system(size: 14))
-                        .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                        .foregroundColor(Theme.textMuted)
                 }
 
                 Text("\(Int(painLevel))/10")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
             }
             .padding(.horizontal, 24)
             .padding(.top, 20)
@@ -257,7 +239,7 @@ struct PainAssessmentStep: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text("Where does it hurt?")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textSecondary)
                     .padding(.horizontal, 24)
 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
@@ -271,14 +253,14 @@ struct PainAssessmentStep: View {
                         }) {
                             Text(area)
                                 .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(selectedAreas.contains(area) ? .white : Color(red: 0.3, green: 0.6, blue: 0.7))
+                                .foregroundColor(selectedAreas.contains(area) ? .white : Theme.teal)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 48)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
                                         .fill(selectedAreas.contains(area) ?
-                                              Color(red: 0.3, green: 0.6, blue: 0.7) :
-                                              Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.1))
+                                              Theme.teal :
+                                              Theme.teal.opacity(0.1))
                                 )
                         }
                     }
@@ -315,18 +297,18 @@ struct DiagnosisStep: View {
 
             Text("Any Existing Conditions?")
                 .font(.system(size: 28, weight: .semibold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
                 .multilineTextAlignment(.center)
 
             Text("Have you been diagnosed with, or do you suspect you have any of the following?")
                 .font(.system(size: 16, weight: .regular))
-                .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
             Text("Select all that apply")
                 .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                .foregroundColor(Theme.textMuted)
                 .padding(.top, 8)
 
             ScrollView {
@@ -342,7 +324,7 @@ struct DiagnosisStep: View {
                             HStack {
                                 Text(condition)
                                     .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(selectedConditions.contains(condition) ? .white : Color(red: 0.3, green: 0.6, blue: 0.7))
+                                    .foregroundColor(selectedConditions.contains(condition) ? .white : Theme.teal)
                                     .multilineTextAlignment(.leading)
                                     .lineLimit(2)
 
@@ -360,8 +342,8 @@ struct DiagnosisStep: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
                                     .fill(selectedConditions.contains(condition) ?
-                                          Color(red: 0.3, green: 0.6, blue: 0.7) :
-                                          Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.1))
+                                          Theme.teal :
+                                          Theme.teal.opacity(0.1))
                             )
                         }
                     }
@@ -403,19 +385,19 @@ struct AcknowledgmentStep: View {
 
             Text("We Understand")
                 .font(.system(size: 32, weight: .semibold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
                 .multilineTextAlignment(.center)
 
             if !conditionsList.isEmpty {
                 Text("A lot of our users also report issues with \(conditionsList).")
                     .font(.system(size: 18, weight: .regular))
-                    .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                    .foregroundColor(Theme.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
 
                 Text("We will help you get relief from this.")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
                     .padding(.top, 8)
@@ -427,7 +409,7 @@ struct AcknowledgmentStep: View {
                 VStack(spacing: 16) {
                     // Divider
                     Rectangle()
-                        .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.3))
+                        .fill(Theme.teal.opacity(0.3))
                         .frame(height: 1)
                         .padding(.horizontal, 32)
                         .padding(.top, 16)
@@ -435,30 +417,30 @@ struct AcknowledgmentStep: View {
                     // Condition name
                     Text(condition)
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                        .foregroundColor(Theme.textPrimary)
                         .padding(.top, 8)
 
                     // Fact
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: "info.circle.fill")
-                                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                .foregroundColor(Theme.teal)
                                 .font(.system(size: 20))
 
                             Text(info.fact)
                                 .font(.system(size: 15, weight: .regular))
-                                .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                                .foregroundColor(Theme.textSecondary)
                         }
 
                         // Solution
                         HStack(alignment: .top, spacing: 12) {
                             Image(systemName: "checkmark.shield.fill")
-                                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                .foregroundColor(Theme.teal)
                                 .font(.system(size: 20))
 
                             Text(info.solution)
                                 .font(.system(size: 15, weight: .medium))
-                                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                .foregroundColor(Theme.teal)
                         }
                     }
                     .padding(20)
@@ -484,12 +466,12 @@ struct SolutionStep: View {
 
             Text("Here's What Changes")
                 .font(.system(size: 32, weight: .bold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
                 .multilineTextAlignment(.center)
 
             Text("BackWell isn't just another exercise app.\nIt's your personalized path to relief.")
                 .font(.system(size: 17, weight: .regular))
-                .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
@@ -529,17 +511,17 @@ struct ChallengeStep: View {
             VStack(spacing: 12) {
                 Text("28")
                     .font(.system(size: 72, weight: .bold))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
 
                 Text("DAY CHALLENGE")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
                     .tracking(2)
             }
 
             Text("Start with our proven 28-day challenge")
                 .font(.system(size: 18, weight: .medium))
-                .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
@@ -573,7 +555,7 @@ struct ChallengeStep: View {
 
             Text("After 28 days, you'll have hundreds more exercises and routes to explore.")
                 .font(.system(size: 14, weight: .regular))
-                .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                .foregroundColor(Theme.textMuted)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
                 .padding(.top, 16)
@@ -590,12 +572,12 @@ struct FeatureBullet: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                .foregroundColor(Theme.teal)
                 .font(.system(size: 20))
 
             Text(text)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textSecondary)
         }
     }
 }
@@ -609,21 +591,21 @@ struct ResultCard: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 28))
-                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                .foregroundColor(Theme.teal)
                 .frame(width: 50, height: 50)
                 .background(
                     Circle()
-                        .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.1))
+                        .fill(Theme.teal.opacity(0.1))
                 )
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textPrimary)
 
                 Text(description)
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                    .foregroundColor(Theme.textMuted)
             }
 
             Spacer()
@@ -651,18 +633,18 @@ struct ChallengeFeature: View {
                     .padding(.vertical, 4)
                     .background(
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
+                            .fill(Theme.teal)
                     )
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textPrimary)
 
                 Text(description)
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                    .foregroundColor(Theme.textMuted)
             }
 
             Spacer()

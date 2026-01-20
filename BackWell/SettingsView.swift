@@ -18,24 +18,15 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Same calming gradient
-                LinearGradient(
-                    gradient: Gradient(colors: [
-                        Color(red: 0.95, green: 0.97, blue: 0.98),
-                        Color(red: 0.88, green: 0.94, blue: 0.96),
-                        Color(red: 0.82, green: 0.91, blue: 0.94)
-                    ]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                Theme.backgroundGradient
+                    .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 24) {
                         // Header
                         Text("Settings")
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                            .foregroundColor(Theme.textPrimary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 24)
                             .padding(.top, 20)
@@ -46,22 +37,22 @@ struct SettingsView: View {
                             HStack(spacing: 16) {
                                 ZStack {
                                     Circle()
-                                        .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2))
+                                        .fill(Theme.teal.opacity(0.2))
                                         .frame(width: 70, height: 70)
 
                                     Image(systemName: "person.fill")
                                         .font(.system(size: 32))
-                                        .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                        .foregroundColor(Theme.teal)
                                 }
 
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text("BackWell User")
                                         .font(.system(size: 20, weight: .semibold))
-                                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                                        .foregroundColor(Theme.textPrimary)
 
                                     Text("Day 1 of 28-Day Challenge")
                                         .font(.system(size: 14, weight: .regular))
-                                        .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                                        .foregroundColor(Theme.textSecondary)
                                 }
 
                                 Spacer()
@@ -78,7 +69,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Notifications")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                                .foregroundColor(Theme.textPrimary)
                                 .padding(.horizontal, 24)
 
                             VStack(spacing: 0) {
@@ -96,12 +87,12 @@ struct SettingsView: View {
                                     HStack {
                                         Image(systemName: "clock.fill")
                                             .font(.system(size: 20))
-                                            .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                            .foregroundColor(Theme.teal)
                                             .frame(width: 32)
 
                                         Text("Reminder Time")
                                             .font(.system(size: 16, weight: .regular))
-                                            .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                                            .foregroundColor(Theme.textPrimary)
 
                                         Spacer()
 
@@ -124,7 +115,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Account")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                                .foregroundColor(Theme.textPrimary)
                                 .padding(.horizontal, 24)
 
                             VStack(spacing: 0) {
@@ -132,12 +123,12 @@ struct SettingsView: View {
                                 HStack(spacing: 16) {
                                     Image(systemName: "crown.fill")
                                         .font(.system(size: 20))
-                                        .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                        .foregroundColor(Theme.teal)
                                         .frame(width: 32)
 
                                     Text("Subscription Status")
                                         .font(.system(size: 16, weight: .regular))
-                                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                                        .foregroundColor(Theme.textPrimary)
 
                                     Spacer()
 
@@ -199,7 +190,7 @@ struct SettingsView: View {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Support")
                                 .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                                .foregroundColor(Theme.textPrimary)
                                 .padding(.horizontal, 24)
 
                             VStack(spacing: 0) {
@@ -256,7 +247,7 @@ struct SettingsView: View {
                         // App Version
                         Text("BackWell v1.0.0")
                             .font(.system(size: 13, weight: .regular))
-                            .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                            .foregroundColor(Theme.textMuted)
                             .padding(.top, 20)
 
                         Spacer(minLength: 40)
@@ -284,23 +275,23 @@ struct SettingsRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                .foregroundColor(Theme.teal)
                 .frame(width: 32)
 
             Text(title)
                 .font(.system(size: 16, weight: .regular))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
 
             Spacer()
 
             if hasToggle, let toggleValue = toggleValue {
                 Toggle("", isOn: toggleValue)
                     .labelsHidden()
-                    .tint(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .tint(Theme.teal)
             } else if hasChevron {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14))
-                    .foregroundColor(Color(red: 0.5, green: 0.6, blue: 0.65))
+                    .foregroundColor(Theme.textMuted)
             }
         }
         .padding(.horizontal, 20)

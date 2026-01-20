@@ -34,16 +34,8 @@ struct ExercisePlayerView: View {
     var totalExercises: Int { dayProgram.exercises.count }
 
     private var background: some View {
-        LinearGradient(
-            gradient: Gradient(colors: [
-                Color(red: 0.95, green: 0.97, blue: 0.98),
-                Color(red: 0.88, green: 0.94, blue: 0.96),
-                Color(red: 0.82, green: 0.91, blue: 0.94)
-            ]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        Theme.backgroundGradient
+            .ignoresSafeArea()
     }
 
     var body: some View {
@@ -117,14 +109,14 @@ struct ExercisePlayerView: View {
                     Text("Home")
                         .font(.system(size: 14, weight: .regular))
                 }
-                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                .foregroundColor(Theme.teal)
             }
 
             Spacer()
 
             Text("Day \(dayProgram.day)")
                 .font(.system(size: 15, weight: .semibold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
 
             Spacer()
 
@@ -144,17 +136,17 @@ struct ExercisePlayerView: View {
                 VStack(spacing: 3) {
                     Text(exercise.name)
                         .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                        .foregroundColor(Theme.textPrimary)
                         .multilineTextAlignment(.center)
 
                     Text(exercise.focusArea)
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                        .foregroundColor(Theme.teal)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.1))
+                                .fill(Theme.teal.opacity(0.1))
                         )
                 }
 
@@ -162,23 +154,23 @@ struct ExercisePlayerView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("How to Perform!")
                         .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                        .foregroundColor(Theme.textPrimary)
 
                     ForEach(Array(exercise.instructions.enumerated()), id: \.offset) { index, instruction in
                         HStack(alignment: .top, spacing: 6) {
                             ZStack {
                                 Circle()
-                                    .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2))
+                                    .fill(Theme.teal.opacity(0.2))
                                     .frame(width: 18, height: 18)
 
                                 Text("\(index + 1)")
                                     .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                                    .foregroundColor(Theme.teal)
                             }
 
                             Text(instruction)
                                 .font(.system(size: 12, weight: .regular))
-                                .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                                .foregroundColor(Theme.textSecondary)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .lineSpacing(1)
 
@@ -292,11 +284,11 @@ struct ExerciseAnimation: View {
             Circle()
                 .fill(Color.white.opacity(0.6))
                 .frame(width: 80, height: 80)
-                .shadow(color: Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2), radius: 8, x: 0, y: 4)
+                .shadow(color: Theme.teal.opacity(0.2), radius: 8, x: 0, y: 4)
 
             Image(systemName: icon)
                 .font(.system(size: 36))
-                .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                .foregroundColor(Theme.teal)
                 .scaleEffect(isAnimating && isPlaying ? 1.1 : 1.0)
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: isAnimating)
         }
@@ -318,11 +310,11 @@ struct TimerDisplay: View {
         VStack(spacing: 2) {
             Text(String(format: "%d:%02d", minutes, seconds))
                 .font(.system(size: 44, weight: .bold, design: .rounded))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
 
             Text(isPlaying ? "Time Remaining" : "Ready to Begin")
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                .foregroundColor(Theme.textSecondary)
         }
     }
 }
@@ -337,20 +329,20 @@ struct BreathingCueView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("🫁 Breathing Cue")
+            Text("Breathing Cue")
                 .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
 
             HStack(spacing: 16) {
                 Circle()
-                    .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.3))
+                    .fill(Theme.teal.opacity(0.3))
                     .frame(width: 60, height: 60)
                     .scaleEffect(scale)
                     .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: scale)
 
                 Text(breatheIn ? "Breathe In" : "Breathe Out")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
             }
             .padding(20)
             .frame(maxWidth: .infinity)
@@ -408,12 +400,12 @@ struct ExerciseControls: View {
                         Text("Skip")
                     }
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .stroke(Color(red: 0.3, green: 0.6, blue: 0.7), lineWidth: 2)
+                            .stroke(Theme.teal, lineWidth: 2)
                     )
                 }
 
@@ -428,7 +420,7 @@ struct ExerciseControls: View {
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
+                            .fill(Theme.teal)
                     )
                 }
             }
@@ -449,10 +441,10 @@ struct MentalComponentView: View {
 
     var typeTitle: String {
         switch mentalComponent.type {
-        case .breathing: return "🫁 Breathing Exercise"
-        case .affirmation: return "💭 Affirmation"
-        case .bodyScan: return "🧘 Body Scan"
-        case .reflection: return "✨ Reflection"
+        case .breathing: return "Breathing Exercise"
+        case .affirmation: return "Affirmation"
+        case .bodyScan: return "Body Scan"
+        case .reflection: return "Reflection"
         }
     }
 
@@ -476,21 +468,21 @@ struct MentalComponentView: View {
 
                 Image(systemName: typeIcon)
                     .font(.system(size: 50))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
             }
 
             Text(typeTitle)
                 .font(.system(size: 24, weight: .semibold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
                 .multilineTextAlignment(.center)
 
             Text(String(format: "%d:%02d", timeRemaining / 60, timeRemaining % 60))
                 .font(.system(size: 48, weight: .bold, design: .rounded))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
 
             Text(mentalComponent.guidance)
                 .font(.system(size: 15, weight: .regular))
-                .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
                 .fixedSize(horizontal: false, vertical: true)
@@ -511,12 +503,12 @@ struct MentalComponentView: View {
                         Text("Skip")
                     }
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .stroke(Color(red: 0.3, green: 0.6, blue: 0.7), lineWidth: 2)
+                            .stroke(Theme.teal, lineWidth: 2)
                     )
                 }
 
@@ -531,7 +523,7 @@ struct MentalComponentView: View {
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
+                            .fill(Theme.teal)
                     )
                 }
             }
@@ -552,21 +544,21 @@ struct CompletionView: View {
 
             ZStack {
                 Circle()
-                    .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2))
+                    .fill(Theme.teal.opacity(0.2))
                     .frame(width: 160, height: 160)
 
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 100))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
             }
 
             Text("Day \(dayProgram.day) Complete!")
                 .font(.system(size: 32, weight: .bold))
-                .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textPrimary)
 
             Text(dayProgram.completionMessage)
                 .font(.system(size: 18, weight: .regular))
-                .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                .foregroundColor(Theme.textSecondary)
                 .multilineTextAlignment(.center)
                 .lineSpacing(6)
                 .padding(.horizontal, 32)
@@ -580,11 +572,11 @@ struct CompletionView: View {
             VStack(spacing: 12) {
                 Text("Today's Focus")
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Color(red: 0.4, green: 0.5, blue: 0.6))
+                    .foregroundColor(Theme.textSecondary)
 
                 Text(dayProgram.mentalFocus)
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
             }
             .padding(20)
             .background(
@@ -603,7 +595,7 @@ struct CompletionView: View {
                     .frame(height: 54)
                     .background(
                         RoundedRectangle(cornerRadius: 27)
-                            .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
+                            .fill(Theme.teal)
                     )
             }
             .padding(.horizontal, 32)
@@ -626,16 +618,16 @@ struct DayIntroView: View {
                 Circle()
                     .fill(Color.white.opacity(0.6))
                     .frame(width: 100, height: 100)
-                    .shadow(color: Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2), radius: 10, x: 0, y: 5)
+                    .shadow(color: Theme.teal.opacity(0.2), radius: 10, x: 0, y: 5)
 
                 VStack(spacing: 2) {
                     Text("DAY")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                        .foregroundColor(Theme.teal)
 
                     Text("\(dayProgram.day)")
                         .font(.system(size: 36, weight: .bold))
-                        .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                        .foregroundColor(Theme.textPrimary)
                 }
             }
 
@@ -643,17 +635,17 @@ struct DayIntroView: View {
             VStack(spacing: 8) {
                 Text(dayProgram.title)
                     .font(.system(size: 26, weight: .bold))
-                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textPrimary)
                     .multilineTextAlignment(.center)
 
                 Text(dayProgram.theme)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 6)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.1))
+                            .fill(Theme.teal.opacity(0.1))
                     )
             }
 
@@ -689,7 +681,7 @@ struct DayIntroView: View {
                 .frame(height: 56)
                 .background(
                     RoundedRectangle(cornerRadius: 28)
-                        .fill(Color(red: 0.3, green: 0.6, blue: 0.7))
+                        .fill(Theme.teal)
                 )
             }
             .padding(.horizontal, 32)
@@ -708,22 +700,22 @@ struct InfoCard: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Color(red: 0.3, green: 0.6, blue: 0.7).opacity(0.2))
+                    .fill(Theme.teal.opacity(0.2))
                     .frame(width: 40, height: 40)
 
                 Image(systemName: icon)
                     .font(.system(size: 18))
-                    .foregroundColor(Color(red: 0.3, green: 0.6, blue: 0.7))
+                    .foregroundColor(Theme.teal)
             }
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color(red: 0.2, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textPrimary)
 
                 Text(description)
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color(red: 0.3, green: 0.4, blue: 0.5))
+                    .foregroundColor(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(3)
             }
@@ -743,5 +735,3 @@ struct InfoCard: View {
         ExercisePlayerView(dayProgram: day1)
     }
 }
-
-

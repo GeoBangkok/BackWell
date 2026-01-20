@@ -44,22 +44,37 @@ struct AppRootView: View {
 
                     // Register Superwall placement - this triggers the paywall
                     Superwall.shared.register(placement: eventName) {
-                        // This handler is called when paywall is dismissed (purchased, skipped, or closed)
-                        // Check if user made a purchase
-                        let hadPurchase = StoreManager.shared.isSubscribed
+                        // This handler is called when paywall is dismissed
+                        // CRITICAL: Wait for StoreKit to finish processing before checking subscription status
+                        // StoreKit transactions are async - checking immediately causes false StartTrial events
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            // Now StoreKit has had time to process
+                            let hadPurchase = StoreManager.shared.isSubscribed
 
-                        // Track paywall dismissal
-                        let timeOnPaywall = paywallStartTime.map { Date().timeIntervalSince($0) }
-                        FacebookEventTracker.shared.trackPaywallDismissed(
-                            hadPurchase: hadPurchase,
-                            timeOnPaywall: timeOnPaywall
-                        )
+                            // Track paywall dismissal
+                            let timeOnPaywall = paywallStartTime.map { Date().timeIntervalSince($0) }
+                            FacebookEventTracker.shared.trackPaywallDismissed(
+                                hadPurchase: hadPurchase,
+                                timeOnPaywall: timeOnPaywall
+                            )
 
-                        // DON'T track StartTrial here - race condition risk
-                        // StartTrial fires in MainAppView.onAppear when user first accesses app
-                        // This avoids false positives from async StoreKit transaction processing
+                            // Track StartTrial on Superwall callback confirmation
+                            // RULE: Fire StartTrial only when StoreKit/Superwall confirms trial started
+                            // - User completed paywall interaction (callback fired)
+                            // - StoreKit processed transaction (500ms delay)
+                            // - User did NOT purchase (isSubscribed == false)
+                            // - Has not already tracked (UserDefaults guard)
+                            if !hadPurchase {
+                                let hasTrackedTrialStart = UserDefaults.standard.bool(forKey: "has_tracked_trial_start")
+                                if !hasTrackedTrialStart {
+                                    FacebookEventTracker.shared.trackStartTrial()
+                                    UserDefaults.standard.set(true, forKey: "has_tracked_trial_start")
+                                    // Store trial start timestamp for trial conversion tracking
+                                    UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "trial_start_timestamp")
+                                    print("📊 Trial confirmed via Superwall callback - StartTrial tracked")
+                                }
+                            }
 
-                        DispatchQueue.main.async {
                             currentScreen = .main
                         }
                     }

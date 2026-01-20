@@ -72,11 +72,20 @@ class StoreManager: ObservableObject {
                 // Track Facebook Purchase event - CRITICAL for ROAS optimization
                 // This is the ONLY money event Meta needs
                 let price = Double(truncating: product.price as NSDecimalNumber)
+
+                // Check if this is a trial conversion (user previously started trial)
+                let hasTrialed = UserDefaults.standard.bool(forKey: "has_tracked_trial_start")
+                let trialStartTimestamp = UserDefaults.standard.double(forKey: "trial_start_timestamp")
+                let isTrialConversion = hasTrialed && trialStartTimestamp > 0
+                let trialHoursSinceStart: Int? = isTrialConversion ? Int((Date().timeIntervalSince1970 - trialStartTimestamp) / 3600) : nil
+
                 FacebookEventTracker.shared.trackPurchase(
                     productID: productID,
                     price: price,
                     currency: "USD",
-                    isRenewal: false
+                    isRenewal: false,
+                    isTrialConversion: isTrialConversion,
+                    trialHoursSinceStart: trialHoursSinceStart
                     // No currentDay - purchase from onboarding, before program starts
                 )
 

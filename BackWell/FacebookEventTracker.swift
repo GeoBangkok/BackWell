@@ -79,12 +79,15 @@ class FacebookEventTracker {
     /// Track successful purchase - CRITICAL for ROAS optimization
     /// currentDay is optional - only pass if user is in active program (Day 1+)
     /// Omit currentDay for onboarding purchases or renewals without day context
+    /// Trial conversion tracking: pass isTrialConversion + trialHoursSinceStart for +72h conversion
     func trackPurchase(
         productID: String,
         price: Double,
         currency: String = "USD",
         currentDay: Int? = nil,
-        isRenewal: Bool = false
+        isRenewal: Bool = false,
+        isTrialConversion: Bool = false,
+        trialHoursSinceStart: Int? = nil
     ) {
         var params = getCommonParameters(
             currentDay: currentDay,
@@ -97,13 +100,22 @@ class FacebookEventTracker {
         params[AppEvents.ParameterName("subscription_type")] = "weekly"
         params[AppEvents.ParameterName("is_renewal")] = isRenewal
 
+        // Add trial conversion context for easier analysis and debugging
+        if isTrialConversion {
+            params[AppEvents.ParameterName("billing_event")] = "trial_conversion"
+            if let hours = trialHoursSinceStart {
+                params[AppEvents.ParameterName("trial_hours_since_start")] = hours
+            }
+        }
+
         AppEvents.shared.logPurchase(
             amount: price,
             currency: currency,
             parameters: params
         )
 
-        print("📊 FB Event: Purchase - $\(price) \(currency) - product: \(productID) - renewal: \(isRenewal)")
+        let conversionInfo = isTrialConversion ? " - TRIAL CONVERSION (+\(trialHoursSinceStart ?? 0)h)" : ""
+        print("📊 FB Event: Purchase - $\(price) \(currency) - product: \(productID) - renewal: \(isRenewal)\(conversionInfo)")
     }
 
     /// Track subscription start - FIRST PURCHASE ONLY (not renewals)

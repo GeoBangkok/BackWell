@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var completedDays: Set<Int> = [] // Days completed
     @State private var selectedDayProgram: DayProgram? = nil
     @State private var showSubscriptionRequired = false
+    @State private var showCitations = false
 
     @ObservedObject private var storeManager = StoreManager.shared
 
@@ -39,6 +40,26 @@ struct HomeView: View {
                             Text("Day \(currentDay) of 28")
                                 .font(.system(size: 16, weight: .regular))
                                 .foregroundColor(Theme.textSecondary)
+
+                            // Citations button
+                            Button(action: {
+                                showCitations = true
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "book.closed.fill")
+                                        .font(.system(size: 12))
+                                    Text("View Research")
+                                        .font(.system(size: 13, weight: .medium))
+                                }
+                                .foregroundColor(Theme.teal)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .fill(Theme.teal.opacity(0.1))
+                                )
+                            }
+                            .padding(.top, 4)
                         }
                         .padding(.top, 20)
                         .padding(.bottom, 10)
@@ -165,6 +186,11 @@ struct HomeView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text("Days 4-28 require an active subscription. Subscribe to continue your journey!")
+            }
+            .sheet(isPresented: $showCitations) {
+                WorksCitedView(onContinue: {
+                    showCitations = false
+                })
             }
         }
     }

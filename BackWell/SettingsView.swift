@@ -310,6 +310,7 @@ struct SupportView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
+        GeometryReader { geo in
         ZStack {
             Theme.backgroundGradient
                 .ignoresSafeArea()
@@ -399,8 +400,9 @@ struct SupportView: View {
                         )
                 }
                 .padding(.horizontal, 24)
-                .padding(.bottom, 40)
+                .padding(.bottom, max(16, geo.safeAreaInsets.bottom + 8))
             }
+        }
         }
     }
 }

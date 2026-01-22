@@ -11,6 +11,7 @@ import SuperwallKit
 enum AppScreen {
     case login
     case disclaimer
+    case worksCited
     case onboarding
     case main
 }
@@ -27,6 +28,10 @@ struct AppRootView: View {
                 })
             case .disclaimer:
                 MedicalDisclaimerView(onAccept: {
+                    currentScreen = .worksCited
+                })
+            case .worksCited:
+                WorksCitedView(onContinue: {
                     currentScreen = .onboarding
                 })
             case .onboarding:

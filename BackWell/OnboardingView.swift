@@ -70,6 +70,7 @@ struct OnboardingView: View {
     }
 
     var body: some View {
+        GeometryReader { geo in
         ZStack {
             Theme.backgroundGradient
                 .ignoresSafeArea()
@@ -84,8 +85,8 @@ struct OnboardingView: View {
                     }
                 }
                 .padding(.horizontal, 32)
-                .padding(.top, 60)
-                .padding(.bottom, 40)
+                .padding(.top, max(40, geo.safeAreaInsets.top + 16))
+                .padding(.bottom, 32)
 
                 // Content area
                 TabView(selection: $currentStep) {
@@ -159,8 +160,9 @@ struct OnboardingView: View {
                     }
                 }
                 .padding(.horizontal, 32)
-                .padding(.bottom, 50)
+                .padding(.bottom, max(16, geo.safeAreaInsets.bottom + 8))
             }
+        }
         }
     }
 }

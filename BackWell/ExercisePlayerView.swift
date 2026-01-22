@@ -52,14 +52,15 @@ struct ExercisePlayerView: View {
 
                     Group {
                         if showingIntro {
-                            DayIntroView(dayProgram: dayProgram, onStart: {
+                            DayIntroView(dayProgram: dayProgram, bottomSafeArea: geo.safeAreaInsets.bottom, onStart: {
                                 showingIntro = false
                             })
                         } else if sessionComplete {
-                            CompletionView(dayProgram: dayProgram)
+                            CompletionView(dayProgram: dayProgram, bottomSafeArea: geo.safeAreaInsets.bottom)
                         } else if showingMentalComponent, let mental = currentMental {
                             MentalComponentView(
                                 mentalComponent: mental,
+                                bottomSafeArea: geo.safeAreaInsets.bottom,
                                 timeRemaining: $timeRemaining,
                                 isPlaying: $isPlaying,
                                 onComplete: moveToNextComponent
@@ -435,6 +436,7 @@ struct ExerciseControls: View {
 // MARK: - Mental Component View
 struct MentalComponentView: View {
     let mentalComponent: MentalComponent
+    let bottomSafeArea: CGFloat
     @Binding var timeRemaining: Int
     @Binding var isPlaying: Bool
     let onComplete: () -> Void
@@ -528,7 +530,7 @@ struct MentalComponentView: View {
                 }
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
+            .padding(.bottom, max(16, bottomSafeArea + 8))
         }
     }
 }
@@ -536,6 +538,7 @@ struct MentalComponentView: View {
 // MARK: - Completion View
 struct CompletionView: View {
     let dayProgram: DayProgram
+    let bottomSafeArea: CGFloat
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -599,7 +602,7 @@ struct CompletionView: View {
                     )
             }
             .padding(.horizontal, 32)
-            .padding(.bottom, 40)
+            .padding(.bottom, max(16, bottomSafeArea + 8))
         }
     }
 }
@@ -607,6 +610,7 @@ struct CompletionView: View {
 // MARK: - Day Intro View
 struct DayIntroView: View {
     let dayProgram: DayProgram
+    let bottomSafeArea: CGFloat
     let onStart: () -> Void
 
     var body: some View {
@@ -685,7 +689,7 @@ struct DayIntroView: View {
                 )
             }
             .padding(.horizontal, 32)
-            .padding(.bottom, 40)
+            .padding(.bottom, max(16, bottomSafeArea + 8))
         }
     }
 }

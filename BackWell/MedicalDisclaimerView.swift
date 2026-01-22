@@ -11,13 +11,14 @@ struct MedicalDisclaimerView: View {
     let onAccept: () -> Void
 
     var body: some View {
-        ZStack {
-            Theme.backgroundGradient
-                .ignoresSafeArea()
+        GeometryReader { geo in
+            ZStack {
+                Theme.backgroundGradient
+                    .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                Spacer()
-                    .frame(height: 60)
+                VStack(spacing: 0) {
+                    Spacer()
+                        .frame(height: max(40, geo.safeAreaInsets.top + 20))
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -97,7 +98,7 @@ struct MedicalDisclaimerView: View {
                             )
                     }
                     .padding(.horizontal, 28)
-                    .padding(.bottom, 50)
+                    .padding(.bottom, max(16, geo.safeAreaInsets.bottom + 8))
                 }
                 .background(
                     LinearGradient(
@@ -112,6 +113,7 @@ struct MedicalDisclaimerView: View {
                     .allowsHitTesting(false)
                 )
             }
+        }
         }
     }
 }

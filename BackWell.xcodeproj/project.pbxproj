@@ -413,7 +413,6 @@
 				DEVELOPMENT_TEAM = BNYNX7BTK6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackWell/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SkinWell;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -458,7 +457,6 @@
 				DEVELOPMENT_TEAM = BNYNX7BTK6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackWell/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SkinWell;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";

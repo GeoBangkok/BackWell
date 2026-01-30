@@ -30,7 +30,7 @@ struct MedicalDisclaimerView: View {
 
                             Image(systemName: "heart.text.square.fill")
                                 .font(.system(size: 40))
-                                .foregroundColor(Theme.teal)
+                                .foregroundColor(Theme.purple)
                         }
                         .padding(.top, 20)
 

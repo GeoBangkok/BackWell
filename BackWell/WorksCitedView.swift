@@ -81,12 +81,12 @@ struct WorksCitedView: View {
                             // Icon
                             ZStack {
                                 Circle()
-                                    .fill(Theme.teal.opacity(0.15))
+                                    .fill(Theme.purple.opacity(0.15))
                                     .frame(width: 70, height: 70)
 
                                 Image(systemName: "book.closed.fill")
                                     .font(.system(size: 32))
-                                    .foregroundColor(Theme.teal)
+                                    .foregroundColor(Theme.purple)
                             }
                             .padding(.top, 16)
 

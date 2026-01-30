@@ -1,8 +1,8 @@
 //
 //  SettingsView.swift
-//  BackWell
+//  SkinWell
 //
-//  Created by standard on 1/17/26.
+//  Settings screen with purple theme
 //
 
 import SwiftUI
@@ -20,8 +20,13 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Theme.backgroundGradient
-                    .ignoresSafeArea()
+                // Purple gradient background
+                LinearGradient(
+                    colors: [Theme.purpleUltraLight, Color.white],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -39,20 +44,20 @@ struct SettingsView: View {
                             HStack(spacing: 16) {
                                 ZStack {
                                     Circle()
-                                        .fill(Theme.teal.opacity(0.2))
+                                        .fill(Theme.purple.opacity(0.2))
                                         .frame(width: 70, height: 70)
 
                                     Image(systemName: "person.fill")
                                         .font(.system(size: 32))
-                                        .foregroundColor(Theme.teal)
+                                        .foregroundColor(Theme.purple)
                                 }
 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("BackWell User")
+                                    Text("SkinWell Premium")
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(Theme.textPrimary)
 
-                                    Text("Day 1 of 28-Day Challenge")
+                                    Text("AI Skin Analysis Active")
                                         .font(.system(size: 14, weight: .regular))
                                         .foregroundColor(Theme.textSecondary)
                                 }
@@ -77,7 +82,7 @@ struct SettingsView: View {
                             VStack(spacing: 0) {
                                 SettingsRow(
                                     icon: "bell.fill",
-                                    title: "Daily Reminders",
+                                    title: "Scan Reminders",
                                     hasToggle: true,
                                     toggleValue: $notificationsEnabled
                                 )
@@ -274,7 +279,7 @@ struct SettingsView: View {
                         .padding(.top, 8)
 
                         // App Version
-                        Text("BackWell v1.0.0")
+                        Text("SkinWell v2.0.0")
                             .font(.system(size: 13, weight: .regular))
                             .foregroundColor(Theme.textMuted)
                             .padding(.top, 12)

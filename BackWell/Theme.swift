@@ -1,8 +1,8 @@
 //
 //  Theme.swift
-//  SkinWell
+//  SkinGlowing
 //
-//  Modern purple theme for SkinWell AI skincare app
+//  Modern purple theme for SkinGlowing AI skincare app
 //
 
 import SwiftUI

@@ -1,6 +1,6 @@
 //
 //  NetworkManager.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  Network connectivity and error handling
 //
@@ -283,7 +283,7 @@ class CacheManager {
 
     private init() {
         let paths = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)
-        cacheDirectory = paths[0].appendingPathComponent("SkinWellCache")
+        cacheDirectory = paths[0].appendingPathComponent("SkinGlowingCache")
 
         // Create cache directory if it doesn't exist
         try? FileManager.default.createDirectory(at: cacheDirectory, withIntermediateDirectories: true)

@@ -1,6 +1,6 @@
 //
 //  ArchiveView.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  Archive of previous skin scan results
 //

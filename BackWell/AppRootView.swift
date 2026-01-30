@@ -1,6 +1,6 @@
 //
 //  AppRootView.swift
-//  BackWell
+//  SkinGlowing
 //
 //  Created by standard on 1/17/26.
 //
@@ -11,8 +11,6 @@ import Combine
 
 enum AppScreen {
     case login
-    case disclaimer
-    case worksCited
     case onboarding
     case main
 }
@@ -25,14 +23,6 @@ struct AppRootView: View {
             switch currentScreen {
             case .login:
                 LoginView(onContinue: {
-                    currentScreen = .disclaimer
-                })
-            case .disclaimer:
-                MedicalDisclaimerView(onAccept: {
-                    currentScreen = .worksCited
-                })
-            case .worksCited:
-                WorksCitedView(onContinue: {
                     currentScreen = .onboarding
                 })
             case .onboarding:

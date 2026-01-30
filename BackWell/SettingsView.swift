@@ -1,6 +1,6 @@
 //
 //  SettingsView.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  Settings screen with purple theme
 //
@@ -53,7 +53,7 @@ struct SettingsView: View {
                                 }
 
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text("SkinWell Premium")
+                                    Text("SkinGlowing Premium")
                                         .font(.system(size: 20, weight: .semibold))
                                         .foregroundColor(Theme.textPrimary)
 
@@ -130,7 +130,7 @@ struct SettingsView: View {
                                 HStack(spacing: 16) {
                                     Image(systemName: "crown.fill")
                                         .font(.system(size: 20))
-                                        .foregroundColor(Theme.teal)
+                                        .foregroundColor(Theme.purple)
                                         .frame(width: 32)
 
                                     Text("Subscription Status")
@@ -231,7 +231,7 @@ struct SettingsView: View {
                                     hasChevron: true
                                 )
                                 .onTapGesture {
-                                    if let url = URL(string: "https://backwelll.lovable.app/terms") {
+                                    if let url = URL(string: "https://skinglowing.lovable.app/terms") {
                                         UIApplication.shared.open(url)
                                     }
                                 }
@@ -245,7 +245,7 @@ struct SettingsView: View {
                                     hasChevron: true
                                 )
                                 .onTapGesture {
-                                    if let url = URL(string: "https://backwelll.lovable.app/privacy") {
+                                    if let url = URL(string: "https://skinglowing.lovable.app/privacy") {
                                         UIApplication.shared.open(url)
                                     }
                                 }
@@ -279,7 +279,7 @@ struct SettingsView: View {
                         .padding(.top, 8)
 
                         // App Version
-                        Text("SkinWell v2.0.0")
+                        Text("SkinGlowing v2.0.0")
                             .font(.system(size: 13, weight: .regular))
                             .foregroundColor(Theme.textMuted)
                             .padding(.top, 12)
@@ -338,12 +338,12 @@ struct SupportView: View {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(Theme.teal.opacity(0.15))
+                        .fill(Theme.purple.opacity(0.15))
                         .frame(width: 100, height: 100)
 
                     Image(systemName: "envelope.fill")
                         .font(.system(size: 44))
-                        .foregroundColor(Theme.teal)
+                        .foregroundColor(Theme.purple)
                 }
 
                 // Title
@@ -371,7 +371,7 @@ struct SupportView: View {
                     }) {
                         Text("george@atlasremoteservices.com")
                             .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Theme.teal)
+                            .foregroundColor(Theme.purple)
                     }
 
                     Text("We typically respond within 24-48 hours")
@@ -390,7 +390,7 @@ struct SupportView: View {
 
                 // Send Email Button
                 Button(action: {
-                    if let url = URL(string: "mailto:george@atlasremoteservices.com?subject=BackWell%20Support") {
+                    if let url = URL(string: "mailto:george@atlasremoteservices.com?subject=SkinGlowing%20Support") {
                         UIApplication.shared.open(url)
                     }
                 }) {
@@ -401,7 +401,7 @@ struct SupportView: View {
                         .frame(height: 54)
                         .background(
                             RoundedRectangle(cornerRadius: 27)
-                                .fill(Theme.teal)
+                                .fill(Theme.purple)
                         )
                 }
                 .padding(.horizontal, 24)
@@ -423,7 +423,7 @@ struct SettingsRow: View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundColor(Theme.teal)
+                .foregroundColor(Theme.purple)
                 .frame(width: 32)
 
             Text(title)
@@ -435,7 +435,7 @@ struct SettingsRow: View {
             if hasToggle, let toggleValue = toggleValue {
                 Toggle("", isOn: toggleValue)
                     .labelsHidden()
-                    .tint(Theme.teal)
+                    .tint(Theme.purple)
             } else if hasChevron {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 14))

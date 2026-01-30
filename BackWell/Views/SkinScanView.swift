@@ -1,6 +1,6 @@
 //
 //  SkinScanView.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  Main skin scanning interface
 //
@@ -150,7 +150,7 @@ struct WelcomeCard: View {
                 .foregroundColor(Theme.purple)
                 .padding(.top, 10)
 
-            Text("Welcome to SkinWell")
+            Text("Welcome to SkinGlowing")
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(Theme.textPrimary)

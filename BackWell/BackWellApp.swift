@@ -1,6 +1,6 @@
 //
-//  BackWellApp.swift
-//  BackWell
+//  SkinGlowingApp.swift
+//  SkinGlowing
 //
 //  Created by standard on 1/17/26.
 //
@@ -11,7 +11,7 @@ import SuperwallKit
 import Combine
 
 @main
-struct BackWellApp: App {
+struct SkinGlowingApp: App {
 
     private let superwallDelegate = DiagnosticSuperwallDelegate()
 

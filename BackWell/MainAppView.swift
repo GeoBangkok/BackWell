@@ -1,8 +1,8 @@
 //
 //  MainAppView.swift
-//  SkinWell
+//  SkinGlowing
 //
-//  Main tab navigation for SkinWell app
+//  Main tab navigation for SkinGlowing app
 //
 
 import SwiftUI
@@ -21,7 +21,7 @@ struct MainAppView: View {
                 // Custom header
                 HStack {
                     Spacer()
-                    Text("SkinWell")
+                    Text("SkinGlowing")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)

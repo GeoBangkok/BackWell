@@ -1,6 +1,6 @@
 //
 //  OnboardingView.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  AI-powered skincare analysis onboarding flow
 //
@@ -215,7 +215,7 @@ struct WelcomeStep: View {
                 .foregroundColor(Theme.purple)
                 .padding(.bottom, 20)
 
-            Text("Welcome to SkinWell")
+            Text("Welcome to SkinGlowing")
                 .font(.largeTitle)
                 .fontWeight(.bold)
                 .foregroundColor(Theme.textPrimary)

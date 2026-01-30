@@ -1,6 +1,6 @@
 //
 //  ArisaChatView.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  AI Skin Companion chat interface
 //

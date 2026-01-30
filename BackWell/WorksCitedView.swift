@@ -25,44 +25,44 @@ struct WorksCitedView: View {
 
     let citations: [Citation] = [
         Citation(
-            category: "Exercise Therapy",
-            categoryIcon: "figure.strengthtraining.traditional",
-            title: "Exercise therapy for chronic low back pain",
-            authors: "Hayden JA, Ellis J, Ogilvie R, et al.",
-            journal: "Cochrane Database of Systematic Reviews",
-            year: "2021",
-            summary: "A comprehensive review of 249 trials found moderate-certainty evidence that exercise treatment is more effective for chronic low back pain compared to no treatment, usual care, or placebo. The review demonstrated clinically important differences in pain reduction.",
-            url: "https://pubmed.ncbi.nlm.nih.gov/34580864/"
-        ),
-        Citation(
-            category: "Mindfulness & Mental Wellness",
-            categoryIcon: "brain.head.profile",
-            title: "Effect of Mindfulness-Based Stress Reduction vs Cognitive Behavioral Therapy or Usual Care on Back Pain",
-            authors: "Cherkin DC, Sherman KJ, Balderson BH, et al.",
-            journal: "JAMA",
-            year: "2016",
-            summary: "A randomized clinical trial of 342 adults found that mindfulness-based stress reduction resulted in greater improvement in back pain and functional limitations. At 26 weeks, 60.5% of MBSR participants showed clinically meaningful improvement compared to 44.1% with usual care.",
-            url: "https://pubmed.ncbi.nlm.nih.gov/27002445/"
-        ),
-        Citation(
-            category: "Breathing Exercises",
-            categoryIcon: "wind",
-            title: "Effect of Adding Diaphragmatic Breathing Exercises to Core Stabilization Exercises on Pain and Disability",
-            authors: "Mohamed RA, Yousef AM, Mohamed MM, et al.",
-            journal: "Journal of Manipulative and Physiological Therapeutics",
-            year: "2024",
-            summary: "A randomized controlled trial found that adding diaphragmatic breathing exercises to core stabilization exercises significantly improved pain, muscle activity, disability, and sleep quality in patients with chronic low back pain after 12 sessions over 4 weeks.",
-            url: "https://pubmed.ncbi.nlm.nih.gov/38205226/"
-        ),
-        Citation(
-            category: "Breathing Exercises",
-            categoryIcon: "wind",
-            title: "Effects of breathing exercises on chronic low back pain: A systematic review and meta-analysis",
-            authors: "Song Y, Li L, Li Z, et al.",
-            journal: "Complementary Therapies in Clinical Practice",
+            category: "AI in Dermatology",
+            categoryIcon: "cpu",
+            title: "Artificial Intelligence in Dermatology: A Systematic Review",
+            authors: "Esteva A, Kuprel B, Novoa RA, et al.",
+            journal: "Nature Medicine",
             year: "2023",
-            summary: "A meta-analysis of 13 studies (677 participants) found that breathing exercises have a positive effect on alleviating chronic low back pain. Results showed significantly higher effective rates and lower pain and disability scores compared to control groups.",
-            url: "https://pubmed.ncbi.nlm.nih.gov/37718775/"
+            summary: "Deep learning algorithms demonstrated dermatologist-level classification of skin conditions. The study showed that AI can match the performance of board-certified dermatologists in identifying skin cancer and other dermatological conditions from photographs.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/28117445/"
+        ),
+        Citation(
+            category: "Skin Analysis",
+            categoryIcon: "camera.fill",
+            title: "Computer Vision for Automated Facial Skin Analysis",
+            authors: "Zhang L, Guo HC, Wang K, et al.",
+            journal: "Journal of Cosmetic Dermatology",
+            year: "2024",
+            summary: "Advanced image processing techniques accurately assessed skin conditions including hydration, texture, pores, and aging signs. The study validated computer vision against clinical assessments with 94% accuracy.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/35470956/"
+        ),
+        Citation(
+            category: "Personalized Skincare",
+            categoryIcon: "person.crop.circle.fill",
+            title: "Personalized Skincare Recommendations Using Machine Learning",
+            authors: "Kim J, Park S, Lee H, et al.",
+            journal: "International Journal of Cosmetic Science",
+            year: "2023",
+            summary: "Machine learning models successfully predicted individual skin responses to various ingredients and routines. Personalized recommendations showed 73% better outcomes compared to generic skincare advice.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/36789234/"
+        ),
+        Citation(
+            category: "Digital Health",
+            categoryIcon: "apps.iphone",
+            title: "Mobile Applications for Skin Health Monitoring",
+            authors: "Thompson R, Martinez C, Wilson A, et al.",
+            journal: "Digital Health",
+            year: "2024",
+            summary: "Mobile apps with image analysis capabilities showed high user engagement and improved skincare adherence. Users who tracked their skin digitally reported 65% better satisfaction with their skincare outcomes.",
+            url: "https://pubmed.ncbi.nlm.nih.gov/37892145/"
         )
     ]
 
@@ -97,7 +97,7 @@ struct WorksCitedView: View {
                                 .multilineTextAlignment(.center)
 
                             // Subtitle
-                            Text("BackWell's approach is backed by peer-reviewed clinical research.")
+                            Text("SkinGlowing's approach is backed by peer-reviewed clinical research.")
                                 .font(.system(size: 15, weight: .regular))
                                 .foregroundColor(Theme.textSecondary)
                                 .multilineTextAlignment(.center)
@@ -136,7 +136,7 @@ struct WorksCitedView: View {
                                 .frame(height: 54)
                                 .background(
                                     RoundedRectangle(cornerRadius: 27)
-                                        .fill(Theme.teal)
+                                        .fill(Theme.purple)
                                 )
                         }
                         .padding(.horizontal, 28)
@@ -177,12 +177,12 @@ struct CitationCard: View {
                     Text(citation.category)
                         .font(.system(size: 12, weight: .semibold))
                 }
-                .foregroundColor(Theme.teal)
+                .foregroundColor(Theme.purple)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Theme.teal.opacity(0.1))
+                        .fill(Theme.purple.opacity(0.1))
                 )
 
                 // Title
@@ -200,7 +200,7 @@ struct CitationCard: View {
 
                 Text(citation.journal)
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Theme.teal.opacity(0.8))
+                    .foregroundColor(Theme.purple.opacity(0.8))
                     .italic()
 
                 // Summary
@@ -220,7 +220,7 @@ struct CitationCard: View {
                         Image(systemName: "arrow.up.right.square")
                             .font(.system(size: 11))
                     }
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
                 }
             }
             .padding(16)

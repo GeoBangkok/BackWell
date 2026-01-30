@@ -1,6 +1,6 @@
 //
 //  RoutineMakerView.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  TikTok-style colorful routine maker
 //

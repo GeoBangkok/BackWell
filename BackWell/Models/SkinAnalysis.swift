@@ -1,6 +1,6 @@
 //
 //  SkinAnalysis.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  Data models for skin analysis and scoring
 //

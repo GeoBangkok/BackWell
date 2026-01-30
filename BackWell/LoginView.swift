@@ -1,6 +1,6 @@
 //
 //  LoginView.swift
-//  BackWell
+//  SkinGlowing
 //
 //  Created by standard on 1/17/26.
 //
@@ -20,13 +20,13 @@ struct LoginView: View {
                 Spacer()
 
                 // App Name
-                Text("BackWell")
+                Text("SkinGlowing")
                     .font(.system(size: 48, weight: .bold, design: .rounded))
                     .foregroundColor(Theme.textPrimary)
                     .padding(.bottom, 8)
 
                 // Tagline
-                Text("Your path to relief")
+                Text("AI-Powered Skin Analysis")
                     .font(.system(size: 20, weight: .medium))
                     .foregroundColor(Theme.textSecondary)
                     .padding(.bottom, 60)
@@ -35,7 +35,7 @@ struct LoginView: View {
 
                 // Gentle pulsating button
                 Button(action: onContinue) {
-                    Text("Get Back Relief Today")
+                    Text("Start Your Skin Journey")
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
@@ -51,7 +51,7 @@ struct LoginView: View {
                 .padding(.bottom, 20)
 
                 // Reassuring text
-                Text("Clinically designed for your comfort")
+                Text("Personalized skincare insights")
                     .font(.system(size: 16, weight: .regular))
                     .foregroundColor(Theme.textMuted)
                     .padding(.bottom, 80)

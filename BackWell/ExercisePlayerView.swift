@@ -111,7 +111,7 @@ struct ExercisePlayerView: View {
                     Text("Home")
                         .font(.system(size: 14, weight: .regular))
                 }
-                .foregroundColor(Theme.teal)
+                .foregroundColor(Theme.purple)
             }
 
             Spacer()
@@ -143,12 +143,12 @@ struct ExercisePlayerView: View {
 
                     Text(exercise.focusArea)
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(Theme.teal)
+                        .foregroundColor(Theme.purple)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Theme.teal.opacity(0.1))
+                                .fill(Theme.purple.opacity(0.1))
                         )
                 }
 
@@ -162,12 +162,12 @@ struct ExercisePlayerView: View {
                         HStack(alignment: .top, spacing: 6) {
                             ZStack {
                                 Circle()
-                                    .fill(Theme.teal.opacity(0.2))
+                                    .fill(Theme.purple.opacity(0.2))
                                     .frame(width: 18, height: 18)
 
                                 Text("\(index + 1)")
                                     .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(Theme.teal)
+                                    .foregroundColor(Theme.purple)
                             }
 
                             Text(instruction)
@@ -286,11 +286,11 @@ struct ExerciseAnimation: View {
             Circle()
                 .fill(Color.white.opacity(0.6))
                 .frame(width: 80, height: 80)
-                .shadow(color: Theme.teal.opacity(0.2), radius: 8, x: 0, y: 4)
+                .shadow(color: Theme.purple.opacity(0.2), radius: 8, x: 0, y: 4)
 
             Image(systemName: icon)
                 .font(.system(size: 36))
-                .foregroundColor(Theme.teal)
+                .foregroundColor(Theme.purple)
                 .scaleEffect(isAnimating && isPlaying ? 1.1 : 1.0)
                 .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: isAnimating)
         }
@@ -337,14 +337,14 @@ struct BreathingCueView: View {
 
             HStack(spacing: 16) {
                 Circle()
-                    .fill(Theme.teal.opacity(0.3))
+                    .fill(Theme.purple.opacity(0.3))
                     .frame(width: 60, height: 60)
                     .scaleEffect(scale)
                     .animation(.easeInOut(duration: 4).repeatForever(autoreverses: true), value: scale)
 
                 Text(breatheIn ? "Breathe In" : "Breathe Out")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
             }
             .padding(20)
             .frame(maxWidth: .infinity)
@@ -402,12 +402,12 @@ struct ExerciseControls: View {
                         Text("Skip")
                     }
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .stroke(Theme.teal, lineWidth: 2)
+                            .stroke(Theme.purple, lineWidth: 2)
                     )
                 }
 
@@ -422,7 +422,7 @@ struct ExerciseControls: View {
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .fill(Theme.teal)
+                            .fill(Theme.purple)
                     )
                 }
             }
@@ -471,7 +471,7 @@ struct MentalComponentView: View {
 
                 Image(systemName: typeIcon)
                     .font(.system(size: 50))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
             }
 
             Text(typeTitle)
@@ -506,12 +506,12 @@ struct MentalComponentView: View {
                         Text("Skip")
                     }
                     .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .stroke(Theme.teal, lineWidth: 2)
+                            .stroke(Theme.purple, lineWidth: 2)
                     )
                 }
 
@@ -526,7 +526,7 @@ struct MentalComponentView: View {
                     .frame(height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 25)
-                            .fill(Theme.teal)
+                            .fill(Theme.purple)
                     )
                 }
             }
@@ -548,12 +548,12 @@ struct CompletionView: View {
 
             ZStack {
                 Circle()
-                    .fill(Theme.teal.opacity(0.2))
+                    .fill(Theme.purple.opacity(0.2))
                     .frame(width: 160, height: 160)
 
                 Image(systemName: "checkmark.circle.fill")
                     .font(.system(size: 100))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
             }
 
             Text("Day \(dayProgram.day) Complete!")
@@ -580,7 +580,7 @@ struct CompletionView: View {
 
                 Text(dayProgram.mentalFocus)
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
             }
             .padding(20)
             .background(
@@ -599,7 +599,7 @@ struct CompletionView: View {
                     .frame(height: 54)
                     .background(
                         RoundedRectangle(cornerRadius: 27)
-                            .fill(Theme.teal)
+                            .fill(Theme.purple)
                     )
             }
             .padding(.horizontal, 32)
@@ -623,12 +623,12 @@ struct DayIntroView: View {
                 Circle()
                     .fill(Color.white.opacity(0.6))
                     .frame(width: 100, height: 100)
-                    .shadow(color: Theme.teal.opacity(0.2), radius: 10, x: 0, y: 5)
+                    .shadow(color: Theme.purple.opacity(0.2), radius: 10, x: 0, y: 5)
 
                 VStack(spacing: 2) {
                     Text("DAY")
                         .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(Theme.teal)
+                        .foregroundColor(Theme.purple)
 
                     Text("\(dayProgram.day)")
                         .font(.system(size: 36, weight: .bold))
@@ -645,12 +645,12 @@ struct DayIntroView: View {
 
                 Text(dayProgram.theme)
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 6)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Theme.teal.opacity(0.1))
+                            .fill(Theme.purple.opacity(0.1))
                     )
             }
 
@@ -686,7 +686,7 @@ struct DayIntroView: View {
                 .frame(height: 56)
                 .background(
                     RoundedRectangle(cornerRadius: 28)
-                        .fill(Theme.teal)
+                        .fill(Theme.purple)
                 )
             }
             .padding(.horizontal, 32)
@@ -705,12 +705,12 @@ struct InfoCard: View {
         HStack(alignment: .top, spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(Theme.teal.opacity(0.2))
+                    .fill(Theme.purple.opacity(0.2))
                     .frame(width: 40, height: 40)
 
                 Image(systemName: icon)
                     .font(.system(size: 18))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
             }
 
             VStack(alignment: .leading, spacing: 4) {

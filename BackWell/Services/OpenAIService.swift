@@ -1,6 +1,6 @@
 //
 //  OpenAIService.swift
-//  SkinWell
+//  SkinGlowing
 //
 //  OpenAI API integration for skin analysis and chat
 //
@@ -87,7 +87,7 @@ class OpenAIService {
     // API key - Set this to your OpenAI API key
     // For production, use environment variables or secure storage
     // IMPORTANT: Replace with your actual API key locally
-    private let apiKey = "YOUR_OPENAI_API_KEY_HERE"
+    private let apiKey = "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"
     private let baseURL = "https://api.openai.com/v1/chat/completions"
 
     private init() {}

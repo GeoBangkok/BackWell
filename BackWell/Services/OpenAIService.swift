@@ -84,8 +84,9 @@ struct RoutineRecommendation: Codable {
 class OpenAIService {
     static let shared = OpenAIService()
 
-    // API key from configuration file
-    private let apiKey = APIConfig.openAIKey
+    // API key - Set this to your OpenAI API key
+    // For production, use environment variables or secure storage
+    private let apiKey = "YOUR_API_KEY_HERE"
     private let baseURL = "https://api.openai.com/v1/chat/completions"
 
     private init() {}

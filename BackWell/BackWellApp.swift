@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import SuperwallKit
+import Combine
 
 @main
 struct BackWellApp: App {

@@ -8,6 +8,7 @@
 import Foundation
 import Network
 import SwiftUI
+import Combine
 
 class NetworkManager: ObservableObject {
     static let shared = NetworkManager()

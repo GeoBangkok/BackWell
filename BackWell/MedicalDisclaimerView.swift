@@ -94,7 +94,7 @@ struct MedicalDisclaimerView: View {
                             .frame(height: 54)
                             .background(
                                 RoundedRectangle(cornerRadius: 27)
-                                    .fill(Theme.teal)
+                                    .fill(Theme.purple)
                             )
                     }
                     .padding(.horizontal, 28)
@@ -127,7 +127,7 @@ struct DisclaimerSection: View {
             HStack(spacing: 8) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 14))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
 
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))

@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Combine
 
 // MARK: - Skin Metrics
 struct SkinMetrics: Codable, Identifiable {

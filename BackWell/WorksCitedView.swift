@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct Citation: Identifiable {
     let id = UUID()

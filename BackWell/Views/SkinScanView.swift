@@ -256,7 +256,7 @@ struct MetricsGrid: View {
     var body: some View {
         VStack(spacing: 15) {
             HStack(spacing: 15) {
-                MetricCard(
+                SkinMetricCard(
                     title: "Hydration",
                     value: metrics.hydration,
                     status: metrics.hydrationLevel,
@@ -264,7 +264,7 @@ struct MetricsGrid: View {
                     color: Color(hex: "#87CEEB")
                 )
 
-                MetricCard(
+                SkinMetricCard(
                     title: "Acne",
                     value: metrics.acne,
                     status: metrics.acneStatus,
@@ -274,7 +274,7 @@ struct MetricsGrid: View {
             }
 
             HStack(spacing: 15) {
-                MetricCard(
+                SkinMetricCard(
                     title: "Glow",
                     value: metrics.glow,
                     status: metrics.glowLevel,
@@ -282,7 +282,7 @@ struct MetricsGrid: View {
                     color: Color(hex: "#FFD700")
                 )
 
-                MetricCard(
+                SkinMetricCard(
                     title: "Aging",
                     value: metrics.aging,
                     status: metrics.agingStatus,
@@ -294,7 +294,7 @@ struct MetricsGrid: View {
     }
 }
 
-struct MetricCard: View {
+struct SkinMetricCard: View {
     let title: String
     let value: Int
     let status: String

@@ -94,7 +94,7 @@ struct SettingsView: View {
                                     HStack {
                                         Image(systemName: "clock.fill")
                                             .font(.system(size: 20))
-                                            .foregroundColor(Theme.teal)
+                                            .foregroundColor(Theme.purple)
                                             .frame(width: 32)
 
                                         Text("Reminder Time")

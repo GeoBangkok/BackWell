@@ -86,7 +86,8 @@ class OpenAIService {
 
     // API key - Set this to your OpenAI API key
     // For production, use environment variables or secure storage
-    private let apiKey = "YOUR_API_KEY_HERE"
+    // IMPORTANT: Replace with your actual API key locally
+    private let apiKey = "YOUR_OPENAI_API_KEY_HERE"
     private let baseURL = "https://api.openai.com/v1/chat/completions"
 
     private init() {}

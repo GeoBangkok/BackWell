@@ -25,7 +25,7 @@ struct MedicalDisclaimerView: View {
                         // Icon
                         ZStack {
                             Circle()
-                                .fill(Theme.teal.opacity(0.15))
+                                .fill(Theme.purple.opacity(0.15))
                                 .frame(width: 80, height: 80)
 
                             Image(systemName: "heart.text.square.fill")

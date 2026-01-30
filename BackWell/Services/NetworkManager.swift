@@ -77,6 +77,9 @@ struct APIErrorHandler {
 
             case .noData:
                 return ("No Data", "No results were returned. Please try again.")
+
+            case .noConnection:
+                return ("No Internet", "Please check your internet connection and try again.")
             }
         } else if (error as NSError).code == NSURLErrorNotConnectedToInternet {
             return ("No Internet Connection", "Please check your internet connection and try again.")

@@ -44,7 +44,7 @@ struct LoginView: View {
                             RoundedRectangle(cornerRadius: 16)
                                 .fill(Theme.buttonGradient)
                         )
-                        .shadow(color: Theme.teal.opacity(0.3), radius: 8, x: 0, y: 4)
+                        .shadow(color: Theme.purple.opacity(0.3), radius: 8, x: 0, y: 4)
                         .scaleEffect(isPulsating ? 1.02 : 1.0)
                 }
                 .padding(.horizontal, 32)

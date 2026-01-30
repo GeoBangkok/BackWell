@@ -51,12 +51,12 @@ struct HomeView: View {
                                     Text("View Research")
                                         .font(.system(size: 13, weight: .medium))
                                 }
-                                .foregroundColor(Theme.teal)
+                                .foregroundColor(Theme.purple)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 6)
                                 .background(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(Theme.teal.opacity(0.1))
+                                        .fill(Theme.purple.opacity(0.1))
                                 )
                             }
                             .padding(.top, 4)
@@ -75,7 +75,7 @@ struct HomeView: View {
 
                                 Text("\(completedDays.count)/28")
                                     .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(Theme.teal)
+                                    .foregroundColor(Theme.purple)
                             }
 
                             GeometryReader { geometry in
@@ -85,7 +85,7 @@ struct HomeView: View {
                                         .frame(height: 8)
 
                                     RoundedRectangle(cornerRadius: 8)
-                                        .fill(Theme.teal)
+                                        .fill(Theme.purple)
                                         .frame(width: geometry.size.width * (CGFloat(completedDays.count) / 28.0), height: 8)
                                 }
                             }
@@ -170,6 +170,8 @@ struct HomeView: View {
                 }
             }
             .navigationBarHidden(true)
+            // Exercise player removed - app now focuses on skincare
+            /*
             .navigationDestination(item: $selectedDayProgram) { dayProgram in
                 ExercisePlayerView(dayProgram: dayProgram)
                     .navigationBarBackButtonHidden(true)
@@ -182,6 +184,7 @@ struct HomeView: View {
                         }
                     }
             }
+            */
             .alert("Subscription Required", isPresented: $showSubscriptionRequired) {
                 Button("OK", role: .cancel) { }
             } message: {
@@ -208,14 +211,14 @@ struct DayCard: View {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(
                         isCompleted ?
-                        Theme.teal :
+                        Theme.purple :
                         isCurrent ?
                         Color.white.opacity(0.8) :
                         Color.white.opacity(0.4)
                     )
                     .frame(height: 80)
                     .shadow(
-                        color: isCurrent ? Theme.teal.opacity(0.3) : Color.clear,
+                        color: isCurrent ? Theme.purple.opacity(0.3) : Color.clear,
                         radius: 8,
                         x: 0,
                         y: 4
@@ -233,7 +236,7 @@ struct DayCard: View {
                     } else {
                         Image(systemName: "play.circle.fill")
                             .font(.system(size: 24))
-                            .foregroundColor(Theme.teal)
+                            .foregroundColor(Theme.purple)
                     }
 
                     Text("Day \(day)")
@@ -258,12 +261,12 @@ struct ExerciseCategoryCard: View {
         HStack(spacing: 16) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Theme.teal.opacity(0.1))
+                    .fill(Theme.purple.opacity(0.1))
                     .frame(width: 60, height: 60)
 
                 Image(systemName: icon)
                     .font(.system(size: 24))
-                    .foregroundColor(Theme.teal)
+                    .foregroundColor(Theme.purple)
             }
 
             VStack(alignment: .leading, spacing: 4) {

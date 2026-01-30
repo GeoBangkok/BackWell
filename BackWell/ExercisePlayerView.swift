@@ -5,6 +5,7 @@
 //  Created by standard on 1/17/26.
 //
 
+/*
 import SwiftUI
 
 struct ExercisePlayerView: View {
@@ -739,3 +740,4 @@ struct InfoCard: View {
         ExercisePlayerView(dayProgram: day1)
     }
 }
+*/

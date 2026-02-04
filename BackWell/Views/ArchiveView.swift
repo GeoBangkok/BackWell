@@ -2,86 +2,71 @@
 //  ArchiveView.swift
 //  SkinGlowing
 //
-//  Archive of previous skin scan results
+//  Modern archive view for skin scan history
 //
 
 import SwiftUI
 
 struct ArchiveView: View {
-    @EnvironmentObject var skinService: SkinAnalysisService
+    @Environment(\.dismiss) var dismiss
     @State private var selectedTimeRange = "All"
     @State private var searchText = ""
-    @State private var selectedEntry: ArchiveEntry?
-    @State private var showingDetail = false
+    @State private var selectedEntry: SkinScanResult?
 
-    let timeRanges = ["All", "This Week", "This Month", "Last 3 Months"]
-
-    // Mock data for demonstration
-    let mockHistory: [ArchiveEntry] = [
-        ArchiveEntry(
-            scanResult: SkinScanResult(
-                metrics: SkinMetrics(
-                    overallScore: 87,
-                    hydration: 78,
-                    acne: 92,
-                    glow: 85,
-                    aging: 88,
-                    timestamp: Date().addingTimeInterval(-86400)
-                ),
-                imageData: nil as Data?,
-                recommendations: ["Use vitamin C serum", "Increase water intake"],
-                routineSteps: [],
-                timestamp: Date().addingTimeInterval(-86400),
-                userConcerns: ["Dark spots", "Dryness"],
-                skinType: "Combination"
+    // Sample data for demonstration
+    @State private var scanHistory: [SkinScanResult] = [
+        SkinScanResult(
+            metrics: SkinMetrics(
+                overallScore: 87,
+                hydration: 78,
+                acne: 92,
+                glow: 85,
+                aging: 88,
+                timestamp: Date().addingTimeInterval(-86400)
             ),
-            notes: "Skin looking better after new routine",
-            isFavorite: true
+            imageData: nil,
+            recommendations: ["Use vitamin C serum", "Increase water intake"],
+            routineSteps: [],
+            timestamp: Date().addingTimeInterval(-86400),
+            userConcerns: ["Dark spots", "Dryness"],
+            skinType: "Combination"
         ),
-        ArchiveEntry(
-            scanResult: SkinScanResult(
-                metrics: SkinMetrics(
-                    overallScore: 83,
-                    hydration: 72,
-                    acne: 88,
-                    glow: 80,
-                    aging: 85,
-                    timestamp: Date().addingTimeInterval(-259200)
-                ),
-                imageData: nil as Data?,
-                recommendations: ["Add retinol", "Use SPF daily"],
-                routineSteps: [],
-                timestamp: Date().addingTimeInterval(-259200),
-                userConcerns: ["Fine lines", "Uneven tone"],
-                skinType: "Combination"
+        SkinScanResult(
+            metrics: SkinMetrics(
+                overallScore: 83,
+                hydration: 72,
+                acne: 88,
+                glow: 80,
+                aging: 85,
+                timestamp: Date().addingTimeInterval(-259200)
             ),
-            notes: nil,
-            isFavorite: false
+            imageData: nil,
+            recommendations: ["Add retinol", "Use SPF daily"],
+            routineSteps: [],
+            timestamp: Date().addingTimeInterval(-259200),
+            userConcerns: ["Fine lines", "Uneven tone"],
+            skinType: "Combination"
         ),
-        ArchiveEntry(
-            scanResult: SkinScanResult(
-                metrics: SkinMetrics(
-                    overallScore: 79,
-                    hydration: 68,
-                    acne: 85,
-                    glow: 75,
-                    aging: 82,
-                    timestamp: Date().addingTimeInterval(-604800)
-                ),
-                imageData: nil as Data?,
-                recommendations: ["Exfoliate 2x weekly", "Hydrating mask"],
-                routineSteps: [],
-                timestamp: Date().addingTimeInterval(-604800),
-                userConcerns: ["Dullness", "Large pores"],
-                skinType: "Combination"
+        SkinScanResult(
+            metrics: SkinMetrics(
+                overallScore: 79,
+                hydration: 68,
+                acne: 85,
+                glow: 75,
+                aging: 82,
+                timestamp: Date().addingTimeInterval(-604800)
             ),
-            notes: "Started new skincare routine",
-            isFavorite: false
+            imageData: nil,
+            recommendations: ["Exfoliate 2x weekly", "Hydrating mask"],
+            routineSteps: [],
+            timestamp: Date().addingTimeInterval(-604800),
+            userConcerns: ["Dullness", "Large pores"],
+            skinType: "Combination"
         )
     ]
 
-    var filteredHistory: [ArchiveEntry] {
-        var entries = skinService.scanHistory.isEmpty ? mockHistory : skinService.scanHistory
+    var filteredScans: [SkinScanResult] {
+        var results = scanHistory
 
         // Filter by time range
         if selectedTimeRange != "All" {
@@ -89,17 +74,17 @@ struct ArchiveView: View {
             let calendar = Calendar.current
 
             switch selectedTimeRange {
-            case "This Week":
+            case "Week":
                 if let weekAgo = calendar.date(byAdding: .weekOfYear, value: -1, to: now) {
-                    entries = entries.filter { $0.scanResult.timestamp >= weekAgo }
+                    results = results.filter { $0.timestamp >= weekAgo }
                 }
-            case "This Month":
+            case "Month":
                 if let monthAgo = calendar.date(byAdding: .month, value: -1, to: now) {
-                    entries = entries.filter { $0.scanResult.timestamp >= monthAgo }
+                    results = results.filter { $0.timestamp >= monthAgo }
                 }
-            case "Last 3 Months":
+            case "3 Months":
                 if let threeMonthsAgo = calendar.date(byAdding: .month, value: -3, to: now) {
-                    entries = entries.filter { $0.scanResult.timestamp >= threeMonthsAgo }
+                    results = results.filter { $0.timestamp >= threeMonthsAgo }
                 }
             default:
                 break
@@ -108,143 +93,213 @@ struct ArchiveView: View {
 
         // Filter by search
         if !searchText.isEmpty {
-            entries = entries.filter { entry in
-                entry.notes?.localizedCaseInsensitiveContains(searchText) ?? false ||
-                entry.scanResult.userConcerns.contains { $0.localizedCaseInsensitiveContains(searchText) }
+            results = results.filter { scan in
+                scan.userConcerns.contains { $0.localizedCaseInsensitiveContains(searchText) }
             }
         }
 
-        return entries
+        return results
     }
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
-                // Background
-                LinearGradient(
-                    colors: [Theme.purpleUltraLight, Color.white],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .ignoresSafeArea()
+                // Clean white background
+                Color.white
+                    .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    // Header with stats
-                    ArchiveHeader(totalScans: filteredHistory.count)
+                if scanHistory.isEmpty {
+                    // Empty state
+                    VStack(spacing: 24) {
+                        Image(systemName: "archivebox")
+                            .font(.system(size: 60))
+                            .foregroundColor(Color(hex: "FF91A4").opacity(0.5))
 
-                    // Filter controls
-                    VStack(spacing: 15) {
-                        // Search bar
-                        HStack {
-                            Image(systemName: "magnifyingglass")
-                                .foregroundColor(Theme.textMuted)
+                        Text("No Scans Yet")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(Color(uiColor: .label))
 
-                            TextField("Search notes or concerns...", text: $searchText)
-                                .textFieldStyle(PlainTextFieldStyle())
+                        Text("Your skin analysis history will appear here")
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(uiColor: .secondaryLabel))
+                            .multilineTextAlignment(.center)
 
-                            if !searchText.isEmpty {
-                                Button(action: { searchText = "" }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(Theme.textMuted)
-                                }
-                            }
-                        }
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(12)
-                        .shadow(color: Theme.shadow, radius: 3, x: 0, y: 2)
-
-                        // Time range filter
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
-                                ForEach(timeRanges, id: \.self) { range in
-                                    TimeRangeChip(
-                                        title: range,
-                                        isSelected: selectedTimeRange == range,
-                                        action: { selectedTimeRange = range }
+                        Button(action: {
+                            dismiss()
+                        }) {
+                            Text("Take Your First Scan")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 200, height: 50)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
                                     )
-                                }
-                            }
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 25))
                         }
                     }
-                    .padding()
+                } else {
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            // Stats overview
+                            HStack(spacing: 20) {
+                                StatCard(
+                                    value: "\(scanHistory.count)",
+                                    label: "Total Scans",
+                                    icon: "camera.fill",
+                                    color: Color(hex: "FF91A4")
+                                )
 
-                    // History list
-                    if filteredHistory.isEmpty {
-                        EmptyArchiveView()
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 15) {
-                                ForEach(filteredHistory) { entry in
-                                    ArchiveCard(entry: entry)
-                                        .onTapGesture {
-                                            selectedEntry = entry
-                                            showingDetail = true
+                                StatCard(
+                                    value: "\(averageScore)",
+                                    label: "Avg Score",
+                                    icon: "chart.line.uptrend.xyaxis",
+                                    color: Color(hex: "FFB6C1")
+                                )
+
+                                StatCard(
+                                    value: "+\(improvement)%",
+                                    label: "Improvement",
+                                    icon: "arrow.up.circle.fill",
+                                    color: .green
+                                )
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 20)
+
+                            // Time range filter
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                HStack(spacing: 12) {
+                                    ForEach(["All", "Week", "Month", "3 Months"], id: \.self) { range in
+                                        FilterChip(
+                                            title: range,
+                                            isSelected: selectedTimeRange == range,
+                                            action: {
+                                                withAnimation {
+                                                    selectedTimeRange = range
+                                                }
+                                            }
+                                        )
+                                    }
+                                }
+                                .padding(.horizontal, 20)
+                            }
+
+                            // Progress Chart placeholder
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Your Progress")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(Color(uiColor: .label))
+
+                                // Chart placeholder
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: "FFE4E1").opacity(0.3),
+                                                Color(hex: "FFB6C1").opacity(0.1)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(height: 200)
+                                    .overlay(
+                                        VStack {
+                                            Image(systemName: "chart.line.uptrend.xyaxis")
+                                                .font(.system(size: 40))
+                                                .foregroundColor(Color(hex: "FF91A4"))
+                                            Text("Progress Chart")
+                                                .font(.system(size: 16))
+                                                .foregroundColor(Color(uiColor: .secondaryLabel))
                                         }
+                                    )
+                            }
+                            .padding(.horizontal, 20)
+
+                            // Scan history list
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Recent Scans")
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .foregroundColor(Color(uiColor: .label))
+                                    .padding(.horizontal, 20)
+
+                                ForEach(filteredScans) { scan in
+                                    ScanHistoryCard(scan: scan)
+                                        .onTapGesture {
+                                            selectedEntry = scan
+                                        }
+                                        .padding(.horizontal, 20)
                                 }
                             }
-                            .padding()
-                            .padding(.bottom, 100)
                         }
+                        .padding(.vertical, 20)
                     }
                 }
             }
-            .navigationBarHidden(true)
-            .sheet(isPresented: $showingDetail) {
-                if let entry = selectedEntry {
-                    ArchiveDetailView(entry: entry)
+            .navigationTitle("Scan History")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color(hex: "FF91A4"))
                 }
             }
-        }
-    }
-}
-
-struct ArchiveHeader: View {
-    let totalScans: Int
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Scan Archive")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
-
-            HStack(spacing: 40) {
-                StatisticView(value: "\(totalScans)", label: "Total Scans", icon: "camera.fill")
-                StatisticView(value: "87", label: "Avg Score", icon: "chart.line.uptrend.xyaxis")
-                StatisticView(value: "+5", label: "Improvement", icon: "arrow.up.circle.fill")
+            .searchable(text: $searchText, prompt: "Search concerns")
+            .sheet(item: $selectedEntry) { entry in
+                ScanDetailView(scan: entry)
             }
         }
-        .padding()
-        .background(Color.white)
-        .shadow(color: Theme.shadow, radius: 5, x: 0, y: 2)
+    }
+
+    private var averageScore: Int {
+        guard !scanHistory.isEmpty else { return 0 }
+        let total = scanHistory.reduce(0) { $0 + $1.metrics.overallScore }
+        return total / scanHistory.count
+    }
+
+    private var improvement: Int {
+        guard scanHistory.count >= 2 else { return 0 }
+        let latest = scanHistory.first?.metrics.overallScore ?? 0
+        let oldest = scanHistory.last?.metrics.overallScore ?? 0
+        return max(0, latest - oldest)
     }
 }
 
-struct StatisticView: View {
+struct StatCard: View {
     let value: String
     let label: String
     let icon: String
+    let color: Color
 
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(Theme.purple)
+                .font(.system(size: 20))
+                .foregroundColor(color)
 
             Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(Color(uiColor: .label))
 
             Text(label)
-                .font(.caption)
-                .foregroundColor(Theme.textSecondary)
+                .font(.system(size: 12))
+                .foregroundColor(Color(uiColor: .secondaryLabel))
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(Color.white)
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 4)
     }
 }
 
-struct TimeRangeChip: View {
+struct ArchiveFilterChip: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -252,289 +307,223 @@ struct TimeRangeChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.body)
-                .foregroundColor(isSelected ? .white : Theme.textPrimary)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-                .background(isSelected ? Theme.purple : Color.white)
-                .cornerRadius(20)
-                .shadow(color: Theme.shadow, radius: 3, x: 0, y: 2)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(isSelected ? .white : Color(uiColor: .label))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(isSelected ? Color(hex: "FF91A4") : Color(uiColor: .systemGray6))
+                )
         }
     }
 }
 
-struct ArchiveCard: View {
-    let entry: ArchiveEntry
-    @State private var isFavorite: Bool
+struct ScanHistoryCard: View {
+    let scan: SkinScanResult
 
-    init(entry: ArchiveEntry) {
-        self.entry = entry
-        self._isFavorite = State(initialValue: entry.isFavorite)
+    var dateFormatter: DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return formatter
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 15) {
-            // Header
-            HStack {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(entry.formattedDate)
-                        .font(.headline)
-                        .foregroundColor(Theme.textPrimary)
+        HStack {
+            // Date section
+            VStack(alignment: .leading, spacing: 4) {
+                Text(dateFormatter.string(from: scan.timestamp))
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color(uiColor: .label))
 
-                    Text(formatTime(entry.scanResult.timestamp))
-                        .font(.caption)
-                        .foregroundColor(Theme.textSecondary)
-                }
-
-                Spacer()
-
-                // Score badge
-                Text("\(entry.scanResult.metrics.overallScore)")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                    .frame(width: 60, height: 60)
-                    .background(
-                        Circle()
-                            .fill(scoreGradient(for: entry.scanResult.metrics.overallScore))
-                    )
-
-                Button(action: { isFavorite.toggle() }) {
-                    Image(systemName: isFavorite ? "star.fill" : "star")
-                        .foregroundColor(Theme.warning)
-                        .font(.title3)
-                }
-            }
-
-            // Metrics row
-            HStack(spacing: 20) {
-                MiniMetric(icon: "drop.fill", value: entry.scanResult.metrics.hydration, color: Color(hex: "#87CEEB"))
-                MiniMetric(icon: "face.smiling", value: entry.scanResult.metrics.acne, color: Color(hex: "#98FB98"))
-                MiniMetric(icon: "sparkles", value: entry.scanResult.metrics.glow, color: Color(hex: "#FFD700"))
-                MiniMetric(icon: "hourglass", value: entry.scanResult.metrics.aging, color: Color(hex: "#FFB6C1"))
-            }
-
-            // Concerns
-            if !entry.scanResult.userConcerns.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(entry.scanResult.userConcerns, id: \.self) { concern in
-                            Text(concern)
-                                .font(.caption)
-                                .foregroundColor(Theme.purple)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(Theme.purpleUltraLight)
-                                .cornerRadius(10)
-                        }
+                HStack {
+                    ForEach(scan.userConcerns.prefix(2), id: \.self) { concern in
+                        Text(concern)
+                            .font(.system(size: 11))
+                            .foregroundColor(Color(hex: "FF91A4"))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Color(hex: "FFE4E1").opacity(0.3))
+                            .cornerRadius(6)
                     }
                 }
             }
 
-            // Notes
-            if let notes = entry.notes {
-                Text(notes)
-                    .font(.body)
-                    .foregroundColor(Theme.textSecondary)
-                    .lineLimit(2)
+            Spacer()
+
+            // Score section
+            VStack(spacing: 4) {
+                Text("\(scan.metrics.overallScore)")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Color(hex: "FF91A4"))
+
+                Text("Score")
+                    .font(.system(size: 12))
+                    .foregroundColor(Color(uiColor: .secondaryLabel))
             }
+
+            // Improvement indicator
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14))
+                .foregroundColor(Color(uiColor: .tertiaryLabel))
         }
-        .padding()
-        .background(Color.white)
-        .cornerRadius(15)
-        .shadow(color: Theme.shadow, radius: 5, x: 0, y: 2)
-    }
-
-    func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .short
-        return formatter.string(from: date)
-    }
-
-    func scoreGradient(for score: Int) -> LinearGradient {
-        let colors: [Color] = score >= 80 ?
-            [Theme.success, Theme.success.opacity(0.8)] :
-            score >= 60 ?
-            [Theme.warning, Theme.warning.opacity(0.8)] :
-            [Theme.error, Theme.error.opacity(0.8)]
-
-        return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.03), radius: 8, x: 0, y: 4)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color(uiColor: .systemGray6), lineWidth: 1)
+        )
     }
 }
 
-struct MiniMetric: View {
-    let icon: String
-    let value: Int
-    let color: Color
-
-    var body: some View {
-        HStack(spacing: 5) {
-            Image(systemName: icon)
-                .font(.footnote)
-                .foregroundColor(color)
-
-            Text("\(value)")
-                .font(.footnote)
-                .fontWeight(.medium)
-                .foregroundColor(Theme.textPrimary)
-        }
-    }
-}
-
-struct EmptyArchiveView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
-
-            Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 60))
-                .foregroundColor(Theme.purple.opacity(0.5))
-
-            Text("No scan history yet")
-                .font(.title3)
-                .fontWeight(.medium)
-                .foregroundColor(Theme.textPrimary)
-
-            Text("Your scan results will appear here")
-                .font(.body)
-                .foregroundColor(Theme.textSecondary)
-
-            Spacer()
-        }
-    }
-}
-
-struct ArchiveDetailView: View {
-    let entry: ArchiveEntry
+struct ScanDetailView: View {
+    let scan: SkinScanResult
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
-        NavigationView {
-            ZStack {
-                Theme.onboardingBackground
-                    .ignoresSafeArea()
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 30) {
+                    // Score
+                    ZStack {
+                        Circle()
+                            .stroke(
+                                LinearGradient(
+                                    colors: [Color(hex: "FFE4E1"), Color(hex: "FFB6C1")],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 12
+                            )
+                            .frame(width: 150, height: 150)
 
-                ScrollView {
-                    VStack(spacing: 25) {
-                        // Score section
-                        VStack(spacing: 15) {
-                            Text("Skin Score")
-                                .font(.title3)
-                                .foregroundColor(Theme.textSecondary)
+                        VStack {
+                            Text("\(scan.metrics.overallScore)")
+                                .font(.system(size: 48, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(hex: "FF91A4"))
 
-                            Text("\(entry.scanResult.metrics.overallScore)")
-                                .font(.system(size: 72, weight: .bold, design: .rounded))
-                                .foregroundColor(Theme.purple)
-
-                            Text(entry.scanResult.metrics.overallGrade)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .foregroundColor(Theme.success)
-                        }
-                        .padding(.top, 20)
-
-                        // Full metrics
-                        VStack(spacing: 15) {
-                            MetricDetailRow(title: "Hydration", value: entry.scanResult.metrics.hydration, status: entry.scanResult.metrics.hydrationLevel, color: Color(hex: "#87CEEB"))
-                            MetricDetailRow(title: "Acne", value: entry.scanResult.metrics.acne, status: entry.scanResult.metrics.acneStatus, color: Color(hex: "#98FB98"))
-                            MetricDetailRow(title: "Glow", value: entry.scanResult.metrics.glow, status: entry.scanResult.metrics.glowLevel, color: Color(hex: "#FFD700"))
-                            MetricDetailRow(title: "Aging", value: entry.scanResult.metrics.aging, status: entry.scanResult.metrics.agingStatus, color: Color(hex: "#FFB6C1"))
-                        }
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(15)
-                        .padding(.horizontal)
-
-                        // Recommendations
-                        if !entry.scanResult.recommendations.isEmpty {
-                            VStack(alignment: .leading, spacing: 15) {
-                                Text("Recommendations")
-                                    .font(.headline)
-                                    .foregroundColor(Theme.textPrimary)
-
-                                ForEach(entry.scanResult.recommendations, id: \.self) { rec in
-                                    HStack(alignment: .top, spacing: 10) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(Theme.success)
-                                            .font(.footnote)
-
-                                        Text(rec)
-                                            .font(.body)
-                                            .foregroundColor(Theme.textPrimary)
-
-                                        Spacer()
-                                    }
-                                }
-                            }
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(15)
-                            .padding(.horizontal)
-                        }
-
-                        // Notes
-                        if let notes = entry.notes {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Notes")
-                                    .font(.headline)
-                                    .foregroundColor(Theme.textPrimary)
-
-                                Text(notes)
-                                    .font(.body)
-                                    .foregroundColor(Theme.textSecondary)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding()
-                            .background(Color.white)
-                            .cornerRadius(15)
-                            .padding(.horizontal)
+                            Text("Overall Score")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color(uiColor: .secondaryLabel))
                         }
                     }
-                    .padding(.bottom, 30)
+                    .padding(.top, 20)
+
+                    // Metrics
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
+                        ArchiveMetricDetailCard(
+                            icon: "drop.fill",
+                            title: "Hydration",
+                            value: scan.metrics.hydration,
+                            status: scan.metrics.hydrationLevel,
+                            color: .blue
+                        )
+
+                        ArchiveMetricDetailCard(
+                            icon: "sparkles",
+                            title: "Glow",
+                            value: scan.metrics.glow,
+                            status: scan.metrics.glowLevel,
+                            color: Color(hex: "FFD700")
+                        )
+
+                        ArchiveMetricDetailCard(
+                            icon: "shield.fill",
+                            title: "Clarity",
+                            value: scan.metrics.acne,
+                            status: scan.metrics.acneStatus,
+                            color: .green
+                        )
+
+                        ArchiveMetricDetailCard(
+                            icon: "clock.fill",
+                            title: "Youth",
+                            value: scan.metrics.aging,
+                            status: scan.metrics.agingStatus,
+                            color: .purple
+                        )
+                    }
+                    .padding(.horizontal, 20)
+
+                    // Recommendations
+                    if !scan.recommendations.isEmpty {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Recommendations")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(Color(uiColor: .label))
+
+                            ForEach(scan.recommendations, id: \.self) { rec in
+                                HStack(alignment: .top, spacing: 10) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(Color(hex: "FF91A4"))
+                                        .font(.system(size: 16))
+
+                                    Text(rec)
+                                        .font(.system(size: 15))
+                                        .foregroundColor(Color(uiColor: .secondaryLabel))
+
+                                    Spacer()
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 20)
+                    }
                 }
+                .padding(.bottom, 30)
             }
-            .navigationTitle(entry.formattedDate)
+            .navigationTitle("Scan Details")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
-                        .foregroundColor(Theme.purple)
+                        .foregroundColor(Color(hex: "FF91A4"))
                 }
             }
         }
     }
 }
 
-struct MetricDetailRow: View {
+struct ArchiveMetricDetailCard: View {
+    let icon: String
     let title: String
     let value: Int
     let status: String
     let color: Color
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 5) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(Theme.textPrimary)
-
-                Text(status)
-                    .font(.caption)
-                    .foregroundColor(color)
-            }
-
-            Spacer()
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 24))
+                .foregroundColor(color)
 
             Text("\(value)%")
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(Color(uiColor: .label))
+
+            Text(title)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color(uiColor: .secondaryLabel))
+
+            Text(status)
+                .font(.system(size: 11))
+                .foregroundColor(color)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 2)
+                .background(color.opacity(0.1))
+                .cornerRadius(6)
         }
-        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(Color(uiColor: .systemGray6).opacity(0.5))
+        .cornerRadius(16)
     }
 }
 
 #Preview {
     ArchiveView()
-        .environmentObject(SkinAnalysisService.shared)
 }

@@ -185,15 +185,6 @@ struct HomeView: View {
                                 )
 
                                 QuickActionCard(
-                                    icon: "lightbulb.fill",
-                                    title: "Tips",
-                                    color: Color.orange,
-                                    action: {
-                                        // Show tips
-                                    }
-                                )
-
-                                QuickActionCard(
                                     icon: "calendar",
                                     title: "Routine",
                                     color: Color(hex: "FF91A4"),
@@ -210,7 +201,7 @@ struct HomeView: View {
                     .padding(.top, 20)
                 }
             }
-            .navigationTitle("Skin Analysis")
+            .navigationTitle("SkinGlowing")
             .navigationBarTitleDisplayMode(.large)
             .navigationBarItems(
                 trailing: Button(action: {

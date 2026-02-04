@@ -2,7 +2,7 @@
 //  MainTabView.swift
 //  SkinGlowing
 //
-//  Main tab navigation with three tabs
+//  Main tab navigation with four tabs
 
 import SwiftUI
 
@@ -23,11 +23,17 @@ struct MainTabView: View {
                 }
                 .tag(1)
 
+            ArisaAIView()
+                .tabItem {
+                    Label("Arisa AI", systemImage: "message.fill")
+                }
+                .tag(2)
+
             SettingsView()
                 .tabItem {
                     Label("Settings", systemImage: "gearshape.fill")
                 }
-                .tag(2)
+                .tag(3)
         }
         .accentColor(Color(hex: "FF91A4"))
     }

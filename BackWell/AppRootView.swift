@@ -44,7 +44,7 @@ struct AppRootView: View {
                         }
                     }
             case .main:
-                MainAppView()
+                MainTabView()
             }
         }
         .animation(.easeInOut, value: currentScreen)

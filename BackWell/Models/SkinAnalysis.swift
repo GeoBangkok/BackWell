@@ -74,7 +74,7 @@ struct SkinMetrics: Codable, Identifiable {
 
 // MARK: - Skin Scan Result
 struct SkinScanResult: Codable, Identifiable {
-    let id = UUID()
+    let id: UUID
     let metrics: SkinMetrics
     let imageData: Data?
     let recommendations: [String]
@@ -82,11 +82,22 @@ struct SkinScanResult: Codable, Identifiable {
     let timestamp: Date
     let userConcerns: [String]
     let skinType: String
+
+    init(id: UUID = UUID(), metrics: SkinMetrics, imageData: Data?, recommendations: [String], routineSteps: [RoutineStep], timestamp: Date, userConcerns: [String], skinType: String) {
+        self.id = id
+        self.metrics = metrics
+        self.imageData = imageData
+        self.recommendations = recommendations
+        self.routineSteps = routineSteps
+        self.timestamp = timestamp
+        self.userConcerns = userConcerns
+        self.skinType = skinType
+    }
 }
 
 // MARK: - Routine Step
 struct RoutineStep: Codable, Identifiable {
-    let id = UUID()
+    let id: UUID
     let stepNumber: Int
     let title: String
     let description: String
@@ -95,6 +106,18 @@ struct RoutineStep: Codable, Identifiable {
     let iconName: String // SF Symbol name
     let color: String // Hex color for TikTok-style display
     let tips: [String]
+
+    init(id: UUID = UUID(), stepNumber: Int, title: String, description: String, duration: String, productType: String, iconName: String, color: String, tips: [String]) {
+        self.id = id
+        self.stepNumber = stepNumber
+        self.title = title
+        self.description = description
+        self.duration = duration
+        self.productType = productType
+        self.iconName = iconName
+        self.color = color
+        self.tips = tips
+    }
 }
 
 // MARK: - Chat Message
@@ -259,30 +282,3 @@ class SkinAnalysisService: ObservableObject {
     }
 }
 
-// MARK: - Color Extension
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (255, 0, 0, 0)
-        }
-
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}

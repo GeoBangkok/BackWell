@@ -2,11 +2,11 @@
 //  OnboardingView.swift
 //  SkinGlowing
 //
-//  AI-powered skincare analysis onboarding flow
-//
+//  AI-powered skincare analysis onboarding flow - iOS Health style
 
 import SwiftUI
 import PhotosUI
+import UIKit
 
 struct OnboardingView: View {
     @State private var currentStep = 0
@@ -15,115 +15,198 @@ struct OnboardingView: View {
     @State private var selectedRace = ""
     @State private var selectedSkinType = ""
     @State private var selectedCosmetics: Set<String> = []
-    @State private var uploadedImages: [UIImage] = []
+    @State private var uploadedImage: UIImage?
     @State private var showingPhotoPicker = false
-    @State private var selectedPhotos: [PhotosPickerItem] = []
+    @State private var selectedPhoto: PhotosPickerItem?
     @State private var isAnalyzing = false
     @State private var analysisProgress: Double = 0
     @State private var showBlurredScore = false
+    @State private var currentAnalysisMessage = ""
+    @State private var skinScore: Int = 0
 
+    let onComplete: () -> Void
     let totalSteps = 8
 
+    // Scientific analysis messages
+    let analysisMessages = [
+        "Analyzing melanin distribution patterns...",
+        "Measuring skin texture uniformity...",
+        "Detecting sebaceous gland activity...",
+        "Evaluating collagen density markers...",
+        "Processing epidermal thickness data...",
+        "Calculating hydration gradient levels...",
+        "Examining vascular network patterns...",
+        "Quantifying elastin fiber alignment...",
+        "Assessing keratinocyte turnover rate...",
+        "Finalizing dermatological analysis..."
+    ]
+
     var body: some View {
-        ZStack {
-            // Background gradient
-            Theme.onboardingBackground
-                .ignoresSafeArea()
+        NavigationView {
+            ZStack {
+                // Clean white background
+                Color(UIColor.systemBackground)
+                    .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // Progress bar
-                ProgressView(value: Double(currentStep + 1), total: Double(totalSteps))
-                    .tint(Theme.purple)
-                    .scaleEffect(x: 1, y: 2)
-                    .padding(.horizontal)
-                    .padding(.top, 60)
+                VStack(spacing: 0) {
+                    // iOS Health-style header
+                    VStack(spacing: 8) {
+                        // Progress indicator
+                        HStack(spacing: 6) {
+                            ForEach(0..<totalSteps, id: \.self) { index in
+                                Circle()
+                                    .fill(index <= currentStep ? Color(hex: "FF91A4") : Color(UIColor.systemGray5))
+                                    .frame(width: 8, height: 8)
+                                    .animation(.easeInOut(duration: 0.3), value: currentStep)
+                            }
+                        }
+                        .padding(.top, 16)
 
-                // Content area
-                TabView(selection: $currentStep) {
-                    WelcomeStep()
-                        .tag(0)
+                        // Step title
+                        Text(stepTitle)
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundColor(Color(UIColor.label))
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
 
-                    SkinConcernsStep(selectedConcerns: $selectedConcerns)
-                        .tag(1)
+                    // Content area with tab view
+                    TabView(selection: $currentStep) {
+                        WelcomeStep()
+                            .tag(0)
 
-                    SkinGoalsStep(selectedGoals: $selectedGoals)
-                        .tag(2)
+                        SkinConcernsStep(selectedConcerns: $selectedConcerns)
+                            .tag(1)
 
-                    RaceEthnicityStep(selectedRace: $selectedRace)
-                        .tag(3)
+                        SkinGoalsStep(selectedGoals: $selectedGoals)
+                            .tag(2)
 
-                    SkinTypeStep(selectedSkinType: $selectedSkinType)
-                        .tag(4)
+                        RaceEthnicityStep(selectedRace: $selectedRace)
+                            .tag(3)
 
-                    CosmeticsStep(selectedCosmetics: $selectedCosmetics)
-                        .tag(5)
+                        SkinTypeStep(selectedSkinType: $selectedSkinType)
+                            .tag(4)
 
-                    PhotoUploadStep(
-                        uploadedImages: $uploadedImages,
-                        showingPhotoPicker: $showingPhotoPicker,
-                        selectedPhotos: $selectedPhotos
-                    )
-                    .tag(6)
+                        CosmeticsStep(selectedCosmetics: $selectedCosmetics)
+                            .tag(5)
 
-                    AnalysisStep(
-                        isAnalyzing: $isAnalyzing,
-                        analysisProgress: $analysisProgress,
-                        showBlurredScore: $showBlurredScore,
-                        uploadedImages: uploadedImages
-                    )
-                    .tag(7)
-                }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .animation(.easeInOut, value: currentStep)
+                        PhotoUploadStep(
+                            uploadedImage: $uploadedImage,
+                            showingPhotoPicker: $showingPhotoPicker,
+                            selectedPhoto: $selectedPhoto
+                        )
+                        .tag(6)
 
-                // Navigation buttons
-                HStack(spacing: 20) {
-                    if currentStep > 0 {
-                        Button(action: { currentStep -= 1 }) {
-                            Text("Back")
-                                .foregroundColor(Theme.textSecondary)
-                                .padding(.horizontal, 30)
-                                .padding(.vertical, 15)
-                                .background(Color.white.opacity(0.3))
-                                .cornerRadius(25)
+                        AnalysisStep(
+                            isAnalyzing: $isAnalyzing,
+                            analysisProgress: $analysisProgress,
+                            showBlurredScore: $showBlurredScore,
+                            uploadedImage: uploadedImage,
+                            currentAnalysisMessage: $currentAnalysisMessage,
+                            analysisMessages: analysisMessages,
+                            skinScore: $skinScore,
+                            onComplete: onComplete
+                        )
+                        .tag(7)
+                    }
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                    .animation(.easeInOut, value: currentStep)
+
+                    // Navigation buttons
+                    HStack(spacing: 16) {
+                        if currentStep > 0 && currentStep < 7 {
+                            Button(action: {
+                                hapticFeedback(.light)
+                                currentStep -= 1
+                            }) {
+                                HStack {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 16, weight: .semibold))
+                                    Text("Back")
+                                        .font(.system(size: 17, weight: .medium))
+                                }
+                                .foregroundColor(Color(hex: "FF91A4"))
+                                .frame(width: 110, height: 50)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .fill(Color(UIColor.systemGray6))
+                                )
+                            }
+                        }
+
+                        Spacer()
+
+                        if currentStep < 7 {
+                            Button(action: handleNextButton) {
+                                HStack {
+                                    Text(nextButtonText)
+                                        .font(.system(size: 17, weight: .semibold))
+                                    if currentStep < 6 {
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 16, weight: .semibold))
+                                    }
+                                }
+                                .foregroundColor(.white)
+                                .frame(width: currentStep == 6 ? 140 : 110, height: 50)
+                                .background(
+                                    LinearGradient(
+                                        colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 25))
+                                .shadow(color: Color(hex: "FF91A4").opacity(0.3), radius: 8, x: 0, y: 4)
+                            }
+                            .disabled(!canProceed)
+                            .opacity(canProceed ? 1.0 : 0.6)
                         }
                     }
-
-                    Spacer()
-
-                    Button(action: handleNextButton) {
-                        Text(nextButtonText)
-                            .foregroundColor(.white)
-                            .font(.headline)
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 15)
-                            .background(Theme.buttonGradient)
-                            .cornerRadius(25)
-                            .shadow(color: Theme.shadow, radius: 5, x: 0, y: 3)
-                    }
-                    .disabled(!canProceed)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 20)
+                    .background(
+                        Color(UIColor.systemBackground)
+                            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: -5)
+                    )
                 }
-                .padding(.horizontal, 30)
-                .padding(.bottom, 40)
             }
+            .navigationBarHidden(true)
         }
         .photosPicker(
             isPresented: $showingPhotoPicker,
-            selection: $selectedPhotos,
-            maxSelectionCount: 3,
+            selection: $selectedPhoto,
             matching: .images,
             photoLibrary: .shared()
         )
-        .onChange(of: selectedPhotos) { _, newValue in
-            Task {
-                uploadedImages = []
-                for item in newValue {
-                    if let data = try? await item.loadTransferable(type: Data.self),
-                       let image = UIImage(data: data) {
-                        uploadedImages.append(image)
-                    }
+        .onChange(of: selectedPhoto) { newValue in
+            Task { @MainActor in
+                if let data = try? await newValue?.loadTransferable(type: Data.self),
+                   let image = UIImage(data: data) {
+                    uploadedImage = image
                 }
             }
+        }
+    }
+
+    var stepTitle: String {
+        switch currentStep {
+        case 0: return "Welcome"
+        case 1: return "Skin Concerns"
+        case 2: return "Your Goals"
+        case 3: return "About You"
+        case 4: return "Skin Type"
+        case 5: return "Products"
+        case 6: return "Photo Analysis"
+        case 7: return "Analyzing"
+        default: return ""
+        }
+    }
+
+    var nextButtonText: String {
+        switch currentStep {
+        case 0: return "Start"
+        case 6: return "Analyze"
+        default: return "Next"
         }
     }
 
@@ -133,71 +216,41 @@ struct OnboardingView: View {
         case 2: return !selectedGoals.isEmpty
         case 3: return !selectedRace.isEmpty
         case 4: return !selectedSkinType.isEmpty
-        case 5: return !selectedCosmetics.isEmpty
-        case 6: return !uploadedImages.isEmpty
+        case 6: return uploadedImage != nil
         default: return true
         }
     }
 
-    var nextButtonText: String {
-        switch currentStep {
-        case 6: return "Start Analysis"
-        case 7: return showBlurredScore ? "Unlock Full Analysis" : "Analyzing..."
-        case totalSteps - 1: return "Complete"
-        default: return "Continue"
-        }
-    }
+    private func handleNextButton() {
+        hapticFeedback(.light)
 
-    func handleNextButton() {
         if currentStep == 6 {
-            // Start AI analysis
-            withAnimation {
-                currentStep += 1
-                startAnalysis()
-            }
-        } else if currentStep == 7 && showBlurredScore {
-            // Trigger paywall
-            triggerPaywall()
-        } else if currentStep < totalSteps - 1 {
-            withAnimation {
-                currentStep += 1
-            }
+            // Start analysis
+            currentStep = 7
+            startAnalysis()
+        } else {
+            currentStep += 1
         }
     }
 
-    func startAnalysis() {
+    private func startAnalysis() {
         isAnalyzing = true
         analysisProgress = 0
+        var messageIndex = 0
 
-        // Simulate analysis progress
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
-            if analysisProgress < 1.0 {
-                analysisProgress += 0.02
-            } else {
-                timer.invalidate()
-                isAnalyzing = false
-                showBlurredScore = true
-            }
-        }
-    }
-
-    func triggerPaywall() {
-        // Trigger the SuperWall paywall after analysis
-        NotificationCenter.default.post(name: Notification.Name("TriggerPaywall"), object: nil)
-
-        // Store the analysis data for use after paywall
-        if !uploadedImages.isEmpty {
-            UserDefaults.standard.set(true, forKey: "HasPendingAnalysis")
-
-            // Store user selections for later use
-            UserDefaults.standard.set(Array(selectedConcerns), forKey: "SelectedConcerns")
-            UserDefaults.standard.set(selectedSkinType, forKey: "SelectedSkinType")
-            UserDefaults.standard.set(selectedRace, forKey: "SelectedRace")
-
-            // Store first image data for analysis
-            if let firstImage = uploadedImages.first,
-               let imageData = firstImage.jpegData(compressionQuality: 0.8) {
-                UserDefaults.standard.set(imageData, forKey: "PendingAnalysisImage")
+        // Simulate analysis with rotating messages
+        Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { timer in
+            withAnimation {
+                if analysisProgress < 1.0 {
+                    analysisProgress += 0.1
+                    currentAnalysisMessage = analysisMessages[messageIndex]
+                    messageIndex = (messageIndex + 1) % analysisMessages.count
+                } else {
+                    timer.invalidate()
+                    isAnalyzing = false
+                    showBlurredScore = true
+                    skinScore = Int.random(in: 75...95)
+                }
             }
         }
     }
@@ -207,52 +260,24 @@ struct OnboardingView: View {
 
 struct WelcomeStep: View {
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 32) {
             Spacer()
 
-            Image(systemName: "sparkles")
+            Image(systemName: "camera.metering.multispot")
                 .font(.system(size: 80))
-                .foregroundColor(Theme.purple)
-                .padding(.bottom, 20)
+                .foregroundColor(Color(hex: "FF91A4"))
 
-            Text("Welcome to SkinGlowing")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
+            VStack(spacing: 16) {
+                Text("Advanced Skin Analysis")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundColor(Color(UIColor.label))
 
-            Text("Your AI-Powered Skin Analysis")
-                .font(.title2)
-                .foregroundColor(Theme.textSecondary)
-
-            VStack(alignment: .leading, spacing: 20) {
-                FeatureRow(icon: "camera.fill", text: "Upload photos for instant analysis")
-                FeatureRow(icon: "chart.line.uptrend.xyaxis", text: "Get your personalized skin score")
-                FeatureRow(icon: "sparkles", text: "Receive custom skincare recommendations")
-                FeatureRow(icon: "calendar", text: "Track your skin improvement over time")
+                Text("We'll analyze your skin using AI technology to provide personalized recommendations")
+                    .font(.system(size: 17))
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
             }
-            .padding(.top, 40)
-
-            Spacer()
-            Spacer()
-        }
-        .padding(.horizontal, 30)
-    }
-}
-
-struct FeatureRow: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 15) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(Theme.purple)
-                .frame(width: 30)
-
-            Text(text)
-                .font(.body)
-                .foregroundColor(Theme.textPrimary)
 
             Spacer()
         }
@@ -263,52 +288,45 @@ struct SkinConcernsStep: View {
     @Binding var selectedConcerns: Set<String>
 
     let concerns = [
-        ("Acne & Breakouts", "face.smiling"),
-        ("Fine Lines & Wrinkles", "clock"),
-        ("Dark Spots", "circle.hexagonpath"),
-        ("Dryness", "drop"),
-        ("Oiliness", "sparkles"),
-        ("Redness", "heart"),
-        ("Large Pores", "circle.grid.3x3"),
-        ("Dark Circles", "eye"),
-        ("Uneven Texture", "square.grid.3x3"),
-        ("Sensitivity", "exclamationmark.triangle")
+        ("drop.fill", "Dryness"),
+        ("sun.max.fill", "Sun Damage"),
+        ("circle.dotted", "Acne"),
+        ("sparkles", "Dark Spots"),
+        ("wind", "Fine Lines"),
+        ("eye", "Dark Circles"),
+        ("oval.portrait", "Large Pores"),
+        ("waveform.path.ecg", "Redness"),
+        ("leaf.fill", "Sensitivity")
     ]
 
     var body: some View {
-        VStack(spacing: 25) {
-            Text("What are your skin concerns?")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 40)
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("What are your main skin concerns?")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .padding(.top, 20)
 
-            Text("Select all that apply")
-                .font(.body)
-                .foregroundColor(Theme.textSecondary)
-
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
-                    ForEach(concerns, id: \.0) { concern in
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(concerns, id: \.1) { icon, concern in
                         SelectableCard(
-                            title: concern.0,
-                            icon: concern.1,
-                            isSelected: selectedConcerns.contains(concern.0),
+                            icon: icon,
+                            title: concern,
+                            isSelected: selectedConcerns.contains(concern),
                             action: {
-                                if selectedConcerns.contains(concern.0) {
-                                    selectedConcerns.remove(concern.0)
+                                hapticFeedback(.light)
+                                if selectedConcerns.contains(concern) {
+                                    selectedConcerns.remove(concern)
                                 } else {
-                                    selectedConcerns.insert(concern.0)
+                                    selectedConcerns.insert(concern)
                                 }
                             }
                         )
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
             }
         }
-        .padding(.bottom, 20)
     }
 }
 
@@ -316,97 +334,82 @@ struct SkinGoalsStep: View {
     @Binding var selectedGoals: Set<String>
 
     let goals = [
-        ("Clear Skin", "sparkle"),
-        ("Anti-Aging", "hourglass"),
-        ("Even Tone", "circle.lefthalf.filled"),
-        ("Hydration", "drop.fill"),
-        ("Minimize Pores", "circle.grid.3x3.fill"),
-        ("Reduce Redness", "heart.fill"),
-        ("Smooth Texture", "square.fill"),
-        ("Brighten", "sun.max.fill")
+        ("sparkle", "Glow"),
+        ("drop.circle", "Hydration"),
+        ("shield.lefthalf.filled", "Protection"),
+        ("arrow.down.circle", "Anti-Aging"),
+        ("circle.hexagongrid", "Even Tone"),
+        ("leaf.circle", "Natural"),
+        ("moon.fill", "Overnight Repair"),
+        ("sun.min", "Oil Control")
     ]
 
     var body: some View {
-        VStack(spacing: 25) {
-            Text("What are your skin goals?")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 40)
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("What are your skincare goals?")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .padding(.top, 20)
 
-            Text("Choose your top priorities")
-                .font(.body)
-                .foregroundColor(Theme.textSecondary)
-
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 15) {
-                    ForEach(goals, id: \.0) { goal in
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(goals, id: \.1) { icon, goal in
                         SelectableCard(
-                            title: goal.0,
-                            icon: goal.1,
-                            isSelected: selectedGoals.contains(goal.0),
+                            icon: icon,
+                            title: goal,
+                            isSelected: selectedGoals.contains(goal),
                             action: {
-                                if selectedGoals.contains(goal.0) {
-                                    selectedGoals.remove(goal.0)
+                                hapticFeedback(.light)
+                                if selectedGoals.contains(goal) {
+                                    selectedGoals.remove(goal)
                                 } else {
-                                    selectedGoals.insert(goal.0)
+                                    selectedGoals.insert(goal)
                                 }
                             }
                         )
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
             }
         }
-        .padding(.bottom, 20)
     }
 }
 
 struct RaceEthnicityStep: View {
     @Binding var selectedRace: String
 
-    let races = [
-        "Asian",
-        "Black/African",
-        "Hispanic/Latino",
-        "Middle Eastern",
-        "Native American",
-        "Pacific Islander",
-        "White/Caucasian",
-        "Mixed/Other",
-        "Prefer not to say"
+    let options = [
+        "Asian", "Black", "Hispanic/Latino",
+        "Middle Eastern", "White", "Mixed", "Other"
     ]
 
     var body: some View {
-        VStack(spacing: 25) {
+        VStack(spacing: 24) {
             Text("Select your ethnicity")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 40)
+                .font(.system(size: 18))
+                .foregroundColor(Color(UIColor.secondaryLabel))
+                .padding(.top, 20)
 
             Text("This helps us provide more accurate skin analysis")
-                .font(.body)
-                .foregroundColor(Theme.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+                .font(.system(size: 15))
+                .foregroundColor(Color(UIColor.tertiaryLabel))
 
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(races, id: \.self) { race in
-                        SelectableRow(
-                            title: race,
-                            isSelected: selectedRace == race,
-                            action: { selectedRace = race }
-                        )
-                    }
+            VStack(spacing: 10) {
+                ForEach(options, id: \.self) { option in
+                    OptionRow(
+                        title: option,
+                        isSelected: selectedRace == option,
+                        action: {
+                            hapticFeedback(.light)
+                            selectedRace = option
+                        }
+                    )
                 }
-                .padding(.horizontal)
             }
+            .padding(.horizontal, 20)
+
+            Spacer()
         }
-        .padding(.bottom, 20)
     }
 }
 
@@ -414,37 +417,37 @@ struct SkinTypeStep: View {
     @Binding var selectedSkinType: String
 
     let skinTypes = [
-        ("Oily", "Shiny all over, prone to breakouts"),
-        ("Dry", "Tight, flaky, dull appearance"),
+        ("Dry", "Feels tight, may have flaking"),
+        ("Oily", "Shiny, especially T-zone"),
         ("Combination", "Oily T-zone, dry cheeks"),
         ("Normal", "Balanced, few concerns"),
-        ("Sensitive", "Easily irritated, reactive")
+        ("Sensitive", "Easily irritated or red")
     ]
 
     var body: some View {
-        VStack(spacing: 25) {
+        VStack(spacing: 24) {
             Text("What's your skin type?")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 40)
+                .font(.system(size: 18))
+                .foregroundColor(Color(UIColor.secondaryLabel))
+                .padding(.top, 20)
 
-            ScrollView {
-                VStack(spacing: 15) {
-                    ForEach(skinTypes, id: \.0) { type in
-                        SelectableDetailCard(
-                            title: type.0,
-                            subtitle: type.1,
-                            isSelected: selectedSkinType == type.0,
-                            action: { selectedSkinType = type.0 }
-                        )
-                    }
+            VStack(spacing: 12) {
+                ForEach(skinTypes, id: \.0) { type, description in
+                    DetailedOptionRow(
+                        title: type,
+                        subtitle: description,
+                        isSelected: selectedSkinType == type,
+                        action: {
+                            hapticFeedback(.light)
+                            selectedSkinType = type
+                        }
+                    )
                 }
-                .padding(.horizontal)
             }
+            .padding(.horizontal, 20)
+
+            Spacer()
         }
-        .padding(.bottom, 20)
     }
 }
 
@@ -452,45 +455,30 @@ struct CosmeticsStep: View {
     @Binding var selectedCosmetics: Set<String>
 
     let brands = [
-        "Clinique",
-        "La Mer",
-        "SK-II",
-        "Estée Lauder",
-        "Lancôme",
-        "Shiseido",
-        "Dior",
-        "Chanel",
-        "Charlotte Tilbury",
-        "Drunk Elephant",
-        "The Ordinary",
-        "CeraVe",
-        "Cetaphil",
-        "Neutrogena",
-        "Olay",
-        "Other/None"
+        "The Ordinary", "CeraVe", "La Roche-Posay", "Cetaphil",
+        "Neutrogena", "Olay", "L'Oreal", "SK-II", "Clinique",
+        "Estée Lauder", "Drunk Elephant", "Sunday Riley"
     ]
 
     var body: some View {
-        VStack(spacing: 25) {
-            Text("Preferred cosmetic brands")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
-                .multilineTextAlignment(.center)
-                .padding(.top, 40)
+        ScrollView {
+            VStack(spacing: 20) {
+                Text("Select brands you use or prefer")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .padding(.top, 20)
 
-            Text("Select brands you currently use or prefer")
-                .font(.body)
-                .foregroundColor(Theme.textSecondary)
-                .multilineTextAlignment(.center)
+                Text("Optional - helps personalize recommendations")
+                    .font(.system(size: 15))
+                    .foregroundColor(Color(UIColor.tertiaryLabel))
 
-            ScrollView {
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     ForEach(brands, id: \.self) { brand in
                         BrandChip(
                             title: brand,
                             isSelected: selectedCosmetics.contains(brand),
                             action: {
+                                hapticFeedback(.light)
                                 if selectedCosmetics.contains(brand) {
                                     selectedCosmetics.remove(brand)
                                 } else {
@@ -500,122 +488,84 @@ struct CosmeticsStep: View {
                         )
                     }
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
             }
         }
-        .padding(.bottom, 20)
     }
 }
 
 struct PhotoUploadStep: View {
-    @Binding var uploadedImages: [UIImage]
+    @Binding var uploadedImage: UIImage?
     @Binding var showingPhotoPicker: Bool
-    @Binding var selectedPhotos: [PhotosPickerItem]
+    @Binding var selectedPhoto: PhotosPickerItem?
 
     var body: some View {
-        VStack(spacing: 25) {
-            Text("Upload your photos")
-                .font(.title)
-                .fontWeight(.bold)
-                .foregroundColor(Theme.textPrimary)
-                .padding(.top, 40)
-
-            Text("For best results, upload 3 clear photos:\nFront face, Left profile, Right profile")
-                .font(.body)
-                .foregroundColor(Theme.textSecondary)
-                .multilineTextAlignment(.center)
+        VStack(spacing: 28) {
+            Text("Upload your photo")
+                .font(.system(size: 18))
+                .foregroundColor(Color(UIColor.secondaryLabel))
+                .padding(.top, 20)
 
             // Photo requirements
-            VStack(alignment: .leading, spacing: 10) {
-                RequirementRow(text: "No makeup or filters")
-                RequirementRow(text: "Good lighting")
-                RequirementRow(text: "Clear, focused images")
-                RequirementRow(text: "Recent photos (within 1 week)")
+            VStack(alignment: .leading, spacing: 12) {
+                RequirementRow(icon: "face.smiling", text: "No makeup or filters")
+                RequirementRow(icon: "sun.max", text: "Good natural lighting")
+                RequirementRow(icon: "camera.aperture", text: "Clear, front-facing photo")
+                RequirementRow(icon: "clock", text: "Recent photo preferred")
             }
-            .padding()
-            .background(Theme.purpleUltraLight)
-            .cornerRadius(12)
-            .padding(.horizontal)
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(UIColor.systemGray6))
+            )
+            .padding(.horizontal, 20)
 
-            // Photo preview area
-            if uploadedImages.isEmpty {
-                Button(action: { showingPhotoPicker = true }) {
-                    VStack(spacing: 20) {
-                        Image(systemName: "photo.on.rectangle.angled")
-                            .font(.system(size: 60))
-                            .foregroundColor(Theme.purple)
+            // Photo upload area
+            if let image = uploadedImage {
+                VStack(spacing: 16) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 200, height: 200)
+                        .clipShape(Circle())
+                        .overlay(
+                            Circle()
+                                .stroke(Color(hex: "FF91A4"), lineWidth: 3)
+                        )
+                        .shadow(color: Color(hex: "FF91A4").opacity(0.3), radius: 10, x: 0, y: 5)
 
-                        Text("Tap to select photos")
-                            .font(.headline)
-                            .foregroundColor(Theme.purple)
+                    Button(action: {
+                        hapticFeedback(.light)
+                        uploadedImage = nil
+                        selectedPhoto = nil
+                    }) {
+                        Text("Change Photo")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color(hex: "FF91A4"))
                     }
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 200)
-                    .background(Color.white)
-                    .cornerRadius(16)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(Theme.purple, style: StrokeStyle(lineWidth: 2, dash: [10]))
-                    )
                 }
-                .padding(.horizontal)
             } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 15) {
-                        ForEach(uploadedImages.indices, id: \.self) { index in
-                            Image(uiImage: uploadedImages[index])
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 120, height: 120)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Theme.purple, lineWidth: 2)
-                                )
-                        }
-
-                        if uploadedImages.count < 3 {
-                            Button(action: { showingPhotoPicker = true }) {
-                                VStack {
-                                    Image(systemName: "plus")
-                                        .font(.title)
-                                        .foregroundColor(Theme.purple)
-                                }
-                                .frame(width: 120, height: 120)
-                                .background(Theme.purpleUltraLight)
-                                .cornerRadius(12)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Theme.purple, style: StrokeStyle(lineWidth: 1, dash: [5]))
-                                )
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                }
-                .padding(.vertical)
-
                 Button(action: {
-                    uploadedImages = []
-                    selectedPhotos = []
+                    hapticFeedback(.light)
+                    showingPhotoPicker = true
                 }) {
-                    Text("Change photos")
-                        .font(.footnote)
-                        .foregroundColor(Theme.textSecondary)
+                    VStack(spacing: 20) {
+                        ZStack {
+                            Circle()
+                                .fill(Color(UIColor.systemGray6))
+                                .frame(width: 140, height: 140)
+
+                            Image(systemName: "camera.fill")
+                                .font(.system(size: 50))
+                                .foregroundColor(Color(hex: "FF91A4"))
+                        }
+
+                        Text("Tap to select photo")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(Color(hex: "FF91A4"))
+                    }
                 }
             }
-
-            // Privacy notice
-            HStack(spacing: 8) {
-                Image(systemName: "lock.shield")
-                    .font(.caption)
-                    .foregroundColor(Theme.success)
-
-                Text("Your photos are encrypted and never shared")
-                    .font(.caption)
-                    .foregroundColor(Theme.textSecondary)
-            }
-            .padding(.top)
 
             Spacer()
         }
@@ -626,114 +576,132 @@ struct AnalysisStep: View {
     @Binding var isAnalyzing: Bool
     @Binding var analysisProgress: Double
     @Binding var showBlurredScore: Bool
-    let uploadedImages: [UIImage]
+    let uploadedImage: UIImage?
+    @Binding var currentAnalysisMessage: String
+    let analysisMessages: [String]
+    @Binding var skinScore: Int
+    let onComplete: () -> Void
+
+    @State private var scoreRevealed = false
+    @State private var blurAmount: Double = 20
 
     var body: some View {
-        VStack(spacing: 30) {
+        VStack(spacing: 32) {
             if isAnalyzing {
-                // Analysis in progress
-                VStack(spacing: 30) {
+                // Loading state with scientific messages
+                VStack(spacing: 24) {
                     Spacer()
 
-                    Image(systemName: "sparkles.rectangle.stack")
-                        .font(.system(size: 80))
-                        .foregroundColor(Theme.purple)
-                        .symbolEffect(.pulse)
-
-                    Text("AI Analyzing Your Skin")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundColor(Theme.textPrimary)
-
-                    VStack(alignment: .leading, spacing: 15) {
-                        AnalysisProgressRow(text: "Detecting skin texture", progress: min(analysisProgress * 3, 1.0))
-                        AnalysisProgressRow(text: "Analyzing problem areas", progress: max(0, min((analysisProgress - 0.33) * 3, 1.0)))
-                        AnalysisProgressRow(text: "Calculating skin score", progress: max(0, min((analysisProgress - 0.66) * 3, 1.0)))
+                    // Animated scanner effect
+                    ZStack {
+                        if let image = uploadedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
+                                .frame(width: 150, height: 150)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            ),
+                                            lineWidth: 3
+                                        )
+                                        .rotationEffect(.degrees(analysisProgress * 360))
+                                        .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: analysisProgress)
+                                )
+                        }
                     }
-                    .padding(.horizontal, 40)
 
+                    VStack(spacing: 16) {
+                        Text("Analyzing Your Skin")
+                            .font(.system(size: 24, weight: .semibold))
+                            .foregroundColor(Color(UIColor.label))
+
+                        Text(currentAnalysisMessage)
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(hex: "FF91A4"))
+                            .multilineTextAlignment(.center)
+                            .frame(height: 20)
+                            .animation(.easeInOut(duration: 0.3), value: currentAnalysisMessage)
+                    }
+
+                    // Progress bar
                     ProgressView(value: analysisProgress)
-                        .tint(Theme.purple)
+                        .tint(Color(hex: "FF91A4"))
                         .scaleEffect(x: 1, y: 2)
-                        .padding(.horizontal, 40)
+                        .padding(.horizontal, 60)
 
                     Spacer()
                 }
             } else if showBlurredScore {
-                // Show blurred score
-                BlurredScoreView()
-            }
-        }
-    }
-}
+                // Blurred score reveal
+                VStack(spacing: 32) {
+                    Spacer()
 
-struct BlurredScoreView: View {
-    @State private var glowAnimation = false
+                    Text("Your Skin Analysis is Ready")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(Color(UIColor.label))
 
-    var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
+                    // Blurred score
+                    ZStack {
+                        VStack(spacing: 16) {
+                            Text("\(skinScore)")
+                                .font(.system(size: 72, weight: .bold, design: .rounded))
+                                .foregroundColor(Color(hex: "FF91A4"))
 
-            // Score display with blur
-            ZStack {
-                VStack(spacing: 20) {
-                    Text("Your Skin Score")
-                        .font(.title2)
-                        .foregroundColor(Theme.textPrimary)
+                            Text("Skin Score")
+                                .font(.system(size: 20, weight: .medium))
+                                .foregroundColor(Color(UIColor.secondaryLabel))
 
-                    Text("87")
-                        .font(.system(size: 120, weight: .bold, design: .rounded))
-                        .foregroundColor(Theme.purple)
+                            HStack(spacing: 4) {
+                                ForEach(0..<5) { index in
+                                    Image(systemName: index < Int(Double(skinScore) / 20.0) ? "star.fill" : "star")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(Color(hex: "FFB6C1"))
+                                }
+                            }
+                        }
+                        .blur(radius: blurAmount)
 
-                    Text("Above Average")
-                        .font(.title3)
-                        .foregroundColor(Theme.success)
-                }
-                .blur(radius: 15)
+                        if !scoreRevealed {
+                            VStack(spacing: 16) {
+                                Image(systemName: "lock.fill")
+                                    .font(.system(size: 40))
+                                    .foregroundColor(Color(hex: "FF91A4"))
 
-                // Lock overlay
-                Image(systemName: "lock.fill")
-                    .font(.system(size: 40))
-                    .foregroundColor(.white)
-                    .padding(20)
-                    .background(Theme.purple)
-                    .clipShape(Circle())
-                    .shadow(color: Theme.glow, radius: glowAnimation ? 20 : 10)
-                    .scaleEffect(glowAnimation ? 1.1 : 1.0)
-                    .animation(
-                        Animation.easeInOut(duration: 1.5)
-                            .repeatForever(autoreverses: true),
-                        value: glowAnimation
+                                Text("Tap to reveal your score")
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(Color(UIColor.secondaryLabel))
+                            }
+                        }
+                    }
+                    .frame(width: 280, height: 200)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(Color(UIColor.systemGray6))
                     )
-            }
+                    .onTapGesture {
+                        if !scoreRevealed {
+                            hapticFeedback(.medium)
+                            withAnimation(.easeOut(duration: 0.5)) {
+                                blurAmount = 0
+                                scoreRevealed = true
+                            }
 
-            // Teaser metrics (also blurred)
-            VStack(spacing: 15) {
-                HStack {
-                    MetricCard(title: "Skin Age", value: "28", subtitle: "years", isBlurred: true)
-                    MetricCard(title: "Hydration", value: "72", subtitle: "%", isBlurred: true)
+                            // Navigate to main app after reveal
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                                onComplete()
+                            }
+                        }
+                    }
+
+                    Spacer()
                 }
-
-                HStack {
-                    MetricCard(title: "Clarity", value: "B+", subtitle: "grade", isBlurred: true)
-                    MetricCard(title: "Evenness", value: "85", subtitle: "%", isBlurred: true)
-                }
             }
-            .padding(.horizontal)
-
-            Text("Unlock your complete analysis")
-                .font(.headline)
-                .foregroundColor(Theme.textPrimary)
-
-            Text("• Detailed skin assessment\n• Personalized routine\n• Product recommendations")
-                .font(.caption)
-                .foregroundColor(Theme.textSecondary)
-                .multilineTextAlignment(.center)
-
-            Spacer()
-        }
-        .onAppear {
-            glowAnimation = true
         }
     }
 }
@@ -741,36 +709,41 @@ struct BlurredScoreView: View {
 // MARK: - Supporting Views
 
 struct SelectableCard: View {
-    let title: String
     let icon: String
+    let title: String
     let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 10) {
+            VStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(isSelected ? .white : Theme.purple)
+                    .font(.system(size: 28))
+                    .foregroundColor(isSelected ? .white : Color(hex: "FF91A4"))
 
                 Text(title)
-                    .font(.caption)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(isSelected ? .white : Theme.textPrimary)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(isSelected ? .white : Color(UIColor.label))
             }
             .frame(maxWidth: .infinity)
             .frame(height: 100)
-            .background(isSelected ? Theme.purple : Color.white)
-            .cornerRadius(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ?
+                          LinearGradient(colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing) :
+                          LinearGradient(colors: [Color(UIColor.systemGray6), Color(UIColor.systemGray6)],
+                                       startPoint: .topLeading, endPoint: .bottomTrailing))
+            )
             .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Theme.purple : Theme.borderLight, lineWidth: 1)
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(isSelected ? Color.clear : Color(UIColor.systemGray5), lineWidth: 1)
             )
         }
     }
 }
 
-struct SelectableRow: View {
+struct OptionRow: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
@@ -779,27 +752,29 @@ struct SelectableRow: View {
         Button(action: action) {
             HStack {
                 Text(title)
-                    .foregroundColor(isSelected ? .white : Theme.textPrimary)
+                    .font(.system(size: 17))
+                    .foregroundColor(Color(UIColor.label))
 
                 Spacer()
 
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.white)
-                }
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22))
+                    .foregroundColor(isSelected ? Color(hex: "FF91A4") : Color(UIColor.systemGray3))
             }
-            .padding()
-            .background(isSelected ? Theme.purple : Color.white)
-            .cornerRadius(12)
-            .overlay(
+            .padding(16)
+            .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Theme.purple : Theme.borderLight, lineWidth: 1)
+                    .fill(Color(UIColor.systemGray6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isSelected ? Color(hex: "FF91A4") : Color.clear, lineWidth: 2)
+                    )
             )
         }
     }
 }
 
-struct SelectableDetailCard: View {
+struct DetailedOptionRow: View {
     let title: String
     let subtitle: String
     let isSelected: Bool
@@ -807,22 +782,31 @@ struct SelectableDetailCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(title)
-                    .font(.headline)
-                    .foregroundColor(isSelected ? .white : Theme.textPrimary)
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(Color(UIColor.label))
 
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(isSelected ? .white.opacity(0.9) : Theme.textSecondary)
+                    Text(subtitle)
+                        .font(.system(size: 14))
+                        .foregroundColor(Color(UIColor.secondaryLabel))
+                }
+
+                Spacer()
+
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 22))
+                    .foregroundColor(isSelected ? Color(hex: "FF91A4") : Color(UIColor.systemGray3))
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding()
-            .background(isSelected ? Theme.purple : Color.white)
-            .cornerRadius(12)
-            .overlay(
+            .padding(16)
+            .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Theme.purple : Theme.borderLight, lineWidth: 1)
+                    .fill(Color(UIColor.systemGray6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(isSelected ? Color(hex: "FF91A4") : Color.clear, lineWidth: 2)
+                    )
             )
         }
     }
@@ -836,93 +820,79 @@ struct BrandChip: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.footnote)
-                .foregroundColor(isSelected ? .white : Theme.textPrimary)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(isSelected ? .white : Color(UIColor.label))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
-                .background(isSelected ? Theme.purple : Color.white)
-                .cornerRadius(20)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(isSelected ?
+                              Color(hex: "FF91A4") :
+                              Color(UIColor.systemGray6))
+                )
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
-                        .stroke(isSelected ? Theme.purple : Theme.borderLight, lineWidth: 1)
+                        .stroke(isSelected ? Color.clear : Color(UIColor.systemGray5), lineWidth: 1)
                 )
         }
     }
 }
 
 struct RequirementRow: View {
+    let icon: String
     let text: String
 
     var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundColor(Theme.success)
-                .font(.footnote)
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundColor(Color(hex: "FF91A4"))
+                .frame(width: 24)
 
             Text(text)
-                .font(.footnote)
-                .foregroundColor(Theme.textPrimary)
+                .font(.system(size: 15))
+                .foregroundColor(Color(UIColor.label))
 
             Spacer()
         }
     }
 }
 
-struct AnalysisProgressRow: View {
-    let text: String
-    let progress: Double
+// MARK: - Haptic Feedback
 
-    var body: some View {
-        HStack(spacing: 15) {
-            if progress >= 1.0 {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(Theme.success)
-            } else {
-                ProgressView()
-                    .scaleEffect(0.8)
-            }
-
-            Text(text)
-                .font(.body)
-                .foregroundColor(Theme.textPrimary)
-
-            Spacer()
-        }
-    }
-}
-
-struct MetricCard: View {
-    let title: String
-    let value: String
-    let subtitle: String
-    let isBlurred: Bool
-
-    var body: some View {
-        VStack(spacing: 5) {
-            Text(title)
-                .font(.caption)
-                .foregroundColor(Theme.textSecondary)
-
-            HStack(alignment: .bottom, spacing: 2) {
-                Text(value)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(Theme.purple)
-
-                Text(subtitle)
-                    .font(.caption2)
-                    .foregroundColor(Theme.textSecondary)
-                    .padding(.bottom, 4)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.white)
-        .cornerRadius(12)
-        .blur(radius: isBlurred ? 8 : 0)
-    }
+func hapticFeedback(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
+    let generator = UIImpactFeedbackGenerator(style: style)
+    generator.prepare()
+    generator.impactOccurred()
 }
 
 #Preview {
-    OnboardingView()
+    OnboardingView(onComplete: {})
+}
+
+// MARK: - Color Extension
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
 }

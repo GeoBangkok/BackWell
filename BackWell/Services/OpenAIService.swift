@@ -366,6 +366,7 @@ extension SkinAnalysisService {
             // Convert routine recommendations to RoutineStep
             let routineSteps = apiResponse.routineSteps.map { rec in
                 RoutineStep(
+                    id: UUID(),
                     stepNumber: rec.step,
                     title: rec.product,
                     description: rec.description,

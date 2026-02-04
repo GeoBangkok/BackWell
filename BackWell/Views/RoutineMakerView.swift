@@ -18,6 +18,7 @@ struct RoutineMakerView: View {
     // Sample routine steps with vibrant colors
     let routineSteps = [
         RoutineStep(
+            id: UUID(),
             stepNumber: 1,
             title: "Double Cleanse",
             description: "Start with oil cleanser, then foam",
@@ -28,6 +29,7 @@ struct RoutineMakerView: View {
             tips: ["Massage in circles", "Focus on T-zone", "Rinse with lukewarm water"]
         ),
         RoutineStep(
+            id: UUID(),
             stepNumber: 2,
             title: "Essence Time",
             description: "Pat in your hydrating essence",
@@ -38,6 +40,7 @@ struct RoutineMakerView: View {
             tips: ["Pat gently", "Layer if needed", "Don't forget neck"]
         ),
         RoutineStep(
+            id: UUID(),
             stepNumber: 3,
             title: "Serum Power",
             description: "Apply your targeted treatment",
@@ -48,6 +51,7 @@ struct RoutineMakerView: View {
             tips: ["Use droplets", "Press into skin", "Wait to absorb"]
         ),
         RoutineStep(
+            id: UUID(),
             stepNumber: 4,
             title: "Eye Care",
             description: "Gentle eye cream application",
@@ -58,6 +62,7 @@ struct RoutineMakerView: View {
             tips: ["Ring finger only", "Tap gently", "Avoid pulling"]
         ),
         RoutineStep(
+            id: UUID(),
             stepNumber: 5,
             title: "Moisturize",
             description: "Lock in all the goodness",
@@ -68,6 +73,7 @@ struct RoutineMakerView: View {
             tips: ["Upward strokes", "Don't forget neck", "Extra on dry areas"]
         ),
         RoutineStep(
+            id: UUID(),
             stepNumber: 6,
             title: "SPF Shield",
             description: "Protect from UV damage",

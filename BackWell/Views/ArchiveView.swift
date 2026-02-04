@@ -28,7 +28,7 @@ struct ArchiveView: View {
                     aging: 88,
                     timestamp: Date().addingTimeInterval(-86400)
                 ),
-                imageData: nil,
+                imageData: nil as Data?,
                 recommendations: ["Use vitamin C serum", "Increase water intake"],
                 routineSteps: [],
                 timestamp: Date().addingTimeInterval(-86400),
@@ -48,7 +48,7 @@ struct ArchiveView: View {
                     aging: 85,
                     timestamp: Date().addingTimeInterval(-259200)
                 ),
-                imageData: nil,
+                imageData: nil as Data?,
                 recommendations: ["Add retinol", "Use SPF daily"],
                 routineSteps: [],
                 timestamp: Date().addingTimeInterval(-259200),
@@ -68,7 +68,7 @@ struct ArchiveView: View {
                     aging: 82,
                     timestamp: Date().addingTimeInterval(-604800)
                 ),
-                imageData: nil,
+                imageData: nil as Data?,
                 recommendations: ["Exfoliate 2x weekly", "Hydrating mask"],
                 routineSteps: [],
                 timestamp: Date().addingTimeInterval(-604800),

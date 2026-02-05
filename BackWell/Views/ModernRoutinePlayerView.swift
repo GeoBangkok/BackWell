@@ -401,7 +401,7 @@ struct ModernRoutinePlayerView: View {
             } else {
                 // Step completed
                 AudioServicesPlaySystemSound(1025) // Success sound
-                hapticFeedback(.success)
+                hapticFeedback(.medium)
                 nextStep()
             }
         }
@@ -422,7 +422,7 @@ struct ModernRoutinePlayerView: View {
         } else {
             // Routine completed
             showingCompletion = true
-            hapticFeedback(.success)
+            hapticFeedback(.medium)
         }
     }
 

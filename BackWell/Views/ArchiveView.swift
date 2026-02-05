@@ -174,7 +174,7 @@ struct ArchiveView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 12) {
                                     ForEach(["All", "Week", "Month", "3 Months"], id: \.self) { range in
-                                        FilterChip(
+                                        ArchiveFilterChip(
                                             title: range,
                                             isSelected: selectedTimeRange == range,
                                             action: {
@@ -228,7 +228,7 @@ struct ArchiveView: View {
                                     .padding(.horizontal, 20)
 
                                 ForEach(filteredScans) { scan in
-                                    ScanHistoryCard(scan: scan)
+                                    ArchiveScanCard(scan: scan)
                                         .onTapGesture {
                                             selectedEntry = scan
                                         }
@@ -319,7 +319,7 @@ struct ArchiveFilterChip: View {
     }
 }
 
-struct ScanHistoryCard: View {
+struct ArchiveScanCard: View {
     let scan: SkinScanResult
 
     var dateFormatter: DateFormatter {

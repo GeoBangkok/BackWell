@@ -120,8 +120,8 @@ struct RoutineStep: Codable, Identifiable {
     }
 }
 
-// MARK: - Chat Message
-struct ChatMessage: Identifiable {
+// MARK: - Skin Chat Message (renamed to avoid conflicts)
+struct SkinChatMessage: Identifiable {
     let id = UUID()
     let content: String
     let isFromUser: Bool

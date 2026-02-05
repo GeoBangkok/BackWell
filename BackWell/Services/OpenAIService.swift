@@ -225,7 +225,7 @@ class OpenAIService {
 
     // MARK: - Chat (Arisa)
 
-    func sendChatMessage(_ message: String, context: [ChatMessage]) async throws -> String {
+    func sendChatMessage(_ message: String, context: [SkinChatMessage]) async throws -> String {
         // Build conversation history
         var messages: [OpenAIMessage] = [
             OpenAIMessage(role: "system", content: [

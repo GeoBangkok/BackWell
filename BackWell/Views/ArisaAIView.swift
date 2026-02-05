@@ -9,8 +9,8 @@ import SwiftUI
 
 struct ArisaAIView: View {
     @State private var messageText = ""
-    @State private var messages: [ChatMessage] = [
-        ChatMessage(
+    @State private var messages: [ArisaChatMessage] = [
+        ArisaChatMessage(
             id: UUID(),
             text: "Hi! I'm Arisa, your AI beauty assistant 💕 I can help you with skincare advice, product recommendations, and answer any questions about your skin!",
             isUser: false,
@@ -40,12 +40,12 @@ struct ArisaAIView: View {
                         ScrollView {
                             VStack(spacing: 16) {
                                 ForEach(messages) { message in
-                                    MessageBubble(message: message)
+                                    ArisaMessageBubble(message: message)
                                         .id(message.id)
                                 }
 
                                 if isTyping {
-                                    TypingIndicator()
+                                    ArisaTypingIndicator()
                                         .id("typing")
                                 }
                             }
@@ -115,7 +115,7 @@ struct ArisaAIView: View {
         guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
 
         // Add user message
-        let userMessage = ChatMessage(
+        let userMessage = ArisaChatMessage(
             id: UUID(),
             text: messageText,
             isUser: true,
@@ -134,7 +134,7 @@ struct ArisaAIView: View {
             isTyping = false
 
             let response = generateAIResponse(for: userQuery)
-            let aiMessage = ChatMessage(
+            let aiMessage = ArisaChatMessage(
                 id: UUID(),
                 text: response,
                 isUser: false,
@@ -178,7 +178,7 @@ struct ArisaAIView: View {
 
     private func clearChat() {
         messages = [
-            ChatMessage(
+            ArisaChatMessage(
                 id: UUID(),
                 text: "Hi! I'm Arisa, your AI beauty assistant 💕 I can help you with skincare advice, product recommendations, and answer any questions about your skin!",
                 isUser: false,
@@ -188,15 +188,15 @@ struct ArisaAIView: View {
     }
 }
 
-struct ChatMessage: Identifiable {
+struct ArisaChatMessage: Identifiable {
     let id: UUID
     let text: String
     let isUser: Bool
     let timestamp: Date
 }
 
-struct MessageBubble: View {
-    let message: ChatMessage
+struct ArisaMessageBubble: View {
+    let message: ArisaChatMessage
 
     var body: some View {
         HStack {
@@ -244,7 +244,7 @@ struct MessageBubble: View {
     }
 }
 
-struct TypingIndicator: View {
+struct ArisaTypingIndicator: View {
     @State private var animationAmount = 0.0
 
     var body: some View {

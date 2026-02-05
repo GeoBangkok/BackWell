@@ -34,22 +34,9 @@
 		9AE5A93D2F1BC02900F47A83 /* BackWellUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackWellUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9A8F66802F34F60600D4123D /* Exceptions for "BackWell" folder in "BackWell" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 9AE5A9232F1BC02700F47A83 /* BackWell */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9AE5A9262F1BC02700F47A83 /* BackWell */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9A8F66802F34F60600D4123D /* Exceptions for "BackWell" folder in "BackWell" target */,
-			);
 			path = BackWell;
 			sourceTree = "<group>";
 		};
@@ -426,7 +413,6 @@
 				DEVELOPMENT_TEAM = BNYNX7BTK6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackWell/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SkinGlowing;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -443,7 +429,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.04;
+				MARKETING_VERSION = 1.05;
 				PRODUCT_BUNDLE_IDENTIFIER = com.BackWell;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -472,7 +458,6 @@
 				DEVELOPMENT_TEAM = BNYNX7BTK6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = BackWell/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SkinGlowing;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
@@ -489,7 +474,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.04;
+				MARKETING_VERSION = 1.05;
 				PRODUCT_BUNDLE_IDENTIFIER = com.BackWell;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

@@ -2,44 +2,19 @@
 //  OnboardingView.swift
 //  SkinGlowing
 //
-//  AI-powered skincare analysis onboarding flow - iOS Health style
+//  Complete onboarding flow with multiple screens
 
 import SwiftUI
-import PhotosUI
-import UIKit
 
 struct OnboardingView: View {
     @State private var currentStep = 0
+    @State private var selectedAge: String = ""
+    @State private var skinSensitive: String = ""
     @State private var selectedConcerns: Set<String> = []
-    @State private var selectedGoals: Set<String> = []
-    @State private var selectedRace = ""
-    @State private var selectedSkinType = ""
-    @State private var selectedCosmetics: Set<String> = []
-    @State private var uploadedImage: UIImage?
-    @State private var showingPhotoPicker = false
-    @State private var selectedPhoto: PhotosPickerItem?
-    @State private var isAnalyzing = false
-    @State private var analysisProgress: Double = 0
-    @State private var showBlurredScore = false
-    @State private var currentAnalysisMessage = ""
-    @State private var skinScore: Int = 0
-
+    @State private var showingSkinScan = false
+    @State private var navigateToMainApp = false
     let onComplete: () -> Void
-    let totalSteps = 8
-
-    // Scientific analysis messages
-    let analysisMessages = [
-        "Analyzing melanin distribution patterns...",
-        "Measuring skin texture uniformity...",
-        "Detecting sebaceous gland activity...",
-        "Evaluating collagen density markers...",
-        "Processing epidermal thickness data...",
-        "Calculating hydration gradient levels...",
-        "Examining vascular network patterns...",
-        "Quantifying elastin fiber alignment...",
-        "Assessing keratinocyte turnover rate...",
-        "Finalizing dermatological analysis..."
-    ]
+    let totalSteps = 7
 
     var body: some View {
         NavigationView {
@@ -49,812 +24,1184 @@ struct OnboardingView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // iOS Health-style header
-                    VStack(spacing: 8) {
-                        // Progress indicator
-                        HStack(spacing: 6) {
-                            ForEach(0..<totalSteps, id: \.self) { index in
-                                Circle()
-                                    .fill(index <= currentStep ? Color(hex: "FF91A4") : Color(UIColor.systemGray5))
-                                    .frame(width: 8, height: 8)
-                                    .animation(.easeInOut(duration: 0.3), value: currentStep)
+                    // Header with SkinGlowing title and back button
+                    ZStack {
+                        // Center title - always visible
+                        Text("SkinGlowing")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(Color(hex: "FF91A4"))
+
+                        // Back button (except for welcome, affirmation, AI scan, and review screens)
+                        if currentStep > 0 && currentStep != 3 && currentStep != 5 && currentStep != 6 {
+                            HStack {
+                                Button(action: {
+                                    hapticFeedback(.light)
+                                    if currentStep > 0 {
+                                        currentStep -= 1
+                                    }
+                                }) {
+                                    Image(systemName: "chevron.left")
+                                        .font(.system(size: 20, weight: .medium))
+                                        .foregroundColor(Color.black.opacity(0.7))
+                                        .frame(width: 44, height: 44)
+                                }
+                                .padding(.leading, 8)
+
+                                Spacer()
                             }
                         }
-                        .padding(.top, 16)
-
-                        // Step title
-                        Text(stepTitle)
-                            .font(.system(size: 28, weight: .bold))
-                            .foregroundColor(Color(UIColor.label))
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
+                    .frame(height: 56)
+                    .padding(.top, 10)
 
                     // Content area with tab view
                     TabView(selection: $currentStep) {
                         WelcomeStep()
                             .tag(0)
 
-                        SkinConcernsStep(selectedConcerns: $selectedConcerns)
+                        AgeSelectionStep(selectedAge: $selectedAge)
                             .tag(1)
 
-                        SkinGoalsStep(selectedGoals: $selectedGoals)
+                        SkinSensitivityStep(skinSensitive: $skinSensitive)
                             .tag(2)
 
-                        RaceEthnicityStep(selectedRace: $selectedRace)
+                        AffirmationStep()
                             .tag(3)
 
-                        SkinTypeStep(selectedSkinType: $selectedSkinType)
+                        SkinConcernsStep(selectedConcerns: $selectedConcerns)
                             .tag(4)
 
-                        CosmeticsStep(selectedCosmetics: $selectedCosmetics)
+                        AIScanningStep(showingSkinScan: $showingSkinScan)
                             .tag(5)
 
-                        PhotoUploadStep(
-                            uploadedImage: $uploadedImage,
-                            showingPhotoPicker: $showingPhotoPicker,
-                            selectedPhoto: $selectedPhoto
-                        )
-                        .tag(6)
-
-                        AnalysisStep(
-                            isAnalyzing: $isAnalyzing,
-                            analysisProgress: $analysisProgress,
-                            showBlurredScore: $showBlurredScore,
-                            uploadedImage: uploadedImage,
-                            currentAnalysisMessage: $currentAnalysisMessage,
-                            analysisMessages: analysisMessages,
-                            skinScore: $skinScore,
-                            onComplete: onComplete
-                        )
-                        .tag(7)
+                        ReviewRequestStep()
+                            .tag(6)
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                     .animation(.easeInOut, value: currentStep)
 
-                    // Navigation buttons
-                    HStack(spacing: 16) {
-                        if currentStep > 0 && currentStep < 7 {
-                            Button(action: {
-                                hapticFeedback(.light)
-                                currentStep -= 1
-                            }) {
-                                HStack {
-                                    Image(systemName: "chevron.left")
-                                        .font(.system(size: 16, weight: .semibold))
-                                    Text("Back")
-                                        .font(.system(size: 17, weight: .medium))
-                                }
-                                .foregroundColor(Color(hex: "FF91A4"))
-                                .frame(width: 110, height: 50)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 25)
-                                        .fill(Color(UIColor.systemGray6))
-                                )
-                            }
-                        }
-
-                        Spacer()
-
-                        if currentStep < 7 {
-                            Button(action: handleNextButton) {
-                                HStack {
-                                    Text(nextButtonText)
-                                        .font(.system(size: 17, weight: .semibold))
-                                    if currentStep < 6 {
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 16, weight: .semibold))
-                                    }
-                                }
+                    // Navigation button (except for skin concerns and AI scanning which have their own)
+                    if currentStep != 4 && currentStep != 5 && currentStep != 6 {
+                        Button(action: {
+                            hapticFeedback(.light)
+                            handleNavigation()
+                        }) {
+                            Text(buttonText)
+                                .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(.white)
-                                .frame(width: currentStep == 6 ? 140 : 110, height: 50)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
                                 .background(
-                                    LinearGradient(
-                                        colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
+                                    RoundedRectangle(cornerRadius: 28)
+                                        .fill(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    Color(hex: "FF91A4"),
+                                                    Color(hex: "FFB6C1")
+                                                ]),
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
                                 )
-                                .clipShape(RoundedRectangle(cornerRadius: 25))
-                                .shadow(color: Color(hex: "FF91A4").opacity(0.3), radius: 8, x: 0, y: 4)
-                            }
-                            .disabled(!canProceed)
-                            .opacity(canProceed ? 1.0 : 0.6)
+                                .shadow(color: Color(hex: "FF91A4").opacity(0.25), radius: 15, x: 0, y: 8)
                         }
+                        .disabled(isButtonDisabled)
+                        .opacity(isButtonDisabled ? 0.6 : 1.0)
+                        .padding(.horizontal, 40)
+                        .padding(.vertical, 20)
+                        .background(
+                            Color(UIColor.systemBackground)
+                                .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: -5)
+                        )
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 20)
-                    .background(
-                        Color(UIColor.systemBackground)
-                            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: -5)
-                    )
                 }
             }
             .navigationBarHidden(true)
         }
-        .photosPicker(
-            isPresented: $showingPhotoPicker,
-            selection: $selectedPhoto,
-            matching: .images,
-            photoLibrary: .shared()
-        )
-        .onChange(of: selectedPhoto) { newValue in
-            Task { @MainActor in
-                if let data = try? await newValue?.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
-                    uploadedImage = image
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToAIScanning"))) { _ in
+            currentStep = 5
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToReview"))) { _ in
+            currentStep = 6
+        }
+        .sheet(isPresented: $showingSkinScan) {
+            SkinScanViewWrapper { analysisCompleted in
+                // When analysis completes, dismiss sheet and trigger paywall
+                showingSkinScan = false
+                if analysisCompleted {
+                    // Trigger paywall after a small delay for smooth transition
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        onComplete()
+                    }
                 }
             }
         }
-    }
-
-    var stepTitle: String {
-        switch currentStep {
-        case 0: return "Welcome"
-        case 1: return "Skin Concerns"
-        case 2: return "Your Goals"
-        case 3: return "About You"
-        case 4: return "Skin Type"
-        case 5: return "Products"
-        case 6: return "Photo Analysis"
-        case 7: return "Analyzing"
-        default: return ""
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("CompleteOnboarding"))) { _ in
+            onComplete()
         }
     }
 
-    var nextButtonText: String {
+    var buttonText: String {
         switch currentStep {
-        case 0: return "Start"
-        case 6: return "Analyze"
+        case 0: return "Next"
+        case 1, 2: return "Continue"
+        case 3: return "Let's start!"
         default: return "Next"
         }
     }
 
-    var canProceed: Bool {
+    var isButtonDisabled: Bool {
         switch currentStep {
-        case 1: return !selectedConcerns.isEmpty
-        case 2: return !selectedGoals.isEmpty
-        case 3: return !selectedRace.isEmpty
-        case 4: return !selectedSkinType.isEmpty
-        case 6: return uploadedImage != nil
-        default: return true
+        case 1: return selectedAge.isEmpty
+        case 2: return skinSensitive.isEmpty
+        default: return false
         }
     }
 
-    private func handleNextButton() {
-        hapticFeedback(.light)
-
-        if currentStep == 6 {
-            // Start analysis
-            currentStep = 7
-            startAnalysis()
-        } else {
+    func handleNavigation() {
+        if currentStep < totalSteps - 1 {
             currentStep += 1
-        }
-    }
-
-    private func startAnalysis() {
-        isAnalyzing = true
-        analysisProgress = 0
-        var messageIndex = 0
-
-        // Simulate analysis with rotating messages
-        Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { timer in
-            withAnimation {
-                if analysisProgress < 1.0 {
-                    analysisProgress += 0.1
-                    currentAnalysisMessage = analysisMessages[messageIndex]
-                    messageIndex = (messageIndex + 1) % analysisMessages.count
-                } else {
-                    timer.invalidate()
-                    isAnalyzing = false
-                    showBlurredScore = true
-                    skinScore = Int.random(in: 75...95)
-                }
-            }
+        } else {
+            // Save all data and complete onboarding
+            UserDefaults.standard.set(selectedAge, forKey: "userAge")
+            UserDefaults.standard.set(skinSensitive, forKey: "skinSensitive")
+            UserDefaults.standard.set(Array(selectedConcerns), forKey: "skinConcerns")
+            onComplete()
         }
     }
 }
 
-// MARK: - Step Views
+// MARK: - Welcome Step View
 
 struct WelcomeStep: View {
+    @State private var animateSmile = false
+    @State private var pulseAnimation = false
+
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: 0) {
             Spacer()
 
-            Image(systemName: "camera.metering.multispot")
-                .font(.system(size: 80))
-                .foregroundColor(Color(hex: "FF91A4"))
+            // Animated Smiley Face
+            ZStack {
+                // Soft pink circle background with pulse animation
+                Circle()
+                    .fill(Color(hex: "FF91A4").opacity(0.1))
+                    .frame(width: 180, height: 180)
+                    .scaleEffect(pulseAnimation ? 1.05 : 1.0)
+                    .animation(
+                        Animation.easeInOut(duration: 2.0)
+                            .repeatForever(autoreverses: true),
+                        value: pulseAnimation
+                    )
+
+                // White inner circle
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 160, height: 160)
+                    .shadow(color: Color(hex: "FF91A4").opacity(0.15), radius: 20, x: 0, y: 10)
+
+                // Animated smiley face
+                VStack(spacing: 0) {
+                    // Eyes
+                    HStack(spacing: 40) {
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 12, height: 12)
+                            .offset(y: animateSmile ? -2 : 0)
+
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 12, height: 12)
+                            .offset(y: animateSmile ? -2 : 0)
+                    }
+                    .padding(.bottom, 20)
+
+                    // Smile
+                    SmilePath()
+                        .stroke(Color.black, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .frame(width: 60, height: 30)
+                        .scaleEffect(animateSmile ? 1.1 : 1.0)
+                }
+                .animation(
+                    Animation.easeInOut(duration: 1.5)
+                        .repeatForever(autoreverses: true),
+                    value: animateSmile
+                )
+            }
+            .padding(.bottom, 60)
+
+            // Welcome Text
+            VStack(spacing: 12) {
+                Text("Hi, I'm Glow!")
+                    .font(.system(size: 42, weight: .medium))
+                    .foregroundColor(Color.black.opacity(0.85))
+
+                Text("Here to help you boost\nyour skincare results")
+                    .font(.system(size: 22, weight: .regular))
+                    .foregroundColor(Color.black.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
+
+            Spacer()
+            Spacer()
+        }
+        .onAppear {
+            animateSmile = true
+            pulseAnimation = true
+        }
+    }
+}
+
+// MARK: - Age Selection Step
+
+struct AgeSelectionStep: View {
+    @Binding var selectedAge: String
+    @State private var animateSmile = false
+    @State private var pulseAnimation = false
+
+    let ageRanges = [
+        "Under 18",
+        "18-24",
+        "25-34",
+        "35-44",
+        "45-54",
+        "55+"
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Top spacing - reduced to fit everything
+            Spacer()
+                .frame(height: 40)
+
+            // Animated Smiley Face (smaller version)
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "FF91A4").opacity(0.1))
+                    .frame(width: 120, height: 120)
+                    .scaleEffect(pulseAnimation ? 1.05 : 1.0)
+                    .animation(
+                        Animation.easeInOut(duration: 2.0)
+                            .repeatForever(autoreverses: true),
+                        value: pulseAnimation
+                    )
+
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 100, height: 100)
+                    .shadow(color: Color(hex: "FF91A4").opacity(0.15), radius: 15, x: 0, y: 8)
+
+                VStack(spacing: 0) {
+                    HStack(spacing: 25) {
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 8, height: 8)
+                            .offset(y: animateSmile ? -1 : 0)
+
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 8, height: 8)
+                            .offset(y: animateSmile ? -1 : 0)
+                    }
+                    .padding(.bottom, 12)
+
+                    SmilePath()
+                        .stroke(Color.black, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                        .frame(width: 35, height: 18)
+                        .scaleEffect(animateSmile ? 1.1 : 1.0)
+                }
+                .animation(
+                    Animation.easeInOut(duration: 1.5)
+                        .repeatForever(autoreverses: true),
+                    value: animateSmile
+                )
+            }
+            .padding(.bottom, 35)
+
+            // Question Text
+            VStack(spacing: 10) {
+                Text("How old are you?")
+                    .font(.system(size: 28, weight: .medium))
+                    .foregroundColor(Color.black.opacity(0.85))
+
+                Text("This helps personalize your skincare recommendations")
+                    .font(.system(size: 16, weight: .regular))
+                    .foregroundColor(Color.black.opacity(0.5))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, 40)
+            }
+            .padding(.bottom, 30)
+
+            // Age Range Options
+            VStack(spacing: 8) {
+                ForEach(ageRanges, id: \.self) { age in
+                    Button(action: {
+                        hapticFeedback(.light)
+                        selectedAge = age
+                    }) {
+                        Text(age)
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(selectedAge == age ? .white : Color.black.opacity(0.7))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 46)
+                            .background(
+                                RoundedRectangle(cornerRadius: 23)
+                                    .fill(
+                                        selectedAge == age ?
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color(hex: "FF91A4"),
+                                                Color(hex: "FFB6C1")
+                                            ]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        ) :
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color(UIColor.systemGray6),
+                                                Color(UIColor.systemGray6)
+                                            ]),
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 23)
+                                    .stroke(
+                                        selectedAge == age ? Color.clear : Color(UIColor.systemGray4),
+                                        lineWidth: 1
+                                    )
+                            )
+                    }
+                }
+            }
+            .padding(.horizontal, 40)
+
+            Spacer(minLength: 20)
+        }
+        .onAppear {
+            animateSmile = true
+            pulseAnimation = true
+        }
+    }
+}
+
+// MARK: - Skin Sensitivity Step
+
+struct SkinSensitivityStep: View {
+    @Binding var skinSensitive: String
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                // Small smiley icon
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: "FF91A4").opacity(0.1))
+                        .frame(width: 60, height: 60)
+
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 50, height: 50)
+
+                    VStack(spacing: 0) {
+                        HStack(spacing: 12) {
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 4, height: 4)
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 4, height: 4)
+                        }
+                        .padding(.bottom, 6)
+
+                        SmilePath()
+                            .stroke(Color.black, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                            .frame(width: 18, height: 9)
+                    }
+                }
+
+                Text("Would you consider your\nskin sensitive?")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(Color.black.opacity(0.85))
+                    .lineSpacing(2)
+
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 40)
+            .padding(.bottom, 50)
 
             VStack(spacing: 16) {
-                Text("Advanced Skin Analysis")
-                    .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(Color(UIColor.label))
+                // Sensitive option
+                Button(action: {
+                    hapticFeedback(.light)
+                    skinSensitive = "sensitive"
+                }) {
+                    HStack(spacing: 20) {
+                        Image(systemName: "leaf")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color.black.opacity(0.6))
+                            .frame(width: 30)
 
-                Text("We'll analyze your skin using AI technology to provide personalized recommendations")
-                    .font(.system(size: 17))
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Sensitive")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Color.black.opacity(0.85))
+
+                            Text("My skin has reacted negatively to some skincare in the past.")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color.black.opacity(0.5))
+                                .lineSpacing(2)
+                                .multilineTextAlignment(.leading)
+                        }
+
+                        Spacer()
+
+                        Circle()
+                            .stroke(skinSensitive == "sensitive" ? Color.clear : Color(UIColor.systemGray4), lineWidth: 2)
+                            .frame(width: 24, height: 24)
+                            .overlay(
+                                Circle()
+                                    .fill(skinSensitive == "sensitive" ? Color(hex: "FF91A4") : Color.clear)
+                                    .frame(width: 24, height: 24)
+                            )
+                            .overlay(
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .opacity(skinSensitive == "sensitive" ? 1 : 0)
+                            )
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(skinSensitive == "sensitive" ?
+                                  Color(hex: "FF91A4").opacity(0.08) :
+                                  Color(UIColor.systemGray6))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(skinSensitive == "sensitive" ?
+                                    Color(hex: "FF91A4").opacity(0.3) :
+                                    Color.clear, lineWidth: 2)
+                    )
+                }
+
+                // Non-sensitive option
+                Button(action: {
+                    hapticFeedback(.light)
+                    skinSensitive = "non-sensitive"
+                }) {
+                    HStack(spacing: 20) {
+                        Image(systemName: "shield")
+                            .font(.system(size: 24))
+                            .foregroundColor(Color.black.opacity(0.6))
+                            .frame(width: 30)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Non-sensitive")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Color.black.opacity(0.85))
+
+                            Text("My skin shows no reaction to certain ingredients.")
+                                .font(.system(size: 14))
+                                .foregroundColor(Color.black.opacity(0.5))
+                                .lineSpacing(2)
+                                .multilineTextAlignment(.leading)
+                        }
+
+                        Spacer()
+
+                        Circle()
+                            .stroke(skinSensitive == "non-sensitive" ? Color.clear : Color(UIColor.systemGray4), lineWidth: 2)
+                            .frame(width: 24, height: 24)
+                            .overlay(
+                                Circle()
+                                    .fill(skinSensitive == "non-sensitive" ? Color(hex: "FF91A4") : Color.clear)
+                                    .frame(width: 24, height: 24)
+                            )
+                            .overlay(
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.white)
+                                    .opacity(skinSensitive == "non-sensitive" ? 1 : 0)
+                            )
+                    }
+                    .padding(20)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(skinSensitive == "non-sensitive" ?
+                                  Color(hex: "FF91A4").opacity(0.08) :
+                                  Color(UIColor.systemGray6))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(skinSensitive == "non-sensitive" ?
+                                    Color(hex: "FF91A4").opacity(0.3) :
+                                    Color.clear, lineWidth: 2)
+                    )
+                }
             }
+            .padding(.horizontal, 24)
 
             Spacer()
         }
     }
 }
+
+// MARK: - Affirmation Step
+
+struct AffirmationStep: View {
+    @State private var animateSmile = false
+    @State private var pulseAnimation = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            // Animated Smiley Face
+            ZStack {
+                Circle()
+                    .fill(Color(hex: "FF91A4").opacity(0.1))
+                    .frame(width: 180, height: 180)
+                    .scaleEffect(pulseAnimation ? 1.05 : 1.0)
+                    .animation(
+                        Animation.easeInOut(duration: 2.0)
+                            .repeatForever(autoreverses: true),
+                        value: pulseAnimation
+                    )
+
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: 160, height: 160)
+                    .shadow(color: Color(hex: "FF91A4").opacity(0.15), radius: 20, x: 0, y: 10)
+
+                VStack(spacing: 0) {
+                    HStack(spacing: 40) {
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 12, height: 12)
+                            .offset(y: animateSmile ? -2 : 0)
+
+                        Circle()
+                            .fill(Color.black)
+                            .frame(width: 12, height: 12)
+                            .offset(y: animateSmile ? -2 : 0)
+                    }
+                    .padding(.bottom, 20)
+
+                    SmilePath()
+                        .stroke(Color.black, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                        .frame(width: 60, height: 30)
+                        .scaleEffect(animateSmile ? 1.1 : 1.0)
+                }
+                .animation(
+                    Animation.easeInOut(duration: 1.5)
+                        .repeatForever(autoreverses: true),
+                    value: animateSmile
+                )
+            }
+            .padding(.bottom, 60)
+
+            // Affirmation Text
+            VStack(spacing: 20) {
+                Text("Great start,\nSkincare Lover!")
+                    .font(.system(size: 38, weight: .medium))
+                    .foregroundColor(Color.black.opacity(0.85))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+
+                Text("I'm not here to \"fix\" you. You don't need \"fixing\"! I'm here to support you on your journey to beautiful skin.")
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundColor(Color.black.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+                    .padding(.horizontal, 40)
+            }
+
+            Spacer()
+            Spacer()
+        }
+        .onAppear {
+            animateSmile = true
+            pulseAnimation = true
+        }
+    }
+}
+
+// MARK: - Skin Concerns Step
 
 struct SkinConcernsStep: View {
     @Binding var selectedConcerns: Set<String>
 
-    let concerns = [
-        ("drop.fill", "Dryness"),
-        ("sun.max.fill", "Sun Damage"),
-        ("circle.dotted", "Acne"),
-        ("sparkles", "Dark Spots"),
-        ("wind", "Fine Lines"),
-        ("eye", "Dark Circles"),
-        ("oval.portrait", "Large Pores"),
-        ("waveform.path.ecg", "Redness"),
-        ("leaf.fill", "Sensitivity")
+    let concernsAll = [
+        ("heart.fill", "Redness or rosacea"),
+        ("star", "Fine lines and wrinkles"),
+        ("sun.max.fill", "Pimples or acne"),
+        ("circle.fill", "Pigmentation changes"),
+        ("square.fill", "Rough texture"),
+        ("person.fill", "Double chin"),
+        ("eye", "Crow's feet"),
+        ("eye.fill", "Puffy eyes"),
+        ("triangle.fill", "Textural Irregularities"),
+        ("arrow.down", "Sagging Skin"),
+        ("drop.fill", "Oiliness"),
+        ("cloud.fill", "Dryness"),
+        ("moon.fill", "Dark circles")
     ]
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Text("What are your main skin concerns?")
-                    .font(.system(size: 18))
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                    .padding(.top, 20)
+        VStack(spacing: 0) {
+            // Header
+            HStack(spacing: 12) {
+                // Small smiley icon
+                ZStack {
+                    Circle()
+                        .fill(Color(hex: "FF91A4").opacity(0.1))
+                        .frame(width: 60, height: 60)
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(concerns, id: \.1) { icon, concern in
-                        SelectableCard(
-                            icon: icon,
-                            title: concern,
-                            isSelected: selectedConcerns.contains(concern),
-                            action: {
-                                hapticFeedback(.light)
-                                if selectedConcerns.contains(concern) {
-                                    selectedConcerns.remove(concern)
-                                } else {
-                                    selectedConcerns.insert(concern)
-                                }
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, 20)
-            }
-        }
-    }
-}
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 50, height: 50)
 
-struct SkinGoalsStep: View {
-    @Binding var selectedGoals: Set<String>
-
-    let goals = [
-        ("sparkle", "Glow"),
-        ("drop.circle", "Hydration"),
-        ("shield.lefthalf.filled", "Protection"),
-        ("arrow.down.circle", "Anti-Aging"),
-        ("circle.hexagongrid", "Even Tone"),
-        ("leaf.circle", "Natural"),
-        ("moon.fill", "Overnight Repair"),
-        ("sun.min", "Oil Control")
-    ]
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Text("What are your skincare goals?")
-                    .font(.system(size: 18))
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                    .padding(.top, 20)
-
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(goals, id: \.1) { icon, goal in
-                        SelectableCard(
-                            icon: icon,
-                            title: goal,
-                            isSelected: selectedGoals.contains(goal),
-                            action: {
-                                hapticFeedback(.light)
-                                if selectedGoals.contains(goal) {
-                                    selectedGoals.remove(goal)
-                                } else {
-                                    selectedGoals.insert(goal)
-                                }
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, 20)
-            }
-        }
-    }
-}
-
-struct RaceEthnicityStep: View {
-    @Binding var selectedRace: String
-
-    let options = [
-        "Asian", "Black", "Hispanic/Latino",
-        "Middle Eastern", "White", "Mixed", "Other"
-    ]
-
-    var body: some View {
-        VStack(spacing: 24) {
-            Text("Select your ethnicity")
-                .font(.system(size: 18))
-                .foregroundColor(Color(UIColor.secondaryLabel))
-                .padding(.top, 20)
-
-            Text("This helps us provide more accurate skin analysis")
-                .font(.system(size: 15))
-                .foregroundColor(Color(UIColor.tertiaryLabel))
-
-            VStack(spacing: 10) {
-                ForEach(options, id: \.self) { option in
-                    OptionRow(
-                        title: option,
-                        isSelected: selectedRace == option,
-                        action: {
-                            hapticFeedback(.light)
-                            selectedRace = option
-                        }
-                    )
-                }
-            }
-            .padding(.horizontal, 20)
-
-            Spacer()
-        }
-    }
-}
-
-struct SkinTypeStep: View {
-    @Binding var selectedSkinType: String
-
-    let skinTypes = [
-        ("Dry", "Feels tight, may have flaking"),
-        ("Oily", "Shiny, especially T-zone"),
-        ("Combination", "Oily T-zone, dry cheeks"),
-        ("Normal", "Balanced, few concerns"),
-        ("Sensitive", "Easily irritated or red")
-    ]
-
-    var body: some View {
-        VStack(spacing: 24) {
-            Text("What's your skin type?")
-                .font(.system(size: 18))
-                .foregroundColor(Color(UIColor.secondaryLabel))
-                .padding(.top, 20)
-
-            VStack(spacing: 12) {
-                ForEach(skinTypes, id: \.0) { type, description in
-                    DetailedOptionRow(
-                        title: type,
-                        subtitle: description,
-                        isSelected: selectedSkinType == type,
-                        action: {
-                            hapticFeedback(.light)
-                            selectedSkinType = type
-                        }
-                    )
-                }
-            }
-            .padding(.horizontal, 20)
-
-            Spacer()
-        }
-    }
-}
-
-struct CosmeticsStep: View {
-    @Binding var selectedCosmetics: Set<String>
-
-    let brands = [
-        "The Ordinary", "CeraVe", "La Roche-Posay", "Cetaphil",
-        "Neutrogena", "Olay", "L'Oreal", "SK-II", "Clinique",
-        "Estée Lauder", "Drunk Elephant", "Sunday Riley"
-    ]
-
-    var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Text("Select brands you use or prefer")
-                    .font(.system(size: 18))
-                    .foregroundColor(Color(UIColor.secondaryLabel))
-                    .padding(.top, 20)
-
-                Text("Optional - helps personalize recommendations")
-                    .font(.system(size: 15))
-                    .foregroundColor(Color(UIColor.tertiaryLabel))
-
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
-                    ForEach(brands, id: \.self) { brand in
-                        BrandChip(
-                            title: brand,
-                            isSelected: selectedCosmetics.contains(brand),
-                            action: {
-                                hapticFeedback(.light)
-                                if selectedCosmetics.contains(brand) {
-                                    selectedCosmetics.remove(brand)
-                                } else {
-                                    selectedCosmetics.insert(brand)
-                                }
-                            }
-                        )
-                    }
-                }
-                .padding(.horizontal, 20)
-            }
-        }
-    }
-}
-
-struct PhotoUploadStep: View {
-    @Binding var uploadedImage: UIImage?
-    @Binding var showingPhotoPicker: Bool
-    @Binding var selectedPhoto: PhotosPickerItem?
-
-    var body: some View {
-        VStack(spacing: 28) {
-            Text("Upload your photo")
-                .font(.system(size: 18))
-                .foregroundColor(Color(UIColor.secondaryLabel))
-                .padding(.top, 20)
-
-            // Photo requirements
-            VStack(alignment: .leading, spacing: 12) {
-                RequirementRow(icon: "face.smiling", text: "No makeup or filters")
-                RequirementRow(icon: "sun.max", text: "Good natural lighting")
-                RequirementRow(icon: "camera.aperture", text: "Clear, front-facing photo")
-                RequirementRow(icon: "clock", text: "Recent photo preferred")
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(UIColor.systemGray6))
-            )
-            .padding(.horizontal, 20)
-
-            // Photo upload area
-            if let image = uploadedImage {
-                VStack(spacing: 16) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 200, height: 200)
-                        .clipShape(Circle())
-                        .overlay(
+                    VStack(spacing: 0) {
+                        HStack(spacing: 12) {
                             Circle()
-                                .stroke(Color(hex: "FF91A4"), lineWidth: 3)
-                        )
-                        .shadow(color: Color(hex: "FF91A4").opacity(0.3), radius: 10, x: 0, y: 5)
+                                .fill(Color.black)
+                                .frame(width: 4, height: 4)
+                            Circle()
+                                .fill(Color.black)
+                                .frame(width: 4, height: 4)
+                        }
+                        .padding(.bottom, 6)
 
-                    Button(action: {
-                        hapticFeedback(.light)
-                        uploadedImage = nil
-                        selectedPhoto = nil
-                    }) {
-                        Text("Change Photo")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "FF91A4"))
+                        SmilePath()
+                            .stroke(Color.black, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                            .frame(width: 18, height: 9)
                     }
                 }
-            } else {
+
+                Text("What are your additional\nskin concerns?")
+                    .font(.system(size: 24, weight: .medium))
+                    .foregroundColor(Color.black.opacity(0.85))
+                    .lineSpacing(2)
+
+                Spacer()
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 20)
+            .padding(.bottom, 30)
+
+            // Scrollable concerns list
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(concernsAll, id: \.1) { icon, concern in
+                        Button(action: {
+                            hapticFeedback(.light)
+                            if selectedConcerns.contains(concern) {
+                                selectedConcerns.remove(concern)
+                            } else {
+                                selectedConcerns.insert(concern)
+                            }
+                        }) {
+                            HStack(spacing: 20) {
+                                Image(systemName: icon)
+                                    .font(.system(size: 22))
+                                    .foregroundColor(Color.black.opacity(0.6))
+                                    .frame(width: 30)
+
+                                Text(concern)
+                                    .font(.system(size: 17, weight: .medium))
+                                    .foregroundColor(Color.black.opacity(0.85))
+
+                                Spacer()
+
+                                Circle()
+                                    .stroke(selectedConcerns.contains(concern) ? Color.clear : Color(UIColor.systemGray4), lineWidth: 2)
+                                    .frame(width: 24, height: 24)
+                                    .overlay(
+                                        Circle()
+                                            .fill(selectedConcerns.contains(concern) ? Color(hex: "FF91A4") : Color.clear)
+                                            .frame(width: 24, height: 24)
+                                    )
+                                    .overlay(
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 12, weight: .bold))
+                                            .foregroundColor(.white)
+                                            .opacity(selectedConcerns.contains(concern) ? 1 : 0)
+                                    )
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(selectedConcerns.contains(concern) ?
+                                          Color(hex: "FF91A4").opacity(0.08) :
+                                          Color(UIColor.systemGray6))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(selectedConcerns.contains(concern) ?
+                                            Color(hex: "FF91A4").opacity(0.3) :
+                                            Color.clear, lineWidth: 2)
+                            )
+                        }
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.bottom, 100) // Space for Next button
+            }
+
+            // Fixed Next button at bottom
+            VStack {
                 Button(action: {
                     hapticFeedback(.light)
-                    showingPhotoPicker = true
+                    // Save concerns and go to AI scanning screen
+                    UserDefaults.standard.set(Array(selectedConcerns), forKey: "skinConcerns")
+                    // Navigate to AI scanning screen
+                    NotificationCenter.default.post(name: NSNotification.Name("NavigateToAIScanning"), object: nil)
                 }) {
-                    VStack(spacing: 20) {
-                        ZStack {
-                            Circle()
-                                .fill(Color(UIColor.systemGray6))
-                                .frame(width: 140, height: 140)
-
-                            Image(systemName: "camera.fill")
-                                .font(.system(size: 50))
-                                .foregroundColor(Color(hex: "FF91A4"))
-                        }
-
-                        Text("Tap to select photo")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(Color(hex: "FF91A4"))
-                    }
+                    Text("Next")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(hex: "FF91A4"),
+                                            Color(hex: "FFB6C1")
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
+                        .shadow(color: Color(hex: "FF91A4").opacity(0.25), radius: 15, x: 0, y: 8)
                 }
+                .padding(.horizontal, 40)
+                .padding(.vertical, 20)
+                .background(
+                    Color(UIColor.systemBackground)
+                        .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: -5)
+                )
             }
-
-            Spacer()
+            .background(Color(UIColor.systemBackground))
         }
     }
 }
 
-struct AnalysisStep: View {
-    @Binding var isAnalyzing: Bool
-    @Binding var analysisProgress: Double
-    @Binding var showBlurredScore: Bool
-    let uploadedImage: UIImage?
-    @Binding var currentAnalysisMessage: String
-    let analysisMessages: [String]
-    @Binding var skinScore: Int
-    let onComplete: () -> Void
+// MARK: - AI Scanning Step
 
-    @State private var scoreRevealed = false
-    @State private var blurAmount: Double = 20
+struct AIScanningStep: View {
+    @Binding var showingSkinScan: Bool
+    @State private var animateAnalysis = false
 
     var body: some View {
-        VStack(spacing: 32) {
-            if isAnalyzing {
-                // Loading state with scientific messages
-                VStack(spacing: 24) {
-                    Spacer()
-
-                    // Animated scanner effect
-                    ZStack {
-                        if let image = uploadedImage {
-                            Image(uiImage: image)
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 150, height: 150)
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle()
-                                        .stroke(
-                                            LinearGradient(
-                                                colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
-                                                startPoint: .top,
-                                                endPoint: .bottom
-                                            ),
-                                            lineWidth: 3
-                                        )
-                                        .rotationEffect(.degrees(analysisProgress * 360))
-                                        .animation(.linear(duration: 2).repeatForever(autoreverses: false), value: analysisProgress)
+        VStack(spacing: 0) {
+            // Face analysis visual with beauty image
+            ZStack {
+                // Beauty image or fallback
+                Group {
+                    if let uiImage = UIImage(named: "beauty") {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                    } else {
+                        // Fallback gradient placeholder if image doesn't load
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(hex: "FFB6C1").opacity(0.3),
+                                        Color(hex: "FF91A4").opacity(0.2)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
                                 )
-                        }
+                            )
+                            .overlay(
+                                Image(systemName: "camera.fill")
+                                    .font(.system(size: 60))
+                                    .foregroundColor(Color(hex: "FF91A4").opacity(0.5))
+                            )
                     }
-
-                    VStack(spacing: 16) {
-                        Text("Analyzing Your Skin")
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(Color(UIColor.label))
-
-                        Text(currentAnalysisMessage)
-                            .font(.system(size: 16))
-                            .foregroundColor(Color(hex: "FF91A4"))
-                            .multilineTextAlignment(.center)
-                            .frame(height: 20)
-                            .animation(.easeInOut(duration: 0.3), value: currentAnalysisMessage)
-                    }
-
-                    // Progress bar
-                    ProgressView(value: analysisProgress)
-                        .tint(Color(hex: "FF91A4"))
-                        .scaleEffect(x: 1, y: 2)
-                        .padding(.horizontal, 60)
-
-                    Spacer()
                 }
-            } else if showBlurredScore {
-                // Blurred score reveal
-                VStack(spacing: 32) {
-                    Spacer()
+                .frame(width: 300, height: 350)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .overlay(
+                        // Analysis overlay dots and connections
+                        ZStack {
+                            // Animated analysis points
+                            ForEach(0..<12, id: \.self) { index in
+                                Circle()
+                                    .fill(Color.white.opacity(0.8))
+                                    .frame(width: 8, height: 8)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color(hex: "FF91A4"), lineWidth: 2)
+                                            .frame(width: 12, height: 12)
+                                    )
+                                    .position(
+                                        x: CGFloat.random(in: 50...250),
+                                        y: CGFloat.random(in: 50...300)
+                                    )
+                                    .scaleEffect(animateAnalysis ? 1.2 : 0.8)
+                                    .opacity(animateAnalysis ? 1 : 0.6)
+                                    .animation(
+                                        Animation.easeInOut(duration: 2)
+                                            .repeatForever(autoreverses: true)
+                                            .delay(Double(index) * 0.1),
+                                        value: animateAnalysis
+                                    )
+                            }
 
-                    Text("Your Skin Analysis is Ready")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(Color(UIColor.label))
+                            // Analysis labels
+                            VStack {
+                                HStack {
+                                    // Wrinkles label
+                                    HStack(spacing: 6) {
+                                        Circle()
+                                            .fill(Color(red: 0.4, green: 0.8, blue: 0.4))
+                                            .frame(width: 8, height: 8)
+                                        Text("Wrinkles")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.black)
+                                        Text("Strength")
+                                            .font(.system(size: 11))
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .fill(Color.white.opacity(0.95))
+                                            .shadow(radius: 5)
+                                    )
+                                    .offset(x: -80, y: 40)
 
-                    // Blurred score
-                    ZStack {
-                        VStack(spacing: 16) {
-                            Text("\(skinScore)")
-                                .font(.system(size: 72, weight: .bold, design: .rounded))
-                                .foregroundColor(Color(hex: "FF91A4"))
+                                    Spacer()
 
-                            Text("Skin Score")
-                                .font(.system(size: 20, weight: .medium))
-                                .foregroundColor(Color(UIColor.secondaryLabel))
+                                    // Pigmentation label
+                                    VStack(alignment: .trailing) {
+                                        Text("Pigmentation")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.black)
+                                        HStack(spacing: 4) {
+                                            Circle()
+                                                .fill(Color(hex: "FF91A4"))
+                                                .frame(width: 8, height: 8)
+                                            Text("Your Focus")
+                                                .font(.system(size: 11))
+                                                .foregroundColor(.gray)
+                                        }
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .fill(Color.white.opacity(0.95))
+                                            .shadow(radius: 5)
+                                    )
+                                    .offset(x: 60, y: -30)
+                                }
 
-                            HStack(spacing: 4) {
-                                ForEach(0..<5) { index in
-                                    Image(systemName: index < Int(Double(skinScore) / 20.0) ? "star.fill" : "star")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(Color(hex: "FFB6C1"))
+                                Spacer()
+
+                                // Oily label
+                                HStack {
+                                    Spacer()
+                                    VStack(alignment: .leading) {
+                                        Text("Oily")
+                                            .font(.system(size: 14, weight: .semibold))
+                                            .foregroundColor(.black)
+                                        Text("Your Skin Type")
+                                            .font(.system(size: 11))
+                                            .foregroundColor(.gray)
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 20)
+                                            .fill(Color.white.opacity(0.95))
+                                            .shadow(radius: 5)
+                                    )
+                                    .offset(x: 40, y: -60)
                                 }
                             }
                         }
-                        .blur(radius: blurAmount)
-
-                        if !scoreRevealed {
-                            VStack(spacing: 16) {
-                                Image(systemName: "lock.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundColor(Color(hex: "FF91A4"))
-
-                                Text("Tap to reveal your score")
-                                    .font(.system(size: 17, weight: .medium))
-                                    .foregroundColor(Color(UIColor.secondaryLabel))
-                            }
-                        }
-                    }
-                    .frame(width: 280, height: 200)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(Color(UIColor.systemGray6))
                     )
-                    .onTapGesture {
-                        if !scoreRevealed {
-                            hapticFeedback(.medium)
-                            withAnimation(.easeOut(duration: 0.5)) {
-                                blurAmount = 0
-                                scoreRevealed = true
-                            }
+            }
+            .padding(.top, 30)
+            .padding(.bottom, 40)
 
-                            // Navigate to main app after reveal
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                                onComplete()
+            // Main text content
+            VStack(spacing: 20) {
+                Text("Sunshine, let's analyze\nyour skin with our AI\nFace scanner.")
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundColor(Color.black.opacity(0.85))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+
+                Text("You'll also be able to monitor your skin's\nchanges over time.")
+                    .font(.system(size: 17))
+                    .foregroundColor(Color.black.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
+            }
+            .padding(.horizontal, 30)
+            .padding(.bottom, 40)
+
+            // Action buttons
+            VStack(spacing: 16) {
+                // Make a face scan button
+                Button(action: {
+                    hapticFeedback(.medium)
+                    showingSkinScan = true
+                }) {
+                    Text("Make a face scan")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(hex: "FF91A4"),
+                                            Color(hex: "FFB6C1")
+                                        ]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                        )
+                        .shadow(color: Color(hex: "FF91A4").opacity(0.25), radius: 15, x: 0, y: 8)
+                }
+
+                // Not now button
+                Button(action: {
+                    hapticFeedback(.light)
+                    // Skip to review screen
+                    NotificationCenter.default.post(name: NSNotification.Name("NavigateToReview"), object: nil)
+                }) {
+                    Text("Not now")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(Color.black.opacity(0.5))
+                }
+                .padding(.top, 8)
+            }
+            .padding(.horizontal, 40)
+
+            Spacer()
+        }
+        .onAppear {
+            animateAnalysis = true
+        }
+    }
+}
+
+// MARK: - Review Request Step
+
+struct ReviewRequestStep: View {
+    @State private var showingAppStore = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            // Phone mockup with notification preview
+            ZStack {
+                // Phone frame
+                RoundedRectangle(cornerRadius: 35)
+                    .fill(Color.black)
+                    .frame(width: 240, height: 480)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 31)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(red: 1.0, green: 0.7, blue: 0.8),
+                                        Color(red: 0.6, green: 0.8, blue: 1.0)
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .padding(4)
+                    )
+
+                // Notification preview
+                VStack(spacing: 0) {
+                    // Time and date
+                    Text("Thu, June 6")
+                        .font(.system(size: 12))
+                        .foregroundColor(.white.opacity(0.9))
+                        .padding(.top, 35)
+
+                    Text("7:12")
+                        .font(.system(size: 48, weight: .light))
+                        .foregroundColor(.white)
+                        .padding(.bottom, 15)
+
+                    // Notification card
+                    HStack(spacing: 12) {
+                        Image(systemName: "sparkles")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(hex: "FF91A4"),
+                                        Color(hex: "FFB6C1")
+                                    ]),
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack {
+                                Text("⭐ Love SkinGlowing?")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(.black.opacity(0.85))
+                                Spacer()
+                                Text("now")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(.black.opacity(0.5))
                             }
+                            Text("Your review helps others discover their skincare journey!")
+                                .font(.system(size: 12))
+                                .foregroundColor(.black.opacity(0.7))
+                                .lineLimit(2)
                         }
+                        .padding(.trailing, 8)
                     }
+                    .padding(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white.opacity(0.95))
+                    )
+                    .padding(.horizontal, 20)
 
                     Spacer()
                 }
             }
-        }
-    }
-}
+            .padding(.bottom, 40)
 
-// MARK: - Supporting Views
+            // Text content
+            VStack(spacing: 16) {
+                Text("Enjoying SkinGlowing?")
+                    .font(.system(size: 32, weight: .medium))
+                    .foregroundColor(Color.black.opacity(0.85))
 
-struct SelectableCard: View {
-    let icon: String
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            VStack(spacing: 12) {
-                Image(systemName: icon)
-                    .font(.system(size: 28))
-                    .foregroundColor(isSelected ? .white : Color(hex: "FF91A4"))
-
-                Text(title)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(isSelected ? .white : Color(UIColor.label))
+                Text("We'd love to hear from you!\nYour feedback helps us improve.")
+                    .font(.system(size: 18))
+                    .foregroundColor(Color.black.opacity(0.6))
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(3)
             }
-            .frame(maxWidth: .infinity)
-            .frame(height: 100)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(isSelected ?
-                          LinearGradient(colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing) :
-                          LinearGradient(colors: [Color(UIColor.systemGray6), Color(UIColor.systemGray6)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? Color.clear : Color(UIColor.systemGray5), lineWidth: 1)
-            )
-        }
-    }
-}
+            .padding(.horizontal, 40)
+            .padding(.bottom, 50)
 
-struct OptionRow: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                Text(title)
-                    .font(.system(size: 17))
-                    .foregroundColor(Color(UIColor.label))
-
-                Spacer()
-
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22))
-                    .foregroundColor(isSelected ? Color(hex: "FF91A4") : Color(UIColor.systemGray3))
-            }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(UIColor.systemGray6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? Color(hex: "FF91A4") : Color.clear, lineWidth: 2)
+            // Buttons
+            VStack(spacing: 16) {
+                // Rate Us button
+                Button(action: {
+                    hapticFeedback(.medium)
+                    openAppStore()
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "star.fill")
+                            .font(.system(size: 18))
+                        Text("Rate Us")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(hex: "FF91A4"),
+                                        Color(hex: "FFB6C1")
+                                    ]),
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                     )
-            )
-        }
-    }
-}
-
-struct DetailedOptionRow: View {
-    let title: String
-    let subtitle: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
-                        .font(.system(size: 17, weight: .medium))
-                        .foregroundColor(Color(UIColor.label))
-
-                    Text(subtitle)
-                        .font(.system(size: 14))
-                        .foregroundColor(Color(UIColor.secondaryLabel))
+                    .shadow(color: Color(hex: "FF91A4").opacity(0.25), radius: 15, x: 0, y: 8)
                 }
 
-                Spacer()
-
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 22))
-                    .foregroundColor(isSelected ? Color(hex: "FF91A4") : Color(UIColor.systemGray3))
+                // Not now button
+                Button(action: {
+                    hapticFeedback(.light)
+                    NotificationCenter.default.post(name: NSNotification.Name("CompleteOnboarding"), object: nil)
+                }) {
+                    Text("Not now")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(Color.black.opacity(0.5))
+                }
+                .padding(.top, 8)
             }
-            .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(UIColor.systemGray6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(isSelected ? Color(hex: "FF91A4") : Color.clear, lineWidth: 2)
-                    )
-            )
-        }
-    }
-}
-
-struct BrandChip: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundColor(isSelected ? .white : Color(UIColor.label))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(isSelected ?
-                              Color(hex: "FF91A4") :
-                              Color(UIColor.systemGray6))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(isSelected ? Color.clear : Color(UIColor.systemGray5), lineWidth: 1)
-                )
-        }
-    }
-}
-
-struct RequirementRow: View {
-    let icon: String
-    let text: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundColor(Color(hex: "FF91A4"))
-                .frame(width: 24)
-
-            Text(text)
-                .font(.system(size: 15))
-                .foregroundColor(Color(UIColor.label))
+            .padding(.horizontal, 40)
 
             Spacer()
         }
+    }
+
+    func openAppStore() {
+        // Replace with your actual App Store ID
+        let appStoreID = "YOUR_APP_STORE_ID"
+        let urlString = "https://apps.apple.com/app/id\(appStoreID)?action=write-review"
+
+        if let url = URL(string: urlString) {
+            if UIApplication.shared.canOpenURL(url) {
+                UIApplication.shared.open(url)
+            } else {
+                // Fallback to main app page if review URL doesn't work
+                if let fallbackURL = URL(string: "https://apps.apple.com/app/id\(appStoreID)") {
+                    UIApplication.shared.open(fallbackURL)
+                }
+            }
+        }
+
+        // Complete onboarding after opening App Store
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            NotificationCenter.default.post(name: NSNotification.Name("CompleteOnboarding"), object: nil)
+        }
+    }
+}
+
+// Custom smile path for the smiley face
+struct SmilePath: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+
+        // Create a curved smile
+        let startPoint = CGPoint(x: rect.minX + 10, y: rect.midY - 5)
+        let endPoint = CGPoint(x: rect.maxX - 10, y: rect.midY - 5)
+        let controlPoint1 = CGPoint(x: rect.minX + 15, y: rect.maxY)
+        let controlPoint2 = CGPoint(x: rect.maxX - 15, y: rect.maxY)
+
+        path.move(to: startPoint)
+        path.addCurve(to: endPoint, control1: controlPoint1, control2: controlPoint2)
+
+        return path
     }
 }
 
@@ -866,11 +1213,316 @@ func hapticFeedback(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
     generator.impactOccurred()
 }
 
-#Preview {
-    OnboardingView(onComplete: {})
+// MARK: - SkinScan View Wrapper
+
+struct SkinScanViewWrapper: View {
+    let onCompletion: (Bool) -> Void
+    @State private var showImagePicker = false
+    @State private var showCamera = false
+    @State private var selectedImage: UIImage?
+    @State private var isAnalyzing = false
+    @State private var analysisProgress: Double = 0
+    @State private var showActionSheet = false
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Button("Cancel") {
+                        onCompletion(false)
+                    }
+                    .foregroundColor(Color(hex: "FF91A4"))
+
+                    Spacer()
+
+                    Text("Skin Analysis")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.black)
+
+                    Spacer()
+
+                    Button("Cancel") {
+                        onCompletion(false)
+                    }
+                    .foregroundColor(.clear)
+                    .disabled(true)
+                }
+                .padding()
+                .background(Color.white)
+
+                if !isAnalyzing {
+                    // Photo selection view
+                    VStack(spacing: 30) {
+                        Spacer()
+
+                        // Preview or placeholder
+                        if let image = selectedImage {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 250, height: 250)
+                                .clipShape(Circle())
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color(hex: "FF91A4"), lineWidth: 3)
+                                )
+                        } else {
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [
+                                                Color(hex: "FFE4E1").opacity(0.3),
+                                                Color(hex: "FFB6C1").opacity(0.1)
+                                            ],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 250, height: 250)
+
+                                VStack(spacing: 12) {
+                                    Image(systemName: "camera.fill")
+                                        .font(.system(size: 50))
+                                        .foregroundColor(Color(hex: "FF91A4"))
+
+                                    Text("Take or choose a photo")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.gray)
+                                }
+                            }
+                        }
+
+                        Spacer()
+
+                        // Action buttons
+                        VStack(spacing: 16) {
+                            if selectedImage == nil {
+                                Button(action: {
+                                    showActionSheet = true
+                                }) {
+                                    HStack {
+                                        Image(systemName: "camera.fill")
+                                        Text("Select Photo")
+                                    }
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .cornerRadius(16)
+                                }
+                            } else {
+                                Button(action: {
+                                    startAnalysis()
+                                }) {
+                                    HStack {
+                                        Image(systemName: "wand.and.stars")
+                                        Text("Analyze My Skin")
+                                    }
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
+                                    .cornerRadius(16)
+                                }
+
+                                Button(action: {
+                                    selectedImage = nil
+                                }) {
+                                    Text("Choose Different Photo")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color(hex: "FF91A4"))
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 30)
+                        .padding(.bottom, 30)
+                    }
+                } else {
+                    // Analysis loading view
+                    VStack(spacing: 40) {
+                        Spacer()
+
+                        // Animated face scanning effect
+                        ZStack {
+                            if let selectedImage = selectedImage {
+                                Image(uiImage: selectedImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 200, height: 200)
+                                    .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(
+                                                LinearGradient(
+                                                    colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                ),
+                                                lineWidth: 3
+                                            )
+                                            .scaleEffect(1.2)
+                                            .opacity(0.6)
+                                    )
+                            }
+
+                            // Scanning animation overlay
+                            ForEach(0..<3, id: \.self) { index in
+                                Circle()
+                                    .stroke(Color(hex: "FF91A4").opacity(0.3), lineWidth: 2)
+                                    .scaleEffect(1.0 + Double(index) * 0.3)
+                                    .opacity(1.0 - Double(index) * 0.3)
+                                    .animation(
+                                        Animation.easeOut(duration: 2.0)
+                                            .repeatForever(autoreverses: false)
+                                            .delay(Double(index) * 0.5),
+                                        value: analysisProgress
+                                    )
+                            }
+                        }
+                        .frame(width: 200, height: 200)
+
+                        VStack(spacing: 20) {
+                            Text("Analyzing your skin...")
+                                .font(.system(size: 24, weight: .semibold))
+                                .foregroundColor(.black)
+
+                            // Progress bar
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(height: 10)
+
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
+                                                startPoint: .leading,
+                                                endPoint: .trailing
+                                            )
+                                        )
+                                        .frame(width: geometry.size.width * analysisProgress, height: 10)
+                                        .animation(.linear, value: analysisProgress)
+                                }
+                            }
+                            .frame(height: 10)
+                            .padding(.horizontal, 50)
+
+                            Text("This may take a few seconds")
+                                .font(.system(size: 14))
+                                .foregroundColor(.gray)
+                        }
+
+                        Spacer()
+                    }
+                }
+            }
+            .background(Color.white)
+        }
+        .actionSheet(isPresented: $showActionSheet) {
+            ActionSheet(
+                title: Text("Select Photo"),
+                message: Text("Choose how you'd like to provide your photo"),
+                buttons: [
+                    .default(Text("Take Photo")) {
+                        showCamera = true
+                    },
+                    .default(Text("Choose from Library")) {
+                        showImagePicker = true
+                    },
+                    .cancel()
+                ]
+            )
+        }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(selectedImage: $selectedImage, sourceType: .photoLibrary)
+        }
+        .sheet(isPresented: $showCamera) {
+            ImagePicker(selectedImage: $selectedImage, sourceType: .camera)
+        }
+    }
+
+    private func startAnalysis() {
+        isAnalyzing = true
+        analysisProgress = 0
+
+        // Simulate analysis progress
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+            analysisProgress += 0.033
+
+            if analysisProgress >= 1.0 {
+                timer.invalidate()
+                // Complete analysis and trigger paywall
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    onCompletion(true)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Image Picker
+
+struct ImagePicker: UIViewControllerRepresentable {
+    @Binding var selectedImage: UIImage?
+    @Environment(\.presentationMode) var presentationMode
+    let sourceType: UIImagePickerController.SourceType
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = sourceType
+        picker.delegate = context.coordinator
+        picker.allowsEditing = true
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: ImagePicker
+
+        init(_ parent: ImagePicker) {
+            self.parent = parent
+        }
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+            if let editedImage = info[.editedImage] as? UIImage {
+                parent.selectedImage = editedImage
+            } else if let originalImage = info[.originalImage] as? UIImage {
+                parent.selectedImage = originalImage
+            }
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            parent.presentationMode.wrappedValue.dismiss()
+        }
+    }
 }
 
 // MARK: - Color Extension
+
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -895,4 +1547,8 @@ extension Color {
             opacity: Double(a) / 255
         )
     }
+}
+
+#Preview {
+    OnboardingView(onComplete: {})
 }

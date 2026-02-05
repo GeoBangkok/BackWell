@@ -34,9 +34,22 @@
 		9AE5A93D2F1BC02900F47A83 /* BackWellUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BackWellUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		9A8F66802F34F60600D4123D /* Exceptions for "BackWell" folder in "BackWell" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 9AE5A9232F1BC02700F47A83 /* BackWell */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		9AE5A9262F1BC02700F47A83 /* BackWell */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				9A8F66802F34F60600D4123D /* Exceptions for "BackWell" folder in "BackWell" target */,
+			);
 			path = BackWell;
 			sourceTree = "<group>";
 		};
@@ -413,11 +426,13 @@
 				DEVELOPMENT_TEAM = BNYNX7BTK6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BackWell/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SkinGlowing;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to take photos for skin analysis.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "BackWell needs access to your microphone to enable voice-guided posture exercises and provide real-time audio feedback.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SkinWell needs access to your photo library to upload photos for\n  AI skin analysis. Your photos are encrypted and used only for personalized\n   skincare recommendations.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SkinGlowing needs access to your photo library to upload photos for\n  AI skin analysis. Your photos are encrypted and used only for personalized\n   skincare recommendations.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -457,11 +472,13 @@
 				DEVELOPMENT_TEAM = BNYNX7BTK6;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BackWell/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = SkinGlowing;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSCameraUsageDescription = "We use your camera to take photos for skin analysis.";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "BackWell needs access to your microphone to enable voice-guided posture exercises and provide real-time audio feedback.";
-				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SkinWell needs access to your photo library to upload photos for\n  AI skin analysis. Your photos are encrypted and used only for personalized\n   skincare recommendations.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "SkinGlowing needs access to your photo library to upload photos for\n  AI skin analysis. Your photos are encrypted and used only for personalized\n   skincare recommendations.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -12,12 +12,13 @@ struct ArisaAIView: View {
     @State private var messages: [ArisaChatMessage] = [
         ArisaChatMessage(
             id: UUID(),
-            text: "Hi! I'm Arisa, your AI beauty assistant 💕 I can help you with skincare advice, product recommendations, and answer any questions about your skin!",
+            text: "heyy bestie!! 💕 i'm arisa, your skincare girlie~ ask me anything about getting that glass skin or spill the tea on your skin concerns ✨",
             isUser: false,
             timestamp: Date()
         )
     ]
     @State private var isTyping = false
+    @State private var isSending = false
     @FocusState private var isInputFocused: Bool
 
     var body: some View {
@@ -113,6 +114,7 @@ struct ArisaAIView: View {
 
     private func sendMessage() {
         guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !isSending else { return } // Prevent multiple sends
 
         // Add user message
         let userMessage = ArisaChatMessage(
@@ -128,51 +130,80 @@ struct ArisaAIView: View {
 
         // Show typing indicator
         isTyping = true
+        isSending = true
 
-        // Simulate AI response
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            isTyping = false
-
-            let response = generateAIResponse(for: userQuery)
-            let aiMessage = ArisaChatMessage(
-                id: UUID(),
-                text: response,
-                isUser: false,
-                timestamp: Date()
+        // Convert messages to SkinChatMessage format for API
+        let context = messages.map { msg in
+            SkinChatMessage(
+                content: msg.text,
+                isFromUser: msg.isUser,
+                timestamp: msg.timestamp
             )
-            messages.append(aiMessage)
+        }
+
+        // Call OpenAI API
+        Task {
+            do {
+                let response = try await OpenAIService.shared.sendChatMessage(userQuery, context: context)
+
+                await MainActor.run {
+                    isTyping = false
+                    isSending = false
+                    let aiMessage = ArisaChatMessage(
+                        id: UUID(),
+                        text: response,
+                        isUser: false,
+                        timestamp: Date()
+                    )
+                    messages.append(aiMessage)
+                }
+            } catch {
+                // Fallback to simple response if API fails
+                await MainActor.run {
+                    isTyping = false
+                    isSending = false
+                    let fallbackResponse = generateAIResponse(for: userQuery)
+                    let aiMessage = ArisaChatMessage(
+                        id: UUID(),
+                        text: fallbackResponse,
+                        isUser: false,
+                        timestamp: Date()
+                    )
+                    messages.append(aiMessage)
+                }
+            }
         }
     }
 
     private func generateAIResponse(for query: String) -> String {
         let lowercasedQuery = query.lowercased()
 
-        // Simple keyword-based responses
+        // Simple keyword-based responses (fallback when API is down)
         if lowercasedQuery.contains("acne") || lowercasedQuery.contains("pimple") || lowercasedQuery.contains("breakout") {
-            return "For acne-prone skin, I recommend:\n\n• Use a gentle cleanser with salicylic acid\n• Apply benzoyl peroxide as a spot treatment\n• Use non-comedogenic moisturizers\n• Consider adding niacinamide to reduce inflammation\n• Always remove makeup before bed\n\nWould you like specific product recommendations?"
+            return "omg bestie acne is so annoying fr 😭 try the cerave SA cleanser and the ordinary niacinamide!! also benzoyl peroxide slaps for spot treating but start slow or you'll be peeling like crazy"
         } else if lowercasedQuery.contains("dry") || lowercasedQuery.contains("hydration") {
-            return "To combat dry skin:\n\n• Use a creamy, hydrating cleanser\n• Apply hyaluronic acid serum on damp skin\n• Layer a rich moisturizer with ceramides\n• Consider slugging at night with petroleum jelly\n• Use a humidifier in your room\n\nDrink plenty of water throughout the day! 💧"
+            return "dry skin era is not it 🥺 get you some hyaluronic acid serum (apply on WET skin!!!), cerave in the tub, and maybe slug with aquaphor at night if you're feeling spicy"
         } else if lowercasedQuery.contains("dark") || lowercasedQuery.contains("spot") || lowercasedQuery.contains("hyperpigmentation") {
-            return "For dark spots and hyperpigmentation:\n\n• Vitamin C serum in the morning\n• Retinol at night (start slowly!)\n• Niacinamide to even skin tone\n• Alpha arbutin for stubborn spots\n• SPF 50+ daily (this is crucial!)\n\nResults take 6-12 weeks, so be patient! ✨"
+            return "dark spots are my villain origin story fr 😭 vitamin c in the AM, retinol at night but like... start slowww. also SPF is literally non-negotiable bestie"
         } else if lowercasedQuery.contains("routine") {
-            return "Here's a basic skincare routine:\n\n🌅 Morning:\n1. Gentle cleanser\n2. Toner (optional)\n3. Vitamin C serum\n4. Moisturizer\n5. SPF 50+\n\n🌙 Evening:\n1. Oil cleanser (if wearing makeup)\n2. Water-based cleanser\n3. Treatment (retinol/acids)\n4. Hydrating serum\n5. Night moisturizer\n\nAdjust based on your skin type!"
+            return "okayy so morning: cleanser, vitamin c, moisturizer, SPF (or else 🔫). night: double cleanse if you wore makeup, then your actives (retinol/acids), hydrating serum, thicc moisturizer. keep it simple tho!!"
         } else if lowercasedQuery.contains("glow") || lowercasedQuery.contains("glass skin") {
-            return "For that glass skin glow:\n\n✨ The 7 Skin Method: Layer toner 7 times\n• Use hydrating essences\n• Apply face oil before moisturizer\n• Weekly sheet masks\n• Gentle exfoliation 2x per week\n• Facial massage with gua sha\n• Sleep 7-8 hours nightly\n\nGlow comes from within - stay hydrated! 🌟"
+            return "glass skin tutorial incoming ✨ the 7 skin method goes HARD (layer toner 7 times no cap), snail mucin is chef's kiss, and facial oils before moisturizer!! also hydrate or diedrate bestie 💕"
         } else if lowercasedQuery.contains("aging") || lowercasedQuery.contains("wrinkle") || lowercasedQuery.contains("fine line") {
-            return "Anti-aging skincare tips:\n\n• Retinol is gold standard (start with 0.25%)\n• Peptides boost collagen production\n• Vitamin C protects from free radicals\n• Hyaluronic acid plumps skin\n• SPF is your best anti-aging tool\n• Consider bakuchiol as gentle alternative\n\nConsistency is key! Results show in 3-6 months 🌺"
+            return "anti-aging before 30? preventative queen behavior ✨ retinol is THAT girl but start at 0.25% or you'll be a flaky mess. also peptides + vitamin c + SPF = the holy trinity"
         } else if lowercasedQuery.contains("product") || lowercasedQuery.contains("recommend") {
-            return "Based on your skin analysis, I recommend:\n\n🌟 Cleanser: CeraVe Hydrating Cleanser\n🌟 Serum: The Ordinary Niacinamide 10%\n🌟 Moisturizer: Cetaphil Daily Hydrating Lotion\n🌟 SPF: La Roche-Posay Anthelios\n🌟 Treatment: Paula's Choice BHA Liquid\n\nStart with basics and add products gradually!"
+            return "my ride or dies rn: cerave cleanser (she's reliable), the ordinary niacinamide (budget friendly icon), la roche posay SPF (french girls know wassup), and paula's choice BHA for texture!! start simple tho"
         } else if lowercasedQuery.contains("hi") || lowercasedQuery.contains("hello") || lowercasedQuery.contains("hey") {
-            return "Hello beautiful! 💕 How can I help you with your skincare journey today? I can help with:\n\n• Skincare routines\n• Product recommendations\n• Ingredient explanations\n• Skin concerns\n• Beauty tips\n\nWhat would you like to know?"
+            return "hiii babe!! 💕 what's the skin sitch today? i can help with routines, product recs, or just decode those confusing ingredients. spill the tea!"
         } else {
             let responses = [
-                "Great question! Based on your skin type, I'd suggest starting with a gentle routine and gradually adding active ingredients. What specific concern would you like to address?",
-                "That's interesting! Skincare is so personal. Can you tell me more about your skin type and main concerns so I can give you tailored advice?",
-                "I understand! Consistency is key in skincare. Remember: cleanse, treat, moisturize, and protect with SPF. What step would you like to focus on?",
-                "Good point! Every skin journey is unique. Would you like tips for morning routine, evening routine, or specific product recommendations?",
-                "Absolutely! The key is finding what works for YOUR skin. Have you noticed any particular ingredients that your skin loves or reacts to?"
+                "ooh good question bestie! what's your main skin concern rn? acne? dryness? or are we just trying to glow up? 💕",
+                "hmm interesting!! tell me more about your skin type so i can give you the tea ✨",
+                "okay but like consistency is everything fr! even the best routine won't work if you're not doing it daily",
+                "yesss let's talk about it! are you more of a 3-step girlie or do you want the full 10-step k-beauty moment?",
+                "no literally everyone's skin is so different! what works for one person might break someone else out 😭"
             ]
-            return responses.randomElement() ?? "I'm here to help! Feel free to ask me anything about skincare, routines, or products."
+            return responses.randomElement() ?? "bestie i'm here for all your skin questions!! let's get you glowing ✨"
         }
     }
 
@@ -180,7 +211,7 @@ struct ArisaAIView: View {
         messages = [
             ArisaChatMessage(
                 id: UUID(),
-                text: "Hi! I'm Arisa, your AI beauty assistant 💕 I can help you with skincare advice, product recommendations, and answer any questions about your skin!",
+                text: "heyy bestie!! 💕 i'm arisa, your skincare girlie~ ask me anything about getting that glass skin or spill the tea on your skin concerns ✨",
                 isUser: false,
                 timestamp: Date()
             )

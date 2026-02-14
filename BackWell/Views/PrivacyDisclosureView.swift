@@ -286,3 +286,33 @@ struct WebView: UIViewRepresentable {
     }
 }
 
+// MARK: - Previews
+
+struct PrivacyDisclosureStep_Previews: PreviewProvider {
+    static var previews: some View {
+        PrivacyDisclosureStep(userConsent: .constant(false))
+    }
+}
+
+struct DisclosureCard_Previews: PreviewProvider {
+    static var previews: some View {
+        DisclosureCard(
+            icon: "camera.fill",
+            title: "What Data We Collect",
+            items: [
+                "Your facial photos (when you choose to scan)",
+                "Age range and skin sensitivity",
+                "Skincare concerns and goals"
+            ]
+        )
+        .padding()
+        .background(Color.gray.opacity(0.1))
+    }
+}
+
+struct PrivacyPolicyWebView_Previews: PreviewProvider {
+    static var previews: some View {
+        PrivacyPolicyWebView()
+    }
+}
+

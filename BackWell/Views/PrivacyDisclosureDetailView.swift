@@ -267,3 +267,29 @@ struct InfoCard: View {
         )
     }
 }
+
+// MARK: - Previews
+
+struct PrivacyDisclosureDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        PrivacyDisclosureDetailView()
+    }
+}
+
+struct InfoCard_Previews: PreviewProvider {
+    static var previews: some View {
+        InfoCard(
+            icon: "camera.fill",
+            iconColor: .purple,
+            title: "What We Collect",
+            description: "When you use our AI features, we collect:",
+            items: [
+                "Facial photos for skin analysis",
+                "Your skin concerns and goals",
+                "Age range and skin sensitivity"
+            ]
+        )
+        .padding()
+        .background(Color.gray.opacity(0.1))
+    }
+}

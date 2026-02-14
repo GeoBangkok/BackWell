@@ -14,10 +14,11 @@ struct OnboardingView: View {
     @State private var selectedConcerns: Set<String> = []
     @State private var kBeautyKnowledge: String = ""
     @State private var selectedConditions: Set<String> = []
+    @State private var userDataSharingConsent: Bool = false
     @State private var showingSkinScan = false
     @State private var navigateToMainApp = false
     let onComplete: () -> Void
-    let totalSteps = 9
+    let totalSteps = 10
 
     var body: some View {
         NavigationView {
@@ -35,7 +36,7 @@ struct OnboardingView: View {
                             .foregroundColor(Color(hex: "FF91A4"))
 
                         // Back button (except for welcome and review screens)
-                        if currentStep > 0 && currentStep != 8 {
+                        if currentStep > 0 && currentStep != 9 {
                             HStack {
                                 Button(action: {
                                     hapticFeedback(.light)
@@ -57,7 +58,7 @@ struct OnboardingView: View {
                     .frame(height: 56)
                     .padding(.top, 10)
 
-                    // Content area with tab view - 9 steps total
+                    // Content area with tab view - 10 steps total
                     TabView(selection: $currentStep) {
                         WelcomeStep()
                             .tag(0)
@@ -80,17 +81,20 @@ struct OnboardingView: View {
                         ChronicConditionsStep(selectedConditions: $selectedConditions)
                             .tag(6)
 
-                        ReviewRequestStep()
+                        PrivacyDisclosureStep(userConsent: $userDataSharingConsent)
                             .tag(7)
 
-                        AIScanningStep(showingSkinScan: $showingSkinScan)
+                        ReviewRequestStep()
                             .tag(8)
+
+                        AIScanningStep(showingSkinScan: $showingSkinScan)
+                            .tag(9)
                     }
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                     .animation(.easeInOut, value: currentStep)
 
                     // Navigation button (except for steps with their own navigation)
-                    if currentStep != 4 && currentStep != 6 && currentStep != 7 && currentStep != 8 {
+                    if currentStep != 4 && currentStep != 6 && currentStep != 7 && currentStep != 8 && currentStep != 9 {
                         Button(action: {
                             hapticFeedback(.light)
                             handleNavigation()
@@ -129,13 +133,16 @@ struct OnboardingView: View {
             .navigationBarHidden(true)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToAIScanning"))) { _ in
-            currentStep = 8
+            currentStep = 9
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToReview"))) { _ in
-            currentStep = 7
+            currentStep = 8
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateFromConditions"))) { _ in
             currentStep = 7
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateFromPrivacyDisclosure"))) { _ in
+            currentStep = 8
         }
         .sheet(isPresented: $showingSkinScan) {
             SkinScanViewWrapper { analysisCompleted in
@@ -185,6 +192,8 @@ struct OnboardingView: View {
             UserDefaults.standard.set(Array(selectedConcerns), forKey: "skinConcerns")
             UserDefaults.standard.set(kBeautyKnowledge, forKey: "kBeautyKnowledge")
             UserDefaults.standard.set(Array(selectedConditions), forKey: "chronicConditions")
+            UserDefaults.standard.set(userDataSharingConsent, forKey: "userDataSharingConsent")
+            UserDefaults.standard.set(Date(), forKey: "consentDate")
             onComplete()
         }
     }

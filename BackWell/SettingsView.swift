@@ -14,6 +14,8 @@ struct SettingsView: View {
     @State private var restoreMessage = ""
     @State private var showSupportView = false
     @State private var showLogoutAlert = false
+    @State private var userDataSharingConsent = UserDefaults.standard.bool(forKey: "userDataSharingConsent")
+    @State private var showPrivacyDisclosure = false
 
     @ObservedObject private var storeManager = StoreManager.shared
 
@@ -257,6 +259,80 @@ struct SettingsView: View {
                             .padding(.horizontal, 24)
                         }
 
+                        // Data Privacy Section
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Data Privacy")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(Theme.textPrimary)
+                                .padding(.horizontal, 24)
+
+                            VStack(spacing: 0) {
+                                // AI Data Sharing Toggle
+                                HStack(spacing: 16) {
+                                    Image(systemName: "lock.shield.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(Theme.purple)
+                                        .frame(width: 32)
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("AI Data Sharing")
+                                            .font(.system(size: 16, weight: .regular))
+                                            .foregroundColor(Theme.textPrimary)
+
+                                        Text("Share data with OpenAI for analysis")
+                                            .font(.system(size: 12, weight: .regular))
+                                            .foregroundColor(Theme.textSecondary)
+                                    }
+
+                                    Spacer()
+
+                                    Toggle("", isOn: $userDataSharingConsent)
+                                        .toggleStyle(SwitchToggleStyle(tint: Theme.purple))
+                                        .labelsHidden()
+                                        .onChange(of: userDataSharingConsent) { newValue in
+                                            UserDefaults.standard.set(newValue, forKey: "userDataSharingConsent")
+                                            if newValue {
+                                                UserDefaults.standard.set(Date(), forKey: "consentDate")
+                                            }
+                                        }
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 16)
+
+                                Divider()
+                                    .padding(.leading, 64)
+
+                                SettingsRow(
+                                    icon: "info.circle.fill",
+                                    title: "Data Usage Details",
+                                    hasChevron: true
+                                )
+                                .onTapGesture {
+                                    showPrivacyDisclosure = true
+                                }
+
+                                Divider()
+                                    .padding(.leading, 64)
+
+                                SettingsRow(
+                                    icon: "trash.fill",
+                                    title: "Delete My Data",
+                                    hasChevron: true,
+                                    textColor: .red
+                                )
+                                .onTapGesture {
+                                    // Handle data deletion request
+                                    // This would typically involve clearing local data and
+                                    // potentially sending a request to delete server-side data
+                                }
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.6))
+                            )
+                            .padding(.horizontal, 24)
+                        }
+
                         // Log Out Button
                         Button(action: {
                             showLogoutAlert = true
@@ -305,6 +381,9 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showSupportView) {
                 SupportView()
+            }
+            .sheet(isPresented: $showPrivacyDisclosure) {
+                PrivacyDisclosureDetailView()
             }
         }
     }
@@ -418,17 +497,18 @@ struct SettingsRow: View {
     var hasToggle: Bool = false
     var toggleValue: Binding<Bool>? = nil
     var hasChevron: Bool = false
+    var textColor: Color? = nil
 
     var body: some View {
         HStack(spacing: 16) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundColor(Theme.purple)
+                .foregroundColor(textColor ?? Theme.purple)
                 .frame(width: 32)
 
             Text(title)
                 .font(.system(size: 16, weight: .regular))
-                .foregroundColor(Theme.textPrimary)
+                .foregroundColor(textColor ?? Theme.textPrimary)
 
             Spacer()
 

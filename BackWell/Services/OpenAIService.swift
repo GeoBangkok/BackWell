@@ -95,6 +95,11 @@ class OpenAIService {
     // MARK: - Skin Analysis
 
     func analyzeSkin(imageData: Data, userConcerns: [String], userSkinType: String) async throws -> SkinAnalysisResponse {
+        // Check for user consent before sending data to OpenAI
+        guard UserDefaults.standard.bool(forKey: "userDataSharingConsent") else {
+            throw OpenAIError.noUserConsent
+        }
+
         // Check if we should use fallback (for testing or when API is unavailable)
         if !NetworkManager.shared.isConnected {
             return generateFallbackAnalysis(concerns: userConcerns, skinType: userSkinType)
@@ -226,6 +231,11 @@ class OpenAIService {
     // MARK: - Chat (Arisa)
 
     func sendChatMessage(_ message: String, context: [SkinChatMessage]) async throws -> String {
+        // Check for user consent before sending data to OpenAI
+        guard UserDefaults.standard.bool(forKey: "userDataSharingConsent") else {
+            throw OpenAIError.noUserConsent
+        }
+
         // Build conversation history
         var messages: [OpenAIMessage] = [
             OpenAIMessage(role: "system", content: [
@@ -323,6 +333,17 @@ class OpenAIService {
 }
 
 // MARK: - API Errors
+
+enum OpenAIError: LocalizedError {
+    case noUserConsent
+
+    var errorDescription: String? {
+        switch self {
+        case .noUserConsent:
+            return "User consent is required to use AI features. Please review and accept the privacy disclosure in Settings."
+        }
+    }
+}
 
 enum APIError: LocalizedError {
     case invalidURL

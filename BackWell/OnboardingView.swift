@@ -1571,14 +1571,6 @@ struct SmilePath: Shape {
     }
 }
 
-// MARK: - Haptic Feedback
-
-func hapticFeedback(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-    let generator = UIImpactFeedbackGenerator(style: style)
-    generator.prepare()
-    generator.impactOccurred()
-}
-
 // MARK: - SkinScan View Wrapper
 
 struct SkinScanViewWrapper: View {

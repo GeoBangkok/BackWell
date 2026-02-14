@@ -286,9 +286,3 @@ struct WebView: UIViewRepresentable {
     }
 }
 
-// Haptic feedback helper (if not already in project)
-func hapticFeedback(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-    let generator = UIImpactFeedbackGenerator(style: style)
-    generator.prepare()
-    generator.impactOccurred()
-}

@@ -1259,7 +1259,7 @@ struct CameraPermissionScreen: View {
             Button(action: {
                 requestCameraAccess()
             }) {
-                Text("Enable Camera")
+                Text("Continue")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)

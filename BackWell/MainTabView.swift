@@ -11,9 +11,11 @@ import SwiftUI
 struct MainTabView: View {
     @State private var selectedTab = 0
     @State private var showingHistory = false
+    @State private var hasPrivacyConsent = UserDefaults.standard.bool(forKey: "userDataSharingConsent")
     @ObservedObject private var historyManager = ScanHistoryManager.shared
 
     var body: some View {
+        ZStack {
         VStack(spacing: 0) {
             // Top bar
             HStack {
@@ -99,6 +101,14 @@ struct MainTabView: View {
         .sheet(isPresented: $showingHistory) {
             ArchiveView()
         }
+
+            // Privacy policy banner overlay — blocks interaction until user opts in
+            if !hasPrivacyConsent {
+                PrivacyPolicyBannerView(hasConsented: $hasPrivacyConsent)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        } // ZStack
+        .animation(.easeInOut(duration: 0.35), value: hasPrivacyConsent)
     }
 }
 

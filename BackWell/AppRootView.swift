@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SuperwallKit
+import AppTrackingTransparency
 import Combine
 
 enum AppScreen {
@@ -48,6 +49,12 @@ struct AppRootView: View {
             }
         }
         .animation(.easeInOut, value: currentScreen)
+        .onAppear {
+            // Request ATT at launch
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                ATTrackingManager.requestTrackingAuthorization { _ in }
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("LogOut"))) { _ in
             withAnimation {
                 currentScreen = .login

@@ -21,6 +21,7 @@ class StoreManager: ObservableObject {
     private var updateListenerTask: Task<Void, Error>?
 
     private init() {
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
         updateListenerTask = listenForTransactions()
         Task {
             await checkSubscriptionStatus()

@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import SuperwallKit
+import AppTrackingTransparency
 import Combine
 
 @main
@@ -16,6 +17,8 @@ struct SkinGlowingApp: App {
     private let superwallDelegate = DiagnosticSuperwallDelegate()
 
     init() {
+        guard ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] != "1" else { return }
+
         Superwall.configure(
             apiKey: "pk_RFmV5ZDuvTQSuZgr_mIDf",
             purchaseController: SuperwallPurchaseController()

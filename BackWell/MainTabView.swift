@@ -2,7 +2,7 @@
 //  MainTabView.swift
 //  SkinGlowing
 //
-//  2-tab layout: Face Scan + Product Scan
+//  3-tab layout: Face Scan + Product Scan + Settings
 //  Top bar: SkinGlowing logo left, History icon right
 //
 
@@ -46,6 +46,9 @@ struct MainTabView: View {
 
                 ProductScanTabView()
                     .tag(1)
+
+                SettingsView()
+                    .tag(2)
             }
             .tabViewStyle(.page(indexDisplayMode: .never))
 
@@ -70,6 +73,17 @@ struct MainTabView: View {
                     hapticFeedback(.light)
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         selectedTab = 1
+                    }
+                }
+
+                SGTabItem(
+                    icon: "gearshape.fill",
+                    title: "Settings",
+                    isSelected: selectedTab == 2
+                ) {
+                    hapticFeedback(.light)
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        selectedTab = 2
                     }
                 }
             }

@@ -2,7 +2,7 @@
 //  OnboardingView.swift
 //  SkinGlowing
 //
-//  Complete 23-screen onboarding flow
+//  Focused 15-screen onboarding flow
 //
 
 import SwiftUI
@@ -15,7 +15,6 @@ struct OnboardingView: View {
     @State private var selectedSkinType: String = ""
     @State private var selectedGoals: Set<String> = []
     @State private var selectedConcerns: Set<String> = []
-    @State private var selectedConsistency: String = ""
     @State private var capturedImage: UIImage? = nil
     @State private var showImagePicker = false
     @State private var imagePickerSource: UIImagePickerController.SourceType = .photoLibrary
@@ -24,7 +23,7 @@ struct OnboardingView: View {
     @State private var loadingFinished = false
 
     let onComplete: () -> Void
-    let totalSteps = 22 // 0-indexed (0-21), screen 23 is handled by onComplete
+    let totalSteps = 14 // 0-indexed (0-14), paywall is handled by onComplete
 
     var body: some View {
         ZStack {
@@ -32,7 +31,7 @@ struct OnboardingView: View {
 
             VStack(spacing: 0) {
                 // Back button and progress (hidden on splash, loading, blurry preview)
-                if currentStep > 0 && currentStep != 20 && currentStep != 21 {
+                if currentStep > 0 && currentStep != 13 && currentStep != 14 {
                     HStack {
                         Button(action: {
                             hapticFeedback(.light)
@@ -84,46 +83,25 @@ struct OnboardingView: View {
                     SkinTypeScreen(selectedSkinType: $selectedSkinType)
                         .tag(5)
 
-                    ProductScanTeaserScreen()
+                    PrimaryGoalScreen(selectedGoals: $selectedGoals)
                         .tag(6)
 
-                    PrimaryGoalScreen(selectedGoals: $selectedGoals)
+                    CurrentConcernsScreen(selectedConcerns: $selectedConcerns)
                         .tag(7)
 
-                    SkinAgeTeaserScreen()
+                    HabitLockScreen()
                         .tag(8)
 
-                    HabitLockScreen()
+                    ResultPreviewScreen()
                         .tag(9)
-
-                    GlassSkinTeaserScreen()
-                        .tag(10)
-
-                    CurrentConcernsScreen(selectedConcerns: $selectedConcerns)
-                        .tag(11)
-
-                    FitScoreTeaserScreen()
-                        .tag(12)
-
-                    BlemishesTeaserScreen()
-                        .tag(13)
-
-                    ConsistencyScreen(selectedConsistency: $selectedConsistency)
-                        .tag(14)
-
-                    FirmnessTeaserScreen()
-                        .tag(15)
 
                     CameraPermissionScreen(onGranted: {
                         advanceStep()
                     })
-                        .tag(16)
+                        .tag(10)
 
                     LightingInstructionScreen()
-                        .tag(17)
-
-                    PremiumFramingScreen()
-                        .tag(18)
+                        .tag(11)
 
                     ScanOrUploadScreen(
                         capturedImage: $capturedImage,
@@ -131,18 +109,18 @@ struct OnboardingView: View {
                         showImagePicker: $showImagePicker,
                         imagePickerSource: $imagePickerSource
                     )
-                        .tag(19)
+                        .tag(12)
 
                     LoadingScreen(capturedImage: $capturedImage, onFinished: {
                         loadingFinished = true
                         advanceStep()
                     })
-                        .tag(20)
+                        .tag(13)
 
                     BlurryPreviewScreen(capturedImage: $capturedImage, onUnlock: {
                         onComplete()
                     })
-                        .tag(21)
+                        .tag(14)
                 }
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .animation(.easeInOut(duration: 0.35), value: currentStep)
@@ -186,8 +164,8 @@ struct OnboardingView: View {
             ImagePicker(selectedImage: $capturedImage, sourceType: imagePickerSource)
         }
         .onChange(of: capturedImage) { newImage in
-            // When photo is selected on screen 19, auto-advance to loading
-            if newImage != nil && currentStep == 19 {
+            // When photo is selected on screen 12, auto-advance to loading
+            if newImage != nil && currentStep == 12 {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     advanceStep()
                 }
@@ -214,9 +192,9 @@ struct OnboardingView: View {
     // MARK: - Navigation Helpers
 
     private var shouldShowContinueButton: Bool {
-        // Hide on splash (0), camera permission (16), scan/upload (19), loading (20), blurry preview (21)
+        // Hide on splash, camera permission, scan/upload, loading, blurry preview.
         switch currentStep {
-        case 0, 16, 19, 20, 21:
+        case 0, 10, 12, 13, 14:
             return false
         default:
             return true
@@ -230,9 +208,8 @@ struct OnboardingView: View {
     private var isContinueDisabled: Bool {
         switch currentStep {
         case 5: return selectedSkinType.isEmpty
-        case 7: return selectedGoals.isEmpty
-        case 11: return selectedConcerns.isEmpty
-        case 14: return selectedConsistency.isEmpty
+        case 6: return selectedGoals.isEmpty
+        case 7: return selectedConcerns.isEmpty
         default: return false
         }
     }
@@ -242,12 +219,10 @@ struct OnboardingView: View {
         switch currentStep {
         case 5:
             UserDefaults.standard.set(selectedSkinType, forKey: "sg_skinType")
-        case 7:
+        case 6:
             UserDefaults.standard.set(Array(selectedGoals), forKey: "sg_goals")
-        case 11:
+        case 7:
             UserDefaults.standard.set(Array(selectedConcerns), forKey: "sg_concerns")
-        case 14:
-            UserDefaults.standard.set(selectedConsistency, forKey: "sg_consistency")
         default:
             break
         }
@@ -298,14 +273,14 @@ struct HookScreen: View {
                 .foregroundColor(.black.opacity(0.8))
                 .padding(.bottom, 40)
 
-            Text("Your face changes\nevery day.")
+            Text("Your skin changes\nevery day.")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
                 .padding(.bottom, 16)
 
-            Text("Most people never notice\nuntil it's obvious.")
+            Text("Most people only notice\nwhen it gets obvious.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
@@ -353,13 +328,13 @@ struct MicroPainScreen: View {
             }
             .padding(.bottom, 48)
 
-            Text("Tiny skin issues stack.")
+            Text("Tiny skin changes stack.")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 16)
 
-            Text("Dryness. Breakouts. Texture. Aging.\nQuietly.")
+            Text("Dryness. Breakouts. Texture.\nUneven tone.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
@@ -381,20 +356,22 @@ struct FaceScanTeaserScreen: View {
         VStack(spacing: 0) {
             Spacer()
 
-            // Mock camera view
+            // Mock scan view
             ZStack {
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.black.opacity(0.04))
+                Image("onboarding_scan_face")
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 280, height: 240)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.black.opacity(0.08), lineWidth: 1)
+                        LinearGradient(
+                            colors: [
+                                Color.black.opacity(0.04),
+                                Color.black.opacity(0.18)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
                     )
-
-                // Camera icon
-                Image(systemName: "viewfinder")
-                    .font(.system(size: 60, weight: .ultraLight))
-                    .foregroundColor(.black.opacity(0.15))
 
                 // Scan line
                 Rectangle()
@@ -406,23 +383,34 @@ struct FaceScanTeaserScreen: View {
                             .repeatForever(autoreverses: true),
                         value: scanLineOffset
                     )
+
+                Image(systemName: "viewfinder")
+                    .font(.system(size: 156, weight: .ultraLight))
+                    .foregroundColor(.white.opacity(0.72))
             }
+            .frame(width: 280, height: 240)
             .clipShape(RoundedRectangle(cornerRadius: 20))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(Color.black.opacity(0.08), lineWidth: 1)
+            )
+            .shadow(color: Color.black.opacity(0.06), radius: 12, x: 0, y: 4)
             .padding(.bottom, 40)
             .onAppear {
                 scanLineOffset = 120
             }
 
-            Text("One scan. Four scores.")
+            Text("One selfie.\nFour skin signals.")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 16)
 
-            Text("See what your skin is doing today.")
+            Text("Track Skin Age, Glass Skin,\nBlemishes, and Firmness.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
+                .lineSpacing(4)
                 .padding(.bottom, 24)
 
             // Small score labels
@@ -450,22 +438,22 @@ struct FaceScanTeaserScreen: View {
 
 struct CredibilityScreen: View {
     let bullets = [
-        "Consistent analysis framework",
-        "Zone-specific detection",
-        "Daily tracking precision"
+        "Zone-based analysis",
+        "Progress history",
+        "Personalized tips"
     ]
 
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
 
-            Text("Designed for consistency.")
+            Text("Built for consistency.")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 12)
 
-            Text("Same lighting tips. Same angles.\nBetter tracking over time.")
+            Text("Same angle.\nSame lighting.\nBetter tracking over time.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
@@ -542,7 +530,7 @@ struct SkinTypeScreen: View {
             }
             .padding(.bottom, 24)
 
-            Text("This helps tune your product\ncompatibility score.")
+            Text("This helps personalize your analysis.")
                 .font(.system(size: 14, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
@@ -672,6 +660,11 @@ struct PrimaryGoalScreen: View {
                     }
                 }
             }
+            .padding(.bottom, 20)
+
+            Text("Pick all that apply.")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(Theme.captionText)
 
             Spacer()
             Spacer()
@@ -785,7 +778,7 @@ struct HabitLockScreen: View {
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 16)
 
-            Text("Progress feels real when\nit's consistent.")
+            Text("Progress is easier\nwhen you can see it.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
@@ -798,7 +791,64 @@ struct HabitLockScreen: View {
     }
 }
 
-// MARK: - Screen 11: Glass Skin Teaser
+// MARK: - Screen 10: Result Preview
+
+struct ResultPreviewScreen: View {
+    let results: [(String, String)] = [
+        ("27", "Skin Age"),
+        ("Glowy", "Glass Skin"),
+        ("Low", "Blemishes"),
+        ("7.4", "Firmness")
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                ForEach(results, id: \.1) { value, label in
+                    VStack(spacing: 8) {
+                        Text(value)
+                            .font(.system(size: value.count > 4 ? 22 : 30, weight: .heavy, design: .rounded))
+                            .foregroundColor(.black)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+
+                        Text(label)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(Theme.captionText)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 104)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.white)
+                            .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 4)
+                    )
+                }
+            }
+            .padding(.bottom, 40)
+
+            Text("Simple scores.\nClear next steps.")
+                .font(.system(size: 32, weight: .heavy))
+                .foregroundColor(.black)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.bottom, 16)
+
+            Text("No guessing.")
+                .font(.system(size: 17, weight: .regular))
+                .foregroundColor(Theme.captionText)
+                .multilineTextAlignment(.center)
+
+            Spacer()
+            Spacer()
+        }
+        .padding(.horizontal, 32)
+    }
+}
+
+// MARK: - Legacy Screen: Glass Skin Teaser
 
 struct GlassSkinTeaserScreen: View {
     let tiers = ["Dull", "Balanced", "Glowy", "Glass-tier"]
@@ -1228,7 +1278,7 @@ struct FirmnessTeaserScreen: View {
     }
 }
 
-// MARK: - Screen 17: Camera Permission
+// MARK: - Screen 11: Camera Permission
 
 struct CameraPermissionScreen: View {
     let onGranted: () -> Void
@@ -1243,18 +1293,31 @@ struct CameraPermissionScreen: View {
                 .foregroundColor(.black.opacity(0.7))
                 .padding(.bottom, 40)
 
-            Text("Enable camera to scan.")
+            Text("Take your first scan.")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 16)
 
-            Text("Scans happen on-device whenever\npossible. Simple and private.")
+            Text("A selfie in good lighting\nis all you need.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
-                .padding(.bottom, 48)
+                .padding(.bottom, 28)
+
+            Text("Your photo is used to generate\nyour skin analysis.")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Theme.captionText)
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.black.opacity(0.03))
+                )
+                .padding(.bottom, 40)
 
             Button(action: {
                 requestCameraAccess()
@@ -1289,7 +1352,7 @@ struct CameraPermissionScreen: View {
     }
 }
 
-// MARK: - Screen 18: Lighting Instruction
+// MARK: - Screen 12: Lighting Instruction
 
 struct LightingInstructionScreen: View {
     let tips: [(String, String)] = [
@@ -1325,14 +1388,14 @@ struct LightingInstructionScreen: View {
             }
             .padding(.bottom, 44)
 
-            Text("Better lighting =\nbetter results.")
+            Text("Better lighting.\nBetter results.")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .lineSpacing(4)
                 .padding(.bottom, 16)
 
-            Text("Keep it consistent for tracking\nthat feels real.")
+            Text("Keep your face centered\nwith no heavy shadows.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
@@ -1430,7 +1493,7 @@ struct PremiumFramingScreen: View {
     }
 }
 
-// MARK: - Screen 20: Scan or Photo Upload
+// MARK: - Screen 13: Scan or Photo Upload
 
 struct ScanOrUploadScreen: View {
     @Binding var capturedImage: UIImage?
@@ -1447,13 +1510,13 @@ struct ScanOrUploadScreen: View {
                 .foregroundColor(.black.opacity(0.6))
                 .padding(.bottom, 36)
 
-            Text("Take your first scan.")
+            Text("Ready for your first scan?")
                 .font(.system(size: 32, weight: .heavy))
                 .foregroundColor(.black)
                 .multilineTextAlignment(.center)
                 .padding(.bottom, 16)
 
-            Text("A selfie in good lighting is\nall you need.")
+            Text("Use a clear selfie\nwith your full face visible.")
                 .font(.system(size: 17, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
@@ -1488,7 +1551,7 @@ struct ScanOrUploadScreen: View {
     }
 }
 
-// MARK: - Screen 21: Loading Screen
+// MARK: - Screen 14: Loading Screen
 
 struct LoadingScreen: View {
     @Binding var capturedImage: UIImage?
@@ -1499,11 +1562,11 @@ struct LoadingScreen: View {
     @State private var visibleSteps: [String] = []
 
     let steps = [
-        "Mapping 14 facial zones...",
-        "Analyzing dermal texture...",
-        "Measuring melanin distribution...",
-        "Calculating skin elasticity...",
-        "Generating your profile..."
+        "Mapping facial zones...",
+        "Checking texture...",
+        "Reading tone balance...",
+        "Estimating skin signals...",
+        "Building your profile..."
     ]
 
     var body: some View {
@@ -1591,7 +1654,7 @@ struct LoadingScreen: View {
     }
 }
 
-// MARK: - Screen 22: Blurry Preview
+// MARK: - Screen 15: Blurry Preview
 
 struct BlurryPreviewScreen: View {
     @Binding var capturedImage: UIImage?
@@ -1652,7 +1715,7 @@ struct BlurryPreviewScreen: View {
                 .foregroundColor(.black)
                 .padding(.bottom, 8)
 
-            Text("Unlock full analysis")
+            Text("Unlock your full skin analysis.")
                 .font(.system(size: 15, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .padding(.bottom, 40)

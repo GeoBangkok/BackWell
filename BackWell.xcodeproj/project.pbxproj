@@ -625,7 +625,7 @@
 			repositoryURL = "https://github.com/superwall/Superwall-iOS";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 4.12.5;
+				minimumVersion = 4.15.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

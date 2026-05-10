@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ArisaAIView: View {
+    let profileContext: String
+
     @State private var messageText = ""
     @State private var messages: [ArisaChatMessage] = [
         ArisaChatMessage(
@@ -20,6 +22,10 @@ struct ArisaAIView: View {
     @State private var isTyping = false
     @State private var isSending = false
     @FocusState private var isInputFocused: Bool
+
+    init(profileContext: String = "") {
+        self.profileContext = profileContext
+    }
 
     var body: some View {
         NavigationStack {
@@ -144,7 +150,14 @@ struct ArisaAIView: View {
         // Call OpenAI API
         Task {
             do {
-                let response = try await OpenAIService.shared.sendChatMessage(userQuery, context: context)
+                let enrichedQuery: String
+                if profileContext.isEmpty {
+                    enrichedQuery = userQuery
+                } else {
+                    enrichedQuery = "\(profileContext)\n\nUser question: \(userQuery)"
+                }
+
+                let response = try await OpenAIService.shared.sendChatMessage(enrichedQuery, context: context)
 
                 await MainActor.run {
                     isTyping = false

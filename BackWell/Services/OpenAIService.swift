@@ -79,6 +79,56 @@ struct RoutineRecommendation: Codable {
     let duration: String
 }
 
+struct OpenAIFaceScanPayload: Codable {
+    let glowScore: Int
+    let skinAge: Int
+    let skinAgeMicro: String
+    let glassSkinScore: Int
+    let glassSkinTier: String
+    let glassSkinMicro: String
+    let blemishSeverity: String
+    let blemishScore: Int
+    let blemishZone: String
+    let blemishMicro: String
+    let textureScore: Int
+    let textureMicro: String
+    let rednessScore: Int
+    let rednessMicro: String
+    let evenToneScore: Int
+    let evenToneMicro: String
+    let hydrationLookScore: Int
+    let hydrationMicro: String
+    let firmnessScore: Double
+    let firmnessMicro: String
+    let underEyeScore: Int
+    let underEyeMicro: String
+    let glowAdvice: String
+    let planFocus: [String]
+}
+
+struct OpenAIProductScanPayload: Codable {
+    let productName: String
+    let productFitScore: Int
+    let compatibilityLabel: String
+    let microExplanation: String
+    let acneSafe: String
+    let hydrationFriendly: String
+    let irritationRisk: String
+    let breakoutRisk: Int
+    let drynessRisk: Int
+    let poreCloggingRisk: Int
+    let glowSupport: String
+    let glowSupportScore: Int
+    let makeupMatchScore: Int
+    let flaggedIngredients: [OpenAIFlaggedIngredient]
+    let usageAdvice: String
+}
+
+struct OpenAIFlaggedIngredient: Codable {
+    let name: String
+    let concern: String
+}
+
 // MARK: - OpenAI Service
 
 class OpenAIService {
@@ -93,6 +143,239 @@ class OpenAIService {
     private init() {}
 
     // MARK: - Skin Analysis
+
+    func analyzeFaceScan(imageData: Data, userConcerns: [String], userSkinType: String, previousScan: FaceScanResult?) async throws -> FaceScanResult {
+        guard UserDefaults.standard.bool(forKey: "userDataSharingConsent") else {
+            throw OpenAIError.noUserConsent
+        }
+
+        guard NetworkManager.shared.isConnected else {
+            var fallback = SkinScoringEngine.shared.generateFaceScan(previousScan: previousScan)
+            fallback = FaceScanResult(
+                glowScore: fallback.glowScore ?? 72,
+                skinAge: fallback.skinAge,
+                skinAgeDelta: fallback.skinAgeDelta,
+                skinAgeMicro: fallback.skinAgeMicro,
+                glassSkinTier: fallback.glassSkinTier,
+                glassSkinScore: fallback.glassSkinScore ?? 68,
+                glassSkinMicro: fallback.glassSkinMicro,
+                blemishSeverity: fallback.blemishSeverity,
+                blemishScore: fallback.blemishScore ?? 74,
+                blemishZone: fallback.blemishZone,
+                blemishMicro: fallback.blemishMicro,
+                textureScore: fallback.textureScore ?? 71,
+                textureMicro: fallback.textureMicro ?? "Visible texture looks moderate today.",
+                rednessScore: fallback.rednessScore ?? 78,
+                rednessMicro: fallback.rednessMicro ?? "Visible redness appears mild.",
+                evenToneScore: fallback.evenToneScore ?? 73,
+                evenToneMicro: fallback.evenToneMicro ?? "Tone looks slightly uneven around cheeks.",
+                hydrationLookScore: fallback.hydrationLookScore ?? 70,
+                hydrationMicro: fallback.hydrationMicro ?? "Hydration look could be stronger.",
+                firmnessScore: fallback.firmnessScore,
+                firmnessDelta: fallback.firmnessDelta,
+                firmnessMicro: fallback.firmnessMicro,
+                underEyeScore: fallback.underEyeScore ?? 69,
+                underEyeMicro: fallback.underEyeMicro ?? "Under-eye area looks a little tired.",
+                glowAdvice: fallback.glowAdvice,
+                planFocus: fallback.planFocus ?? ["Hydration", "Texture", "Glow"],
+                imageData: imageData
+            )
+            return fallback
+        }
+
+        let base64Image = imageData.base64EncodedString()
+        let imageUrl = "data:image/jpeg;base64,\(base64Image)"
+        let previousContext = previousScan.map {
+            "Previous scan: skin age \($0.skinAge), glow \($0.glowScore ?? 0), texture \($0.textureScore ?? 0), redness \($0.rednessScore ?? 0), firmness \(String(format: "%.1f", $0.firmnessScore))."
+        } ?? "No previous scan."
+
+        let systemPrompt = """
+        You are SkinGlowing's visual skin analysis engine. Analyze the face photo as consumer wellness guidance, not medical diagnosis.
+        Return ONLY valid JSON with this exact structure:
+        {
+          "glowScore": 0-100,
+          "skinAge": integer perceived skin age,
+          "skinAgeMicro": "short visual explanation",
+          "glassSkinScore": 0-100,
+          "glassSkinTier": "Dull|Balanced|Glowy|Glass-tier",
+          "glassSkinMicro": "short visual explanation",
+          "blemishSeverity": "Minor|Moderate|Active",
+          "blemishScore": 0-100 where higher means clearer,
+          "blemishZone": "main visible zone",
+          "blemishMicro": "short visual explanation",
+          "textureScore": 0-100,
+          "textureMicro": "short visual explanation",
+          "rednessScore": 0-100 where higher means calmer-looking,
+          "rednessMicro": "short visual explanation",
+          "evenToneScore": 0-100,
+          "evenToneMicro": "short visual explanation",
+          "hydrationLookScore": 0-100,
+          "hydrationMicro": "short visual explanation",
+          "firmnessScore": 0-10,
+          "firmnessMicro": "short visual explanation",
+          "underEyeScore": 0-100,
+          "underEyeMicro": "short visual explanation",
+          "glowAdvice": "one short next step",
+          "planFocus": ["three focus areas for a 90 day plan"]
+        }
+        Use consumer-safe language like visible, perceived, looks, may. Do not diagnose disease.
+        User skin type: \(userSkinType.isEmpty ? "Not sure" : userSkinType).
+        User goals/concerns: \(userConcerns.joined(separator: ", ")).
+        \(previousContext)
+        """
+
+        let request = OpenAIRequest(
+            model: "gpt-5-nano",
+            messages: [
+                OpenAIMessage(role: "system", content: [
+                    OpenAIContent(type: "text", text: systemPrompt, imageUrl: nil)
+                ]),
+                OpenAIMessage(role: "user", content: [
+                    OpenAIContent(type: "text", text: "Analyze this face photo for SkinGlowing metrics.", imageUrl: nil),
+                    OpenAIContent(type: "image_url", text: nil, imageUrl: OpenAIImageUrl(url: imageUrl, detail: "high"))
+                ])
+            ],
+            maxTokens: 1200,
+            temperature: 0.2
+        )
+
+        do {
+            let response = try await makeAPICall(request: request)
+            guard let content = response.choices.first?.message.content,
+                  let data = extractJSONData(from: content),
+                  let payload = try? JSONDecoder().decode(OpenAIFaceScanPayload.self, from: data) else {
+                return SkinScoringEngine.shared.generateFaceScan(previousScan: previousScan)
+            }
+
+            let tier = glassTier(from: payload.glassSkinTier, score: payload.glassSkinScore)
+            let severity = blemishSeverity(from: payload.blemishSeverity)
+            let skinAgeDelta = previousScan.map { payload.skinAge - $0.skinAge }
+            let firmnessDelta = previousScan.map { Double(round((payload.firmnessScore - $0.firmnessScore) * 10) / 10) }
+
+            return FaceScanResult(
+                glowScore: clamped(payload.glowScore, 0, 100),
+                skinAge: max(16, payload.skinAge),
+                skinAgeDelta: skinAgeDelta,
+                skinAgeMicro: payload.skinAgeMicro,
+                glassSkinTier: tier,
+                glassSkinScore: clamped(payload.glassSkinScore, 0, 100),
+                glassSkinMicro: payload.glassSkinMicro,
+                blemishSeverity: severity,
+                blemishScore: clamped(payload.blemishScore, 0, 100),
+                blemishZone: payload.blemishZone,
+                blemishMicro: payload.blemishMicro,
+                textureScore: clamped(payload.textureScore, 0, 100),
+                textureMicro: payload.textureMicro,
+                rednessScore: clamped(payload.rednessScore, 0, 100),
+                rednessMicro: payload.rednessMicro,
+                evenToneScore: clamped(payload.evenToneScore, 0, 100),
+                evenToneMicro: payload.evenToneMicro,
+                hydrationLookScore: clamped(payload.hydrationLookScore, 0, 100),
+                hydrationMicro: payload.hydrationMicro,
+                firmnessScore: min(10, max(0, payload.firmnessScore)),
+                firmnessDelta: firmnessDelta,
+                firmnessMicro: payload.firmnessMicro,
+                underEyeScore: clamped(payload.underEyeScore, 0, 100),
+                underEyeMicro: payload.underEyeMicro,
+                glowAdvice: payload.glowAdvice,
+                planFocus: payload.planFocus,
+                imageData: imageData
+            )
+        } catch {
+            print("Face scan API failed: \(error)")
+            return SkinScoringEngine.shared.generateFaceScan(previousScan: previousScan)
+        }
+    }
+
+    func analyzeProductScan(imageData: Data, userSkinType: String, latestFaceScan: FaceScanResult?) async throws -> ProductScanResult {
+        guard UserDefaults.standard.bool(forKey: "userDataSharingConsent") else {
+            throw OpenAIError.noUserConsent
+        }
+
+        guard NetworkManager.shared.isConnected else {
+            return SkinScoringEngine.shared.generateProductScan(
+                productName: "Scanned Product",
+                userSkinType: userSkinType.isEmpty ? "Normal" : userSkinType
+            )
+        }
+
+        let base64Image = imageData.base64EncodedString()
+        let imageUrl = "data:image/jpeg;base64,\(base64Image)"
+        let scanContext = latestFaceScan.map {
+            "Latest face scan: glow \($0.glowScore ?? 0), blemish score \($0.blemishScore ?? 0), redness \($0.rednessScore ?? 0), hydration look \($0.hydrationLookScore ?? 0), texture \($0.textureScore ?? 0)."
+        } ?? "No face scan yet."
+
+        let systemPrompt = """
+        You are SkinGlowing's cosmetic and ingredient compatibility engine. Read the product/package/ingredient photo and estimate fit for the user's skin profile.
+        Return ONLY valid JSON:
+        {
+          "productName": "best detected product name or Scanned Product",
+          "productFitScore": 0-100,
+          "compatibilityLabel": "Excellent fit|Good fit|Fair fit|Poor fit",
+          "microExplanation": "one short reason",
+          "acneSafe": "Green|Yellow|Red",
+          "hydrationFriendly": "Green|Yellow|Red",
+          "irritationRisk": "Green|Yellow|Red",
+          "breakoutRisk": 0-100 where higher means more risk,
+          "drynessRisk": 0-100,
+          "poreCloggingRisk": 0-100,
+          "glowSupport": "Green|Yellow|Red",
+          "glowSupportScore": 0-100,
+          "makeupMatchScore": 0-100,
+          "flaggedIngredients": [{"name":"ingredient", "concern":"short concern"}],
+          "usageAdvice": "one short consumer-safe usage note"
+        }
+        Use risk language, not certainty. If label text is unreadable, infer from visible packaging and say so in microExplanation.
+        User skin type: \(userSkinType.isEmpty ? "Not sure" : userSkinType).
+        \(scanContext)
+        """
+
+        let request = OpenAIRequest(
+            model: "gpt-5-nano",
+            messages: [
+                OpenAIMessage(role: "system", content: [
+                    OpenAIContent(type: "text", text: systemPrompt, imageUrl: nil)
+                ]),
+                OpenAIMessage(role: "user", content: [
+                    OpenAIContent(type: "text", text: "Analyze this cosmetic/product photo for skin compatibility.", imageUrl: nil),
+                    OpenAIContent(type: "image_url", text: nil, imageUrl: OpenAIImageUrl(url: imageUrl, detail: "high"))
+                ])
+            ],
+            maxTokens: 1100,
+            temperature: 0.2
+        )
+
+        do {
+            let response = try await makeAPICall(request: request)
+            guard let content = response.choices.first?.message.content,
+                  let data = extractJSONData(from: content),
+                  let payload = try? JSONDecoder().decode(OpenAIProductScanPayload.self, from: data) else {
+                return SkinScoringEngine.shared.generateProductScan(productName: "Scanned Product", userSkinType: userSkinType)
+            }
+
+            return ProductScanResult(
+                productName: payload.productName.isEmpty ? "Scanned Product" : payload.productName,
+                compatibilityScore: max(0, min(10, Int(round(Double(payload.productFitScore) / 10.0)))),
+                compatibilityLabel: payload.compatibilityLabel,
+                microExplanation: payload.microExplanation,
+                acneSafe: trafficLight(from: payload.acneSafe),
+                hydrationFriendly: trafficLight(from: payload.hydrationFriendly),
+                irritationRisk: trafficLight(from: payload.irritationRisk),
+                breakoutRisk: clamped(payload.breakoutRisk, 0, 100),
+                drynessRisk: clamped(payload.drynessRisk, 0, 100),
+                poreCloggingRisk: clamped(payload.poreCloggingRisk, 0, 100),
+                glowSupport: trafficLight(from: payload.glowSupport),
+                glowSupportScore: clamped(payload.glowSupportScore, 0, 100),
+                makeupMatchScore: clamped(payload.makeupMatchScore, 0, 100),
+                flaggedIngredients: payload.flaggedIngredients.map { FlaggedIngredient(name: $0.name, concern: $0.concern) },
+                usageAdvice: payload.usageAdvice,
+                imageData: imageData
+            )
+        } catch {
+            print("Product scan API failed: \(error)")
+            return SkinScoringEngine.shared.generateProductScan(productName: "Scanned Product", userSkinType: userSkinType)
+        }
+    }
 
     func analyzeSkin(imageData: Data, userConcerns: [String], userSkinType: String) async throws -> SkinAnalysisResponse {
         // Check for user consent before sending data to OpenAI
@@ -280,6 +563,65 @@ class OpenAIService {
 
         let response = try await makeAPICall(request: request)
         return response.choices.first?.message.content ?? "I'm sorry, I couldn't process that request. Please try again."
+    }
+
+    // MARK: - Response Helpers
+
+    private func extractJSONData(from content: String) -> Data? {
+        var trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if trimmed.hasPrefix("```") {
+            trimmed = trimmed
+                .replacingOccurrences(of: "```json", with: "")
+                .replacingOccurrences(of: "```JSON", with: "")
+                .replacingOccurrences(of: "```", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        if let start = trimmed.firstIndex(of: "{"),
+           let end = trimmed.lastIndex(of: "}"),
+           start <= end {
+            trimmed = String(trimmed[start...end])
+        }
+
+        return trimmed.data(using: .utf8)
+    }
+
+    private func glassTier(from value: String, score: Int) -> GlassSkinTier {
+        let normalized = value.lowercased()
+        if normalized.contains("glass") { return .glassTier }
+        if normalized.contains("glow") { return .glowy }
+        if normalized.contains("balanced") { return .balanced }
+        if normalized.contains("dull") { return .dull }
+
+        switch score {
+        case 85...100: return .glassTier
+        case 70..<85: return .glowy
+        case 50..<70: return .balanced
+        default: return .dull
+        }
+    }
+
+    private func blemishSeverity(from value: String) -> BlemishSeverity {
+        let normalized = value.lowercased()
+        if normalized.contains("active") { return .active }
+        if normalized.contains("moderate") { return .moderate }
+        return .minor
+    }
+
+    private func trafficLight(from value: String) -> TrafficLight {
+        let normalized = value.lowercased()
+        if normalized.contains("red") || normalized.contains("poor") || normalized.contains("high") {
+            return .red
+        }
+        if normalized.contains("yellow") || normalized.contains("fair") || normalized.contains("medium") {
+            return .yellow
+        }
+        return .green
+    }
+
+    private func clamped(_ value: Int, _ minValue: Int, _ maxValue: Int) -> Int {
+        min(maxValue, max(minValue, value))
     }
 
     // MARK: - Private API Call Method

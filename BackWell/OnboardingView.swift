@@ -2,11 +2,12 @@
 //  OnboardingView.swift
 //  SkinGlowing
 //
-//  Focused 15-screen onboarding flow
+//  Focused onboarding flow
 //
 
 import SwiftUI
 import AVFoundation
+import StoreKit
 
 // MARK: - Main Onboarding View
 
@@ -19,18 +20,257 @@ struct OnboardingView: View {
     @State private var showImagePicker = false
     @State private var imagePickerSource: UIImagePickerController.SourceType = .photoLibrary
     @State private var showActionSheet = false
-    @State private var splashOpacity: Double = 0
     @State private var loadingFinished = false
 
     let onComplete: () -> Void
-    let totalSteps = 14 // 0-indexed (0-14), paywall is handled by onComplete
+    let totalSteps = 8 // 0-indexed, paywall is handled by onComplete
 
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Back button and progress (hidden on splash, loading, blurry preview)
+                ZStack {
+                    Text("SkinGlowing")
+                        .font(.system(size: 20, weight: .heavy))
+                        .foregroundColor(.black)
+
+                    HStack(spacing: 0) {
+                        if currentStep > 0 && currentStep < 6 {
+                            Button(action: {
+                                hapticFeedback(.light)
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    currentStep -= 1
+                                }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 18, weight: .medium))
+                                    .foregroundColor(.black.opacity(0.6))
+                                    .frame(width: 44, height: 44)
+                            }
+                        } else {
+                            Color.clear.frame(width: 44, height: 44)
+                        }
+
+                        Spacer()
+
+                        Color.clear.frame(width: 44, height: 44)
+                    }
+                    .padding(.horizontal, 8)
+                }
+                .frame(height: 52)
+                .padding(.top, 4)
+
+                // Screen content
+                TabView(selection: $currentStep) {
+                    FaceScanTeaserScreen()
+                        .tag(0)
+
+                    SkinTypeScreen(selectedSkinType: $selectedSkinType)
+                        .tag(1)
+
+                    GoalConcernScreen(selectedGoals: $selectedGoals)
+                        .tag(2)
+
+                    GlowUpPlanScreen()
+                    .tag(3)
+
+                    ReviewPromptScreen(onContinue: {
+                        advanceStep()
+                    })
+                    .tag(4)
+
+                    CameraPermissionScreen(onGranted: {
+                        advanceStep()
+                    })
+                    .tag(5)
+
+                    ScanOrUploadScreen(
+                        capturedImage: $capturedImage,
+                        showActionSheet: $showActionSheet,
+                        showImagePicker: $showImagePicker,
+                        imagePickerSource: $imagePickerSource
+                    )
+                    .tag(6)
+
+                    LoadingScreen(capturedImage: $capturedImage, onFinished: {
+                        loadingFinished = true
+                        advanceStep()
+                    })
+                    .tag(7)
+
+                    BlurryPreviewScreen(capturedImage: $capturedImage, onUnlock: {
+                        onComplete()
+                    })
+                    .tag(8)
+                }
+                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                .animation(.easeInOut(duration: 0.35), value: currentStep)
+
+                bottomActionRow
+            }
+        }
+        .sheet(isPresented: $showImagePicker) {
+            ImagePicker(selectedImage: $capturedImage, sourceType: imagePickerSource)
+        }
+        .onChange(of: capturedImage) { newImage in
+            if newImage != nil && currentStep == 6 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    advanceStep()
+                }
+            }
+        }
+        .actionSheet(isPresented: $showActionSheet) {
+            ActionSheet(
+                title: Text("Add a Photo"),
+                buttons: [
+                    .default(Text("Take Photo")) {
+                        imagePickerSource = .camera
+                        showImagePicker = true
+                    },
+                    .default(Text("Choose from Library")) {
+                        imagePickerSource = .photoLibrary
+                        showImagePicker = true
+                    },
+                    .cancel()
+                ]
+            )
+        }
+    }
+
+    // MARK: - Navigation Helpers
+
+    private var bottomActionRow: some View {
+        HStack(spacing: 12) {
+            if shouldShowPrimaryButton {
+                Button(action: {
+                    hapticFeedback(.medium)
+                    handlePrimaryAction()
+                }) {
+                    Text(primaryButtonText)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 56)
+                        .background(
+                            RoundedRectangle(cornerRadius: 28)
+                                .fill(Theme.accent)
+                        )
+                }
+                .disabled(isContinueDisabled)
+                .opacity(isContinueDisabled ? 0.45 : 1.0)
+            }
+
+            Button(action: {
+                hapticFeedback(.light)
+                onComplete()
+            }) {
+                Text("Skip")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.black.opacity(0.62))
+                    .frame(width: shouldShowPrimaryButton ? 92 : nil)
+                    .frame(maxWidth: shouldShowPrimaryButton ? nil : .infinity)
+                    .frame(height: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(Color.black.opacity(0.05))
+                    )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 24)
+        .padding(.bottom, 24)
+        .padding(.top, 8)
+    }
+
+    private var shouldShowPrimaryButton: Bool {
+        currentStep != 7
+    }
+
+    private var primaryButtonText: String {
+        switch currentStep {
+        case 6:
+            return "Take Photo or Upload"
+        case 8:
+            return "See My Results"
+        default:
+            return "Continue"
+        }
+    }
+
+    private var isContinueDisabled: Bool {
+        switch currentStep {
+        case 1: return selectedSkinType.isEmpty
+        case 2: return selectedGoals.isEmpty
+        default: return false
+        }
+    }
+
+    private func handlePrimaryAction() {
+        switch currentStep {
+        case 5:
+            requestCameraAccess()
+        case 6:
+            showActionSheet = true
+        case 8:
+            onComplete()
+        default:
+            handleContinue()
+        }
+    }
+
+    private func handleContinue() {
+        switch currentStep {
+        case 1:
+            UserDefaults.standard.set(selectedSkinType, forKey: "sg_skinType")
+        case 2:
+            UserDefaults.standard.set(Array(selectedGoals), forKey: "sg_goals")
+        default:
+            break
+        }
+        advanceStep()
+    }
+
+    private func advanceStep() {
+        withAnimation(.easeInOut(duration: 0.35)) {
+            if currentStep < totalSteps {
+                currentStep += 1
+            }
+        }
+    }
+
+    private func requestCameraAccess() {
+        AVCaptureDevice.requestAccess(for: .video) { _ in
+            DispatchQueue.main.async {
+                advanceStep()
+            }
+        }
+    }
+}
+
+/*
+ Legacy onboarding shell retained below as screen components only.
+ */
+private struct _LegacyOnboardingShell_DO_NOT_USE: View {
+    @State private var currentStep = 0
+    @State private var selectedSkinType: String = ""
+    @State private var selectedGoals: Set<String> = []
+    @State private var selectedConcerns: Set<String> = []
+    @State private var capturedImage: UIImage? = nil
+    @State private var showImagePicker = false
+    @State private var imagePickerSource: UIImagePickerController.SourceType = .photoLibrary
+    @State private var showActionSheet = false
+    @State private var splashOpacity: Double = 0
+    @State private var loadingFinished = false
+
+    let onComplete: () -> Void
+    let totalSteps = 14
+
+    var body: some View {
+        ZStack {
+            Color.white.ignoresSafeArea()
+
+            VStack(spacing: 0) {
                 if currentStep > 0 && currentStep != 13 && currentStep != 14 {
                     HStack {
                         Button(action: {
@@ -49,21 +289,18 @@ struct OnboardingView: View {
 
                         Spacer()
 
-                        // Step indicator
                         Text("\(currentStep)/\(totalSteps)")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(Theme.captionText)
 
                         Spacer()
 
-                        // Invisible spacer for alignment
                         Color.clear.frame(width: 44, height: 44)
                     }
                     .padding(.horizontal, 8)
                     .padding(.top, 4)
                 }
 
-                // Screen content
                 TabView(selection: $currentStep) {
                     SplashScreen(splashOpacity: $splashOpacity)
                         .tag(0)
@@ -125,7 +362,6 @@ struct OnboardingView: View {
                 .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 .animation(.easeInOut(duration: 0.35), value: currentStep)
 
-                // Bottom CTA button (shown on most screens)
                 if shouldShowContinueButton {
                     Button(action: {
                         hapticFeedback(.medium)
@@ -189,10 +425,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - Navigation Helpers
-
     private var shouldShowContinueButton: Bool {
-        // Hide on splash, camera permission, scan/upload, loading, blurry preview.
         switch currentStep {
         case 0, 10, 12, 13, 14:
             return false
@@ -535,6 +768,224 @@ struct SkinTypeScreen: View {
                 .foregroundColor(Theme.captionText)
                 .multilineTextAlignment(.center)
                 .lineSpacing(3)
+
+            Spacer()
+            Spacer()
+        }
+        .padding(.horizontal, 32)
+    }
+}
+
+// MARK: - Goal / Concern Question
+
+struct GoalConcernScreen: View {
+    @Binding var selectedGoals: Set<String>
+
+    let goals: [(String, String)] = [
+        ("sparkle", "Clear acne"),
+        ("circle.lefthalf.filled", "Even tone"),
+        ("flame", "Less redness"),
+        ("square.grid.2x2", "Smoother texture"),
+        ("sun.max", "Glass glow"),
+        ("clock.arrow.circlepath", "Anti-aging"),
+        ("circle.grid.cross", "Smaller pores"),
+        ("drop", "Less dryness")
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            Text("What do you want\nto improve?")
+                .font(.system(size: 32, weight: .heavy))
+                .foregroundColor(.black)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.bottom, 28)
+
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+                ForEach(goals, id: \.1) { icon, label in
+                    Button(action: {
+                        hapticFeedback(.light)
+                        if selectedGoals.contains(label) {
+                            selectedGoals.remove(label)
+                        } else {
+                            selectedGoals.insert(label)
+                        }
+                    }) {
+                        VStack(spacing: 10) {
+                            Image(systemName: icon)
+                                .font(.system(size: 24, weight: .thin))
+                                .foregroundColor(selectedGoals.contains(label) ? Theme.accent : .black.opacity(0.5))
+
+                            Text(label)
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(selectedGoals.contains(label) ? .black : .black.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.8)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 86)
+                        .background(
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(selectedGoals.contains(label) ? Theme.accent.opacity(0.08) : Color.black.opacity(0.03))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(selectedGoals.contains(label) ? Theme.accent.opacity(0.4) : Color.clear, lineWidth: 1.5)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.bottom, 20)
+
+            Text("Pick all that apply.")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundColor(Theme.captionText)
+
+            Spacer()
+            Spacer()
+        }
+        .padding(.horizontal, 32)
+    }
+}
+
+// MARK: - Reviews / Rating Prompt
+
+struct ReviewPromptScreen: View {
+    let onContinue: () -> Void
+    @State private var hasRequestedReview = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            HStack(spacing: 6) {
+                ForEach(0..<5, id: \.self) { _ in
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundColor(Color(red: 1.0, green: 0.64, blue: 0.02))
+                }
+            }
+            .padding(.bottom, 28)
+
+            Text("Help us make\nSkinGlowing better.")
+                .font(.system(size: 32, weight: .heavy))
+                .foregroundColor(.black)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.bottom, 16)
+
+            Text("A quick rating helps us improve the skin analysis experience for everyone.")
+                .font(.system(size: 17, weight: .regular))
+                .foregroundColor(Theme.captionText)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 36)
+
+            Button(action: {
+                hapticFeedback(.medium)
+                requestReview()
+            }) {
+                Text(hasRequestedReview ? "Thanks for rating" : "Rate SkinGlowing")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 56)
+                    .background(
+                        RoundedRectangle(cornerRadius: 28)
+                            .fill(Theme.accent)
+                    )
+            }
+            .padding(.horizontal, 40)
+
+            Spacer()
+            Spacer()
+        }
+        .padding(.horizontal, 32)
+    }
+
+    private func requestReview() {
+        guard !hasRequestedReview else {
+            onContinue()
+            return
+        }
+
+        hasRequestedReview = true
+
+        if let scene = UIApplication.shared.connectedScenes
+            .compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive }) {
+            SKStoreReviewController.requestReview(in: scene)
+        }
+    }
+}
+
+// MARK: - GlowUp Plan
+
+struct GlowUpPlanScreen: View {
+    let phases: [(String, String, String)] = [
+        ("Days 1-30", "Reset", "Understand your baseline"),
+        ("Days 31-60", "Improve", "Adjust your routine"),
+        ("Days 61-90", "Glow", "Track visible progress")
+    ]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Spacer()
+
+            VStack(spacing: 12) {
+                ForEach(phases, id: \.0) { days, title, subtitle in
+                    HStack(spacing: 14) {
+                        VStack(spacing: 2) {
+                            Text(days)
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Theme.accent)
+                                .lineLimit(1)
+                        }
+                        .frame(width: 82, height: 42)
+                        .background(
+                            RoundedRectangle(cornerRadius: 12)
+                                .fill(Theme.accent.opacity(0.08))
+                        )
+
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(title)
+                                .font(.system(size: 17, weight: .heavy))
+                                .foregroundColor(.black)
+
+                            Text(subtitle)
+                                .font(.system(size: 13, weight: .regular))
+                                .foregroundColor(Theme.captionText)
+                        }
+
+                        Spacer()
+                    }
+                    .padding(16)
+                    .background(
+                        RoundedRectangle(cornerRadius: 16)
+                            .fill(Color.black.opacity(0.025))
+                    )
+                }
+            }
+            .padding(.bottom, 36)
+
+            Text("Your 90-day\nGlowUp Plan.")
+                .font(.system(size: 32, weight: .heavy))
+                .foregroundColor(.black)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.bottom, 16)
+
+            Text("Based on your first scan and answers, SkinGlowing prepares a personalized plan to help you reach the skin of your dreams.")
+                .font(.system(size: 17, weight: .regular))
+                .foregroundColor(Theme.captionText)
+                .multilineTextAlignment(.center)
+                .lineSpacing(4)
+                .padding(.horizontal, 8)
 
             Spacer()
             Spacer()
@@ -1319,21 +1770,6 @@ struct CameraPermissionScreen: View {
                 )
                 .padding(.bottom, 40)
 
-            Button(action: {
-                requestCameraAccess()
-            }) {
-                Text("Continue")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 28)
-                            .fill(Theme.accent)
-                    )
-            }
-            .padding(.horizontal, 40)
-
             Spacer()
             Spacer()
         }
@@ -1523,27 +1959,6 @@ struct ScanOrUploadScreen: View {
                 .lineSpacing(4)
                 .padding(.bottom, 48)
 
-            // Camera button
-            Button(action: {
-                hapticFeedback(.medium)
-                showActionSheet = true
-            }) {
-                HStack(spacing: 10) {
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 18))
-                    Text("Take Photo or Upload")
-                        .font(.system(size: 17, weight: .semibold))
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: 56)
-                .background(
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(Theme.accent)
-                )
-            }
-            .padding(.horizontal, 40)
-
             Spacer()
             Spacer()
         }
@@ -1719,23 +2134,6 @@ struct BlurryPreviewScreen: View {
                 .font(.system(size: 15, weight: .regular))
                 .foregroundColor(Theme.captionText)
                 .padding(.bottom, 40)
-
-            // CTA
-            Button(action: {
-                hapticFeedback(.medium)
-                onUnlock()
-            }) {
-                Text("See My Results")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 56)
-                    .background(
-                        RoundedRectangle(cornerRadius: 28)
-                            .fill(Theme.accent)
-                    )
-            }
-            .padding(.horizontal, 40)
 
             Spacer()
         }

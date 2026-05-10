@@ -67,42 +67,76 @@ enum TrafficLight: String, Codable {
 
 struct FaceScanResult: Codable, Identifiable {
     let id: UUID
+    let glowScore: Int?
     let skinAge: Int
     let skinAgeDelta: Int?
     let skinAgeMicro: String
     let glassSkinTier: GlassSkinTier
+    let glassSkinScore: Int?
     let glassSkinMicro: String
     let blemishSeverity: BlemishSeverity
+    let blemishScore: Int?
     let blemishZone: String
     let blemishMicro: String
+    let textureScore: Int?
+    let textureMicro: String?
+    let rednessScore: Int?
+    let rednessMicro: String?
+    let evenToneScore: Int?
+    let evenToneMicro: String?
+    let hydrationLookScore: Int?
+    let hydrationMicro: String?
     let firmnessScore: Double
     let firmnessDelta: Double?
     let firmnessMicro: String
+    let underEyeScore: Int?
+    let underEyeMicro: String?
     let glowAdvice: String
+    let planFocus: [String]?
     let imageData: Data?
     let timestamp: Date
 
     init(
         id: UUID = UUID(),
+        glowScore: Int? = nil,
         skinAge: Int, skinAgeDelta: Int? = nil, skinAgeMicro: String,
-        glassSkinTier: GlassSkinTier, glassSkinMicro: String,
-        blemishSeverity: BlemishSeverity, blemishZone: String, blemishMicro: String,
+        glassSkinTier: GlassSkinTier, glassSkinScore: Int? = nil, glassSkinMicro: String,
+        blemishSeverity: BlemishSeverity, blemishScore: Int? = nil, blemishZone: String, blemishMicro: String,
+        textureScore: Int? = nil, textureMicro: String? = nil,
+        rednessScore: Int? = nil, rednessMicro: String? = nil,
+        evenToneScore: Int? = nil, evenToneMicro: String? = nil,
+        hydrationLookScore: Int? = nil, hydrationMicro: String? = nil,
         firmnessScore: Double, firmnessDelta: Double? = nil, firmnessMicro: String,
-        glowAdvice: String, imageData: Data? = nil, timestamp: Date = Date()
+        underEyeScore: Int? = nil, underEyeMicro: String? = nil,
+        glowAdvice: String, planFocus: [String]? = nil, imageData: Data? = nil, timestamp: Date = Date()
     ) {
         self.id = id
+        self.glowScore = glowScore
         self.skinAge = skinAge
         self.skinAgeDelta = skinAgeDelta
         self.skinAgeMicro = skinAgeMicro
         self.glassSkinTier = glassSkinTier
+        self.glassSkinScore = glassSkinScore
         self.glassSkinMicro = glassSkinMicro
         self.blemishSeverity = blemishSeverity
+        self.blemishScore = blemishScore
         self.blemishZone = blemishZone
         self.blemishMicro = blemishMicro
+        self.textureScore = textureScore
+        self.textureMicro = textureMicro
+        self.rednessScore = rednessScore
+        self.rednessMicro = rednessMicro
+        self.evenToneScore = evenToneScore
+        self.evenToneMicro = evenToneMicro
+        self.hydrationLookScore = hydrationLookScore
+        self.hydrationMicro = hydrationMicro
         self.firmnessScore = firmnessScore
         self.firmnessDelta = firmnessDelta
         self.firmnessMicro = firmnessMicro
+        self.underEyeScore = underEyeScore
+        self.underEyeMicro = underEyeMicro
         self.glowAdvice = glowAdvice
+        self.planFocus = planFocus
         self.imageData = imageData
         self.timestamp = timestamp
     }
@@ -133,8 +167,14 @@ struct ProductScanResult: Codable, Identifiable {
     let acneSafe: TrafficLight
     let hydrationFriendly: TrafficLight
     let irritationRisk: TrafficLight
+    let breakoutRisk: Int?
+    let drynessRisk: Int?
+    let poreCloggingRisk: Int?
     let glowSupport: TrafficLight
+    let glowSupportScore: Int?
+    let makeupMatchScore: Int?
     let flaggedIngredients: [FlaggedIngredient]
+    let usageAdvice: String?
     let imageData: Data?
     let timestamp: Date
 
@@ -142,8 +182,11 @@ struct ProductScanResult: Codable, Identifiable {
         id: UUID = UUID(), productName: String, compatibilityScore: Int,
         compatibilityLabel: String, microExplanation: String,
         acneSafe: TrafficLight, hydrationFriendly: TrafficLight,
-        irritationRisk: TrafficLight, glowSupport: TrafficLight,
-        flaggedIngredients: [FlaggedIngredient],
+        irritationRisk: TrafficLight, breakoutRisk: Int? = nil,
+        drynessRisk: Int? = nil, poreCloggingRisk: Int? = nil,
+        glowSupport: TrafficLight, glowSupportScore: Int? = nil,
+        makeupMatchScore: Int? = nil, flaggedIngredients: [FlaggedIngredient],
+        usageAdvice: String? = nil,
         imageData: Data? = nil, timestamp: Date = Date()
     ) {
         self.id = id
@@ -154,8 +197,14 @@ struct ProductScanResult: Codable, Identifiable {
         self.acneSafe = acneSafe
         self.hydrationFriendly = hydrationFriendly
         self.irritationRisk = irritationRisk
+        self.breakoutRisk = breakoutRisk
+        self.drynessRisk = drynessRisk
+        self.poreCloggingRisk = poreCloggingRisk
         self.glowSupport = glowSupport
+        self.glowSupportScore = glowSupportScore
+        self.makeupMatchScore = makeupMatchScore
         self.flaggedIngredients = flaggedIngredients
+        self.usageAdvice = usageAdvice
         self.imageData = imageData
         self.timestamp = timestamp
     }

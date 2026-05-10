@@ -2,7 +2,7 @@
 //  Theme.swift
 //  SkinGlowing
 //
-//  Apple-clean design system: white + black + red accent
+//  SkinGlowing design system: blush editorial + glass cards
 //
 
 import SwiftUI
@@ -11,18 +11,22 @@ import SwiftUI
 
 struct Theme {
     // MARK: - Backgrounds
-    static let background = Color.white
-    static let backgroundSecondary = Color(red: 0.976, green: 0.976, blue: 0.980) // #F9F9FA
+    static let background = Color(red: 1.000, green: 0.972, blue: 0.985)
+    static let backgroundSecondary = Color(red: 1.000, green: 0.940, blue: 0.965)
+    static let blush = Color(red: 1.000, green: 0.895, blue: 0.930)
+    static let blushDeep = Color(red: 0.980, green: 0.225, blue: 0.490)
+    static let champagne = Color(red: 1.000, green: 0.984, blue: 0.948)
 
     // MARK: - Text
-    static let headline = Color.black
+    static let headline = Color(red: 0.075, green: 0.075, blue: 0.080)
     static let bodyText = Color(red: 0.27, green: 0.27, blue: 0.27) // #454545
     static let captionText = Color(red: 0.60, green: 0.62, blue: 0.65) // #999EA6
     static let mutedText = Color(red: 0.75, green: 0.76, blue: 0.78) // #BFC2C7
 
-    // MARK: - Accent (Red — used sparingly)
-    static let accent = Color(red: 0.86, green: 0.15, blue: 0.15) // #DB2626
-    static let accentSoft = Color(red: 0.86, green: 0.15, blue: 0.15).opacity(0.08)
+    // MARK: - Accent
+    static let accent = Color(red: 0.957, green: 0.145, blue: 0.427)
+    static let accentSoft = Color(red: 0.957, green: 0.145, blue: 0.427).opacity(0.10)
+    static let accentMuted = Color(red: 1.000, green: 0.535, blue: 0.680)
 
     // MARK: - Status Colors
     static let statusGreen = Color(red: 0.13, green: 0.77, blue: 0.37) // #22C55E
@@ -30,9 +34,24 @@ struct Theme {
     static let statusRed = Color(red: 0.94, green: 0.27, blue: 0.27) // #EF4444
 
     // MARK: - Card System
-    static let cardCorner: CGFloat = 18
-    static let cardShadowColor = Color.black.opacity(0.06)
-    static let cardShadowRadius: CGFloat = 12
+    static let cardCorner: CGFloat = 8
+    static let cardShadowColor = Color(red: 0.957, green: 0.145, blue: 0.427).opacity(0.13)
+    static let cardShadowRadius: CGFloat = 16
+    static let glassStroke = Color.white.opacity(0.72)
+    static let blushBackground = LinearGradient(
+        colors: [
+            Color.white,
+            Color(red: 1.000, green: 0.950, blue: 0.972),
+            Color(red: 1.000, green: 0.895, blue: 0.930)
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    static let pinkButtonGradient = LinearGradient(
+        colors: [Color(red: 1.000, green: 0.300, blue: 0.565), Color(red: 0.930, green: 0.080, blue: 0.365)],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
 
     // MARK: - Backward Compatibility (old views still compile)
     static let purple = Color(red: 0.486, green: 0.227, blue: 0.929)
@@ -81,7 +100,7 @@ extension View {
     // New design system
     func sgCard() -> some View {
         self
-            .background(Color.white)
+            .background(Color.white.opacity(0.86))
             .cornerRadius(Theme.cardCorner)
             .shadow(color: Theme.cardShadowColor, radius: Theme.cardShadowRadius, x: 0, y: 4)
     }
@@ -92,7 +111,7 @@ extension View {
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
-            .background(RoundedRectangle(cornerRadius: 28).fill(Theme.accent))
+            .background(RoundedRectangle(cornerRadius: 28).fill(Theme.pinkButtonGradient))
     }
 
     // Backward compat

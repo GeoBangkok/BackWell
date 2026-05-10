@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "SkinGlowing";
+"NSCameraUsageDescription" = "เราใช้กล้องของคุณเพื่อถ่ายรูปสำหรับการวิเคราะห์ผิว";
+"NSPhotoLibraryUsageDescription" = "SkinGlowing ต้องการเข้าถึงคลังรูปภาพเพื่ออัปโหลดรูปสำหรับการวิเคราะห์ผิวด้วย AI รูปของคุณถูกเข้ารหัสและใช้เพื่อคำแนะนำเฉพาะบุคคลเท่านั้น";
+"NSUserTrackingUsageDescription" = "สิ่งนี้ช่วยให้เราปรับปรุง SkinGlowing และแสดงข้อเสนอที่เกี่ยวข้องมากขึ้น";
+"NSMicrophoneUsageDescription" = "SkinGlowing ต้องการเข้าถึงไมโครโฟนสำหรับฟีเจอร์เสียง";

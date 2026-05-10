@@ -55,7 +55,7 @@ struct MainTabView: View {
 
                 SGMainTabBar(selectedTab: $selectedTab)
             }
-            .background(Theme.backgroundSecondary.ignoresSafeArea())
+            .background(Theme.blushBackground.ignoresSafeArea())
             .preferredColorScheme(.light)
             .sheet(isPresented: $showingHistory) {
                 ArchiveView()
@@ -89,32 +89,38 @@ struct TodayDashboardView: View {
     }
 
     private var hero: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Today")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(Theme.captionText)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 10) {
+                    SGBrandMark(size: 17)
 
                     Text(todayHeadline)
-                        .font(.system(size: 30, weight: .bold))
+                        .font(.system(size: 34, weight: .regular, design: .serif))
                         .foregroundColor(Theme.headline)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(todaySubhead)
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(Theme.bodyText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
 
-                Spacer()
+                Spacer(minLength: 8)
 
-                GlowScoreBadge(score: historyManager.latestFaceScan?.glowScore ?? 0)
+                VStack(spacing: 10) {
+                    GlowScoreBadge(score: historyManager.latestFaceScan?.glowScore ?? 0)
+                    SGSparkleBubble()
+                }
             }
 
-            Text(todaySubhead)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundColor(Theme.bodyText)
-                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 8) {
+                MiniSignalPill(icon: "sparkles", title: "AI-Powered")
+                MiniSignalPill(icon: "circle.dashed", title: "360 Analysis")
+                MiniSignalPill(icon: "heart.fill", title: "Personal")
+            }
         }
         .padding(18)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 
     private var latestSignalGrid: some View {
@@ -161,8 +167,7 @@ struct TodayDashboardView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 
     private var recentProductPreview: some View {
@@ -180,20 +185,19 @@ struct TodayDashboardView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 
     private var todayHeadline: String {
-        guard let scan = historyManager.latestFaceScan else { return "Start with one selfie." }
+        guard let scan = historyManager.latestFaceScan else { return "Your Personal\nSkin Coach" }
         if (scan.glowScore ?? 0) >= 80 { return "Your glow is trending strong." }
         if (scan.rednessScore ?? 100) < 65 { return "Calm the skin barrier today." }
-        return "Build your glow baseline."
+        return "Build your 90-Day\nGlow Plan."
     }
 
     private var todaySubhead: String {
         guard let scan = historyManager.latestFaceScan else {
-            return "Scan once to unlock your metrics, 90-day plan, and product compatibility context."
+            return "Scan your face in full depth to unlock metrics, a personalized plan, and product compatibility."
         }
         return scan.glowAdvice
     }
@@ -287,8 +291,9 @@ struct UnifiedScanHubView: View {
                         .foregroundColor(selectedMode == mode ? .white : Theme.bodyText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(selectedMode == mode ? Theme.headline : Color.white)
-                        .cornerRadius(8)
+                        .background(selectedMode == mode ? AnyShapeStyle(Theme.pinkButtonGradient) : AnyShapeStyle(Color.white.opacity(0.82)))
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(Color.white.opacity(0.72), lineWidth: 1))
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -297,25 +302,37 @@ struct UnifiedScanHubView: View {
 
     private var scanCard: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack(spacing: 14) {
-                Image(systemName: selectedMode.icon)
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 60, height: 60)
-                    .background(Theme.accent)
-                    .clipShape(Circle())
+            ZStack(alignment: .bottomLeading) {
+                Image("onboarding_scan_face")
+                    .resizable()
+                    .scaledToFill()
+                    .frame(height: 260)
+                    .frame(maxWidth: .infinity)
+                    .clipped()
+                    .overlay(
+                        LinearGradient(
+                            colors: [.clear, Color.white.opacity(0.92)],
+                            startPoint: .center,
+                            endPoint: .bottom
+                        )
+                    )
 
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(selectedMode.title)
-                        .font(.system(size: 22, weight: .bold))
+                ScanOverlayLines()
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(selectedMode == .face ? "Scanning your face\nin full depth" : "Scan every cosmetic.\nImprove your glow.")
+                        .font(.system(size: 30, weight: .regular, design: .serif))
                         .foregroundColor(Theme.headline)
+                        .fixedSize(horizontal: false, vertical: true)
 
                     Text(selectedMode.subtitle)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(Theme.bodyText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .padding(18)
             }
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous))
 
             HStack(spacing: 10) {
                 Button {
@@ -338,31 +355,40 @@ struct UnifiedScanHubView: View {
                 }
                 .buttonStyle(SGIconButtonStyle())
             }
+            .padding(.horizontal, 18)
+            .padding(.bottom, 18)
         }
-        .padding(18)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 
     private var analyzingCard: some View {
-        VStack(spacing: 14) {
-            ProgressView()
-                .tint(Theme.accent)
-                .scaleEffect(1.1)
+        VStack(spacing: 16) {
+            HStack(spacing: 14) {
+                ProgressView()
+                    .tint(Theme.accent)
+                    .scaleEffect(1.2)
 
-            Text(selectedMode == .face ? "Reading your skin signals..." : "Reading product fit...")
-                .font(.system(size: 17, weight: .bold))
-                .foregroundColor(Theme.headline)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(selectedMode == .face ? "Analyzing depth, texture, tone, and glow factors..." : "Reading product score, ingredients, and skin impact...")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Theme.headline)
 
-            Text("OpenAI is analyzing the image with your onboarding profile and latest scan context.")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Theme.bodyText)
-                .multilineTextAlignment(.center)
+                    Text("OpenAI is using your image, onboarding profile, and latest scan context.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Theme.bodyText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            HStack(spacing: 0) {
+                ScanStep(icon: "face.smiling", title: "Scanning", active: true)
+                ScanStep(icon: "chart.bar.fill", title: "Analyzing", active: true)
+                ScanStep(icon: "sparkles", title: "Plan", active: false)
+            }
         }
         .frame(maxWidth: .infinity)
-        .padding(22)
-        .background(Color.white)
-        .cornerRadius(8)
+        .padding(18)
+        .sgGlassCard()
     }
 
     private var metricPreview: some View {
@@ -378,8 +404,7 @@ struct UnifiedScanHubView: View {
             FlowTagList(items: items)
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 
     private func analyze(_ image: UIImage) {
@@ -447,18 +472,46 @@ struct GlowUpPlanView: View {
     var body: some View {
         SGScreen(title: "GlowUp Plan") {
             VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("90 days to visible progress.")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(Theme.headline)
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Your 90-Day")
+                                .font(.system(size: 34, weight: .regular, design: .serif))
+                                .foregroundColor(Theme.headline)
+                            Text("Glow Plan")
+                                .font(.system(size: 34, weight: .regular, design: .serif))
+                                .foregroundColor(Theme.accent)
+                        }
+
+                        Spacer()
+                        SGSparkleBubble()
+                    }
+
+                    HStack(alignment: .center, spacing: 14) {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Day 21")
+                                .font(.system(size: 26, weight: .regular, design: .serif))
+                                .foregroundColor(Theme.accent)
+                            Text("You're on your way.")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Theme.bodyText)
+                        }
+
+                        Spacer()
+
+                        Text("23%")
+                            .font(.system(size: 30, weight: .regular, design: .serif))
+                            .foregroundColor(Theme.accent)
+                    }
+
+                    GlowPlanProgress()
 
                     Text("Built from your onboarding answers, selfie scans, and product compatibility history.")
                         .font(.system(size: 15, weight: .medium))
                         .foregroundColor(Theme.bodyText)
                 }
                 .padding(18)
-                .background(Color.white)
-                .cornerRadius(8)
+                .sgGlassCard()
 
                 ForEach(planPhases.indices, id: \.self) { index in
                     PlanPhaseCard(phase: planPhases[index], index: index)
@@ -501,8 +554,7 @@ struct ProfileHubView: View {
                 profileCard
                 historyCard
                 SettingsView()
-                    .background(Color.white)
-                    .cornerRadius(8)
+                    .sgGlassCard()
             }
         }
     }
@@ -518,8 +570,7 @@ struct ProfileHubView: View {
             ProfileLine(label: "Concerns", value: ((UserDefaults.standard.array(forKey: "sg_concerns") as? [String]) ?? []).joined(separator: ", ").nilIfEmpty ?? "Not set")
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 
     private var historyCard: some View {
@@ -547,8 +598,7 @@ struct ProfileHubView: View {
             }
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 }
 
@@ -561,18 +611,23 @@ struct SGScreen<Content: View>: View {
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 18) {
-                Text(title)
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(Theme.headline)
+                SGBrandMark(size: 20)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top, 10)
+
+                if title != "SkinGlowing" {
+                    Text(title)
+                        .font(.system(size: 28, weight: .regular, design: .serif))
+                        .foregroundColor(Theme.headline)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
 
                 content
             }
             .padding(.horizontal, 16)
             .padding(.bottom, 108)
         }
-        .background(Theme.backgroundSecondary.ignoresSafeArea())
+        .background(Theme.blushBackground.ignoresSafeArea())
     }
 }
 
@@ -600,10 +655,8 @@ struct SGMainTabBar: View {
         }
         .padding(.top, 8)
         .padding(.bottom, 22)
-        .background(
-            Color.white
-                .shadow(color: Color.black.opacity(0.07), radius: 12, x: 0, y: -2)
-        )
+        .background(.ultraThinMaterial)
+        .overlay(Rectangle().fill(Color.white.opacity(0.55)).frame(height: 1), alignment: .top)
     }
 }
 
@@ -640,8 +693,9 @@ struct SGPrimaryButtonStyle: ButtonStyle {
             .font(.system(size: 16, weight: .bold))
             .foregroundColor(.white)
             .frame(height: 54)
-            .background(configuration.isPressed ? Theme.accent.opacity(0.78) : Theme.accent)
-            .cornerRadius(8)
+            .background(configuration.isPressed ? AnyShapeStyle(Theme.accent.opacity(0.78)) : AnyShapeStyle(Theme.pinkButtonGradient))
+            .clipShape(Capsule())
+            .shadow(color: Theme.accent.opacity(configuration.isPressed ? 0.12 : 0.24), radius: 12, x: 0, y: 7)
     }
 }
 
@@ -650,8 +704,9 @@ struct SGIconButtonStyle: ButtonStyle {
         configuration.label
             .font(.system(size: 20, weight: .bold))
             .foregroundColor(Theme.accent)
-            .background(configuration.isPressed ? Theme.accentSoft.opacity(0.7) : Theme.accentSoft)
-            .cornerRadius(8)
+            .background(configuration.isPressed ? Theme.accentSoft.opacity(0.7) : Color.white.opacity(0.78))
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Color.white.opacity(0.75), lineWidth: 1))
     }
 }
 
@@ -668,8 +723,9 @@ struct GlowScoreBadge: View {
                 .foregroundColor(.white.opacity(0.9))
         }
         .frame(width: 70, height: 70)
-        .background(Theme.accent)
+        .background(Theme.pinkButtonGradient)
         .clipShape(Circle())
+        .shadow(color: Theme.accent.opacity(0.28), radius: 12, x: 0, y: 8)
     }
 }
 
@@ -702,8 +758,7 @@ struct MetricTile: View {
         }
         .frame(maxWidth: .infinity, minHeight: 118, alignment: .topLeading)
         .padding(14)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 }
 
@@ -746,7 +801,7 @@ struct PlanRow: View {
             Spacer()
         }
         .padding(12)
-        .background(Theme.backgroundSecondary)
+        .background(Color.white.opacity(0.58))
         .cornerRadius(8)
     }
 }
@@ -803,8 +858,7 @@ struct FaceResultSummary: View {
                 .foregroundColor(Theme.bodyText)
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 }
 
@@ -833,8 +887,7 @@ struct ProductResultSummary: View {
             }
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 }
 
@@ -855,7 +908,7 @@ struct ResultPill: View {
                 .foregroundColor(Theme.headline)
         }
         .padding(12)
-        .background(Theme.backgroundSecondary)
+        .background(Color.white.opacity(0.58))
         .cornerRadius(8)
     }
 }
@@ -867,11 +920,11 @@ struct FlowTagList: View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 116), spacing: 8)], spacing: 8) {
             ForEach(items, id: \.self) { item in
                 Text(item)
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Theme.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(Theme.backgroundSecondary)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Theme.accent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 10)
+                    .background(Color.white.opacity(0.72))
                     .cornerRadius(8)
             }
         }
@@ -895,10 +948,10 @@ struct PlanPhaseCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(phase.range)
                         .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(Theme.accent)
+                    .foregroundColor(Theme.accent)
                     Text("\(phase.title): \(phase.focus)")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(Theme.headline)
+                    .font(.system(size: 20, weight: .regular, design: .serif))
+                    .foregroundColor(Theme.headline)
                 }
 
                 Spacer()
@@ -907,7 +960,7 @@ struct PlanPhaseCard: View {
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                     .frame(width: 38, height: 38)
-                    .background(Theme.headline)
+                    .background(Theme.pinkButtonGradient)
                     .clipShape(Circle())
             }
 
@@ -918,8 +971,7 @@ struct PlanPhaseCard: View {
             }
         }
         .padding(16)
-        .background(Color.white)
-        .cornerRadius(8)
+        .sgGlassCard()
     }
 }
 
@@ -941,6 +993,165 @@ struct ProfileLine: View {
 
             Spacer()
         }
+    }
+}
+
+struct SGBrandMark: View {
+    let size: CGFloat
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "sparkle")
+                .font(.system(size: size, weight: .bold))
+                .foregroundColor(Theme.accent)
+
+            Text("SkinGlowing")
+                .font(.system(size: size + 6, weight: .regular, design: .serif))
+                .foregroundColor(Theme.accent)
+        }
+    }
+}
+
+struct SGSparkleBubble: View {
+    var body: some View {
+        Image(systemName: "sparkles")
+            .font(.system(size: 22, weight: .semibold))
+            .foregroundColor(Theme.accent)
+            .frame(width: 58, height: 58)
+            .background(Color.white.opacity(0.72))
+            .clipShape(Circle())
+            .overlay(Circle().stroke(Color.white.opacity(0.85), lineWidth: 1))
+            .shadow(color: Theme.accent.opacity(0.12), radius: 12, x: 0, y: 8)
+    }
+}
+
+struct MiniSignalPill: View {
+    let icon: String
+    let title: String
+
+    var body: some View {
+        Label(title, systemImage: icon)
+            .font(.system(size: 11, weight: .bold))
+            .foregroundColor(Theme.headline)
+            .lineLimit(1)
+            .minimumScaleFactor(0.75)
+            .padding(.horizontal, 9)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background(Color.white.opacity(0.62))
+            .clipShape(Capsule())
+            .overlay(Capsule().stroke(Color.white.opacity(0.75), lineWidth: 1))
+    }
+}
+
+struct ScanOverlayLines: View {
+    var body: some View {
+        GeometryReader { geo in
+            let width = geo.size.width
+            let height = geo.size.height
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.78), lineWidth: 2)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 22)
+
+                Path { path in
+                    path.move(to: CGPoint(x: width * 0.50, y: height * 0.18))
+                    path.addLine(to: CGPoint(x: width * 0.50, y: height * 0.76))
+                    path.move(to: CGPoint(x: width * 0.22, y: height * 0.50))
+                    path.addLine(to: CGPoint(x: width * 0.78, y: height * 0.50))
+                }
+                .stroke(Color.white.opacity(0.82), style: StrokeStyle(lineWidth: 1.2, lineCap: .round, dash: [4, 7]))
+
+                ForEach(0..<4) { index in
+                    Circle()
+                        .fill(Color.white.opacity(0.92))
+                        .frame(width: 6, height: 6)
+                        .position(
+                            x: [0.34, 0.50, 0.62, 0.72][index] * width,
+                            y: [0.42, 0.30, 0.56, 0.48][index] * height
+                        )
+                }
+            }
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+struct ScanStep: View {
+    let icon: String
+    let title: String
+    let active: Bool
+
+    var body: some View {
+        VStack(spacing: 7) {
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(active ? .white : Theme.accent.opacity(0.45))
+                .frame(width: 34, height: 34)
+                .background(active ? AnyShapeStyle(Theme.pinkButtonGradient) : AnyShapeStyle(Color.white.opacity(0.64)))
+                .clipShape(Circle())
+
+            Text(title)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(active ? Theme.accent : Theme.captionText)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+struct GlowPlanProgress: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            GeometryReader { proxy in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Theme.accent.opacity(0.14))
+                    Capsule()
+                        .fill(Theme.pinkButtonGradient)
+                        .frame(width: proxy.size.width * 0.23)
+                    Circle()
+                        .fill(Color.white)
+                        .frame(width: 18, height: 18)
+                        .overlay(Circle().stroke(Theme.accent, lineWidth: 4))
+                        .offset(x: max(0, proxy.size.width * 0.23 - 9))
+                }
+            }
+            .frame(height: 9)
+
+            HStack {
+                Text("Day 1")
+                Spacer()
+                Text("Day 45")
+                Spacer()
+                Text("Day 90")
+            }
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundColor(Theme.bodyText)
+        }
+    }
+}
+
+struct SGGlassCardModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .background(.ultraThinMaterial)
+            .background(Color.white.opacity(0.70))
+            .clipShape(RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.cardCorner, style: .continuous)
+                    .stroke(Theme.glassStroke, lineWidth: 1)
+            )
+            .shadow(color: Theme.cardShadowColor, radius: Theme.cardShadowRadius, x: 0, y: 8)
+    }
+}
+
+extension View {
+    func sgGlassCard() -> some View {
+        modifier(SGGlassCardModifier())
     }
 }
 

@@ -308,6 +308,7 @@ class SkinScoringEngine {
     // MARK: - Generate Face Scan
 
     func generateFaceScan(previousScan: FaceScanResult?, userAge: Int? = nil) -> FaceScanResult {
+        let localize = AppLanguageManager.shared.localized
         let baseAge = userAge ?? Int.random(in: 23...35)
 
         // Controlled variability: Skin Age changes slowly
@@ -366,29 +367,30 @@ class SkinScoringEngine {
         return FaceScanResult(
             skinAge: skinAge,
             skinAgeDelta: skinAgeDelta,
-            skinAgeMicro: skinAgeMicros.randomElement()!,
+            skinAgeMicro: localize(skinAgeMicros.randomElement()!),
             glassSkinTier: glassTier,
-            glassSkinMicro: glassSkinMicros.randomElement()!,
+            glassSkinMicro: localize(glassSkinMicros.randomElement()!),
             blemishSeverity: blemish,
-            blemishZone: blemishZones.randomElement()!,
-            blemishMicro: blemishMicros.randomElement()!,
+            blemishZone: localize(blemishZones.randomElement()!),
+            blemishMicro: localize(blemishMicros.randomElement()!),
             firmnessScore: firmness,
             firmnessDelta: firmnessDelta,
-            firmnessMicro: firmnessMicros.randomElement()!,
-            glowAdvice: glowAdvices.randomElement()!
+            firmnessMicro: localize(firmnessMicros.randomElement()!),
+            glowAdvice: localize(glowAdvices.randomElement()!)
         )
     }
 
     // MARK: - Generate Product Scan
 
     func generateProductScan(productName: String, userSkinType: String) -> ProductScanResult {
+        let localize = AppLanguageManager.shared.localized
         let score = Int.random(in: 5...10)
         let label: String
         switch score {
-        case 9...10: label = "Excellent fit"
-        case 7...8: label = "Good fit"
-        case 5...6: label = "Fair fit"
-        default: label = "Poor fit"
+        case 9...10: label = localize("Excellent fit")
+        case 7...8: label = localize("Good fit")
+        case 5...6: label = localize("Fair fit")
+        default: label = localize("Poor fit")
         }
 
         let lights: [TrafficLight] = [.green, .green, .green, .yellow, .yellow, .red]
@@ -400,19 +402,19 @@ class SkinScoringEngine {
 
         let micro: String
         switch score {
-        case 9...10: micro = "Low clog-risk for your skin type."
-        case 7...8: micro = "Generally compatible with \(userSkinType.lowercased()) skin."
-        case 5...6: micro = "Some ingredients may not suit \(userSkinType.lowercased()) skin."
-        default: micro = "Several concerning ingredients detected."
+        case 9...10: micro = localize("Low clog-risk for your skin type.")
+        case 7...8: micro = String(format: localize("Generally compatible with %@ skin."), userSkinType.lowercased())
+        case 5...6: micro = String(format: localize("Some ingredients may not suit %@ skin."), userSkinType.lowercased())
+        default: micro = localize("Several concerning ingredients detected.")
         }
 
         let sampleIngredients: [[FlaggedIngredient]] = [
             [],
-            [FlaggedIngredient(name: "Fragrance", concern: "irritation risk for sensitive skin")],
-            [FlaggedIngredient(name: "Isopropyl Myristate", concern: "may clog pores")],
+            [FlaggedIngredient(name: localize("Fragrance"), concern: localize("irritation risk for sensitive skin"))],
+            [FlaggedIngredient(name: localize("Isopropyl Myristate"), concern: localize("may clog pores"))],
             [
-                FlaggedIngredient(name: "Alcohol Denat.", concern: "can be drying"),
-                FlaggedIngredient(name: "Fragrance", concern: "potential irritant")
+                FlaggedIngredient(name: localize("Alcohol Denat."), concern: localize("can be drying")),
+                FlaggedIngredient(name: localize("Fragrance"), concern: localize("potential irritant"))
             ]
         ]
         let flagged = score >= 8 ? sampleIngredients[0] :

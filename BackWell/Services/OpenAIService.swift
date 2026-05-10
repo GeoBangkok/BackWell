@@ -150,6 +150,7 @@ class OpenAIService {
         }
 
         guard NetworkManager.shared.isConnected else {
+            let localize = AppLanguageManager.shared.localized
             var fallback = SkinScoringEngine.shared.generateFaceScan(previousScan: previousScan)
             fallback = FaceScanResult(
                 glowScore: fallback.glowScore ?? 72,
@@ -164,20 +165,20 @@ class OpenAIService {
                 blemishZone: fallback.blemishZone,
                 blemishMicro: fallback.blemishMicro,
                 textureScore: fallback.textureScore ?? 71,
-                textureMicro: fallback.textureMicro ?? "Visible texture looks moderate today.",
+                textureMicro: fallback.textureMicro ?? localize("Visible texture looks moderate today."),
                 rednessScore: fallback.rednessScore ?? 78,
-                rednessMicro: fallback.rednessMicro ?? "Visible redness appears mild.",
+                rednessMicro: fallback.rednessMicro ?? localize("Visible redness appears mild."),
                 evenToneScore: fallback.evenToneScore ?? 73,
-                evenToneMicro: fallback.evenToneMicro ?? "Tone looks slightly uneven around cheeks.",
+                evenToneMicro: fallback.evenToneMicro ?? localize("Tone looks slightly uneven around cheeks."),
                 hydrationLookScore: fallback.hydrationLookScore ?? 70,
-                hydrationMicro: fallback.hydrationMicro ?? "Hydration look could be stronger.",
+                hydrationMicro: fallback.hydrationMicro ?? localize("Hydration look could be stronger."),
                 firmnessScore: fallback.firmnessScore,
                 firmnessDelta: fallback.firmnessDelta,
                 firmnessMicro: fallback.firmnessMicro,
                 underEyeScore: fallback.underEyeScore ?? 69,
-                underEyeMicro: fallback.underEyeMicro ?? "Under-eye area looks a little tired.",
+                underEyeMicro: fallback.underEyeMicro ?? localize("Under-eye area looks a little tired."),
                 glowAdvice: fallback.glowAdvice,
-                planFocus: fallback.planFocus ?? ["Hydration", "Texture", "Glow"],
+                planFocus: fallback.planFocus ?? [localize("Hydration"), localize("Texture"), localize("Glow")],
                 imageData: imageData
             )
             return fallback
@@ -222,6 +223,7 @@ class OpenAIService {
         User skin type: \(userSkinType.isEmpty ? "Not sure" : userSkinType).
         User goals/concerns: \(userConcerns.joined(separator: ", ")).
         \(previousContext)
+        \(AppLanguageManager.shared.selectedLanguage.jsonResponseInstruction)
         """
 
         let request = OpenAIRequest(
@@ -293,8 +295,9 @@ class OpenAIService {
         }
 
         guard NetworkManager.shared.isConnected else {
+            let localize = AppLanguageManager.shared.localized
             return SkinScoringEngine.shared.generateProductScan(
-                productName: "Scanned Product",
+                productName: localize("Scanned Product"),
                 userSkinType: userSkinType.isEmpty ? "Normal" : userSkinType
             )
         }
@@ -328,6 +331,7 @@ class OpenAIService {
         Use risk language, not certainty. If label text is unreadable, infer from visible packaging and say so in microExplanation.
         User skin type: \(userSkinType.isEmpty ? "Not sure" : userSkinType).
         \(scanContext)
+        \(AppLanguageManager.shared.selectedLanguage.jsonResponseInstruction)
         """
 
         let request = OpenAIRequest(
@@ -350,11 +354,11 @@ class OpenAIService {
             guard let content = response.choices.first?.message.content,
                   let data = extractJSONData(from: content),
                   let payload = try? JSONDecoder().decode(OpenAIProductScanPayload.self, from: data) else {
-                return SkinScoringEngine.shared.generateProductScan(productName: "Scanned Product", userSkinType: userSkinType)
+                return SkinScoringEngine.shared.generateProductScan(productName: AppLanguageManager.shared.localized("Scanned Product"), userSkinType: userSkinType)
             }
 
             return ProductScanResult(
-                productName: payload.productName.isEmpty ? "Scanned Product" : payload.productName,
+                productName: payload.productName.isEmpty ? AppLanguageManager.shared.localized("Scanned Product") : payload.productName,
                 compatibilityScore: max(0, min(10, Int(round(Double(payload.productFitScore) / 10.0)))),
                 compatibilityLabel: payload.compatibilityLabel,
                 microExplanation: payload.microExplanation,
@@ -373,7 +377,7 @@ class OpenAIService {
             )
         } catch {
             print("Product scan API failed: \(error)")
-            return SkinScoringEngine.shared.generateProductScan(productName: "Scanned Product", userSkinType: userSkinType)
+            return SkinScoringEngine.shared.generateProductScan(productName: AppLanguageManager.shared.localized("Scanned Product"), userSkinType: userSkinType)
         }
     }
 
@@ -416,6 +420,7 @@ class OpenAIService {
         }
 
         Be specific and helpful in your recommendations. Consider the user's stated concerns: \(userConcerns.joined(separator: ", "))
+        \(AppLanguageManager.shared.selectedLanguage.jsonResponseInstruction)
         """
 
         let userPrompt = "Please analyze this facial photo and provide a comprehensive skin analysis with scores and recommendations."
@@ -460,6 +465,7 @@ class OpenAIService {
     private func generateFallbackAnalysis(concerns: [String], skinType: String) -> SkinAnalysisResponse {
         // Generate realistic but randomized scores
         let baseScore = Int.random(in: 70...85)
+        let localize = AppLanguageManager.shared.localized
 
         return SkinAnalysisResponse(
             overallScore: baseScore + Int.random(in: -5...10),
@@ -468,44 +474,44 @@ class OpenAIService {
             glow: baseScore + Int.random(in: -8...8),
             aging: baseScore + Int.random(in: 0...10),
             recommendations: [
-                "Use a gentle, pH-balanced cleanser twice daily",
-                "Apply a hydrating serum with hyaluronic acid",
-                "Never skip SPF 30+ sunscreen in the morning",
-                "Consider adding retinol to your evening routine",
-                "Stay hydrated with 8-10 glasses of water daily"
+                localize("Use a gentle, pH-balanced cleanser twice daily"),
+                localize("Apply a hydrating serum with hyaluronic acid"),
+                localize("Never skip SPF 30+ sunscreen in the morning"),
+                localize("Consider adding retinol to your evening routine"),
+                localize("Stay hydrated with 8-10 glasses of water daily")
             ],
-            skinType: skinType.isEmpty ? "Combination" : skinType,
-            concerns: concerns.isEmpty ? ["General skin health"] : concerns,
+            skinType: skinType.isEmpty ? localize("Combination") : skinType,
+            concerns: concerns.isEmpty ? [localize("General skin health")] : concerns,
             routineSteps: [
                 RoutineRecommendation(
                     step: 1,
-                    product: "Gentle Cleanser",
-                    description: "Use lukewarm water and massage for 60 seconds",
-                    duration: "60 seconds"
+                    product: localize("Gentle Cleanser"),
+                    description: localize("Use lukewarm water and massage for 60 seconds"),
+                    duration: localize("60 seconds")
                 ),
                 RoutineRecommendation(
                     step: 2,
-                    product: "Hydrating Toner",
-                    description: "Pat gently into skin",
-                    duration: "30 seconds"
+                    product: localize("Hydrating Toner"),
+                    description: localize("Pat gently into skin"),
+                    duration: localize("30 seconds")
                 ),
                 RoutineRecommendation(
                     step: 3,
-                    product: "Vitamin C Serum",
-                    description: "Apply 2-3 drops to face and neck",
-                    duration: "45 seconds"
+                    product: localize("Vitamin C Serum"),
+                    description: localize("Apply 2-3 drops to face and neck"),
+                    duration: localize("45 seconds")
                 ),
                 RoutineRecommendation(
                     step: 4,
-                    product: "Moisturizer",
-                    description: "Apply in upward strokes",
-                    duration: "45 seconds"
+                    product: localize("Moisturizer"),
+                    description: localize("Apply in upward strokes"),
+                    duration: localize("45 seconds")
                 ),
                 RoutineRecommendation(
                     step: 5,
-                    product: "Sunscreen",
-                    description: "Apply generously, reapply every 2 hours",
-                    duration: "30 seconds"
+                    product: localize("Sunscreen"),
+                    description: localize("Apply generously, reapply every 2 hours"),
+                    duration: localize("30 seconds")
                 )
             ]
         )
@@ -536,6 +542,7 @@ class OpenAIService {
 
                 Keep responses SHORT and conversational. Like texting a friend, not writing an essay.
                 If it's medical/serious, still say "bestie maybe see a derm for that one 🥺"
+                \(AppLanguageManager.shared.selectedLanguage.chatResponseInstruction)
                 """, imageUrl: nil)
             ])
         ]
@@ -562,7 +569,7 @@ class OpenAIService {
         )
 
         let response = try await makeAPICall(request: request)
-        return response.choices.first?.message.content ?? "I'm sorry, I couldn't process that request. Please try again."
+        return response.choices.first?.message.content ?? AppLanguageManager.shared.localized("I'm sorry, I couldn't process that request. Please try again.")
     }
 
     // MARK: - Response Helpers

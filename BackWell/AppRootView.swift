@@ -18,6 +18,7 @@ enum AppScreen {
 
 struct AppRootView: View {
     @State private var currentScreen: AppScreen = .login
+    @StateObject private var languageManager = AppLanguageManager.shared
 
     var body: some View {
         Group {
@@ -48,6 +49,8 @@ struct AppRootView: View {
                 MainTabView()
             }
         }
+        .environmentObject(languageManager)
+        .environment(\.locale, Locale(identifier: languageManager.selectedLanguage.localeIdentifier))
         .animation(.easeInOut, value: currentScreen)
         .onAppear {
             // Request ATT at launch

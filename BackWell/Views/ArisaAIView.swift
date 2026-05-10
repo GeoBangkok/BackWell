@@ -14,7 +14,7 @@ struct ArisaAIView: View {
     @State private var messages: [ArisaChatMessage] = [
         ArisaChatMessage(
             id: UUID(),
-            text: "heyy bestie!! 💕 i'm arisa, your skincare girlie~ ask me anything about getting that glass skin or spill the tea on your skin concerns ✨",
+            text: AppLanguageManager.shared.localized("Arisa welcome message"),
             isUser: false,
             timestamp: Date()
         )
@@ -30,18 +30,20 @@ struct ArisaAIView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
-                LinearGradient(
-                    colors: [
-                        Color(hex: "FFE4E1").opacity(0.1),
-                        Color.white
-                    ],
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
+                Theme.blushBackground
                 .ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    VStack(spacing: 8) {
+                        SGBrandMark(size: 18)
+                        Text("Ask SkinGlowing anything.")
+                            .font(.system(size: 32, weight: .regular, design: .serif))
+                            .foregroundColor(Theme.headline)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.top, 12)
+                    .padding(.horizontal, 20)
+
                     // Chat messages
                     ScrollViewReader { proxy in
                         ScrollView {
@@ -79,8 +81,8 @@ struct ArisaAIView: View {
                             .textFieldStyle(PlainTextFieldStyle())
                             .padding(.horizontal, 16)
                             .padding(.vertical, 12)
-                            .background(Color(uiColor: .systemGray6))
-                            .cornerRadius(20)
+                            .background(Color.white.opacity(0.78))
+                            .clipShape(Capsule())
                             .lineLimit(1...4)
                             .focused($isInputFocused)
                             .onSubmit {
@@ -88,27 +90,29 @@ struct ArisaAIView: View {
                             }
 
                         Button(action: sendMessage) {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.system(size: 34))
-                                .foregroundColor(messageText.isEmpty ? Color(uiColor: .systemGray3) : Color(hex: "FF91A4"))
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(messageText.isEmpty ? Theme.captionText : Theme.accent)
+                                .frame(width: 44, height: 44)
+                                .background(Color.white.opacity(0.82))
+                                .clipShape(Circle())
                         }
                         .disabled(messageText.isEmpty)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 12)
                     .background(
-                        Color.white
-                            .shadow(color: Color.black.opacity(0.05), radius: 10, x: 0, y: -5)
+                        .ultraThinMaterial
                     )
                 }
             }
-            .navigationTitle("Arisa AI")
+            .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: clearChat) {
                         Image(systemName: "trash")
-                            .foregroundColor(Color(hex: "FF91A4"))
+                            .foregroundColor(Theme.accent)
                     }
                 }
             }
@@ -193,30 +197,30 @@ struct ArisaAIView: View {
 
         // Simple keyword-based responses (fallback when API is down)
         if lowercasedQuery.contains("acne") || lowercasedQuery.contains("pimple") || lowercasedQuery.contains("breakout") {
-            return "omg bestie acne is so annoying fr 😭 try the cerave SA cleanser and the ordinary niacinamide!! also benzoyl peroxide slaps for spot treating but start slow or you'll be peeling like crazy"
+            return AppLanguageManager.shared.localized("Arisa fallback acne")
         } else if lowercasedQuery.contains("dry") || lowercasedQuery.contains("hydration") {
-            return "dry skin era is not it 🥺 get you some hyaluronic acid serum (apply on WET skin!!!), cerave in the tub, and maybe slug with aquaphor at night if you're feeling spicy"
+            return AppLanguageManager.shared.localized("Arisa fallback dry")
         } else if lowercasedQuery.contains("dark") || lowercasedQuery.contains("spot") || lowercasedQuery.contains("hyperpigmentation") {
-            return "dark spots are my villain origin story fr 😭 vitamin c in the AM, retinol at night but like... start slowww. also SPF is literally non-negotiable bestie"
+            return AppLanguageManager.shared.localized("Arisa fallback dark spots")
         } else if lowercasedQuery.contains("routine") {
-            return "okayy so morning: cleanser, vitamin c, moisturizer, SPF (or else 🔫). night: double cleanse if you wore makeup, then your actives (retinol/acids), hydrating serum, thicc moisturizer. keep it simple tho!!"
+            return AppLanguageManager.shared.localized("Arisa fallback routine")
         } else if lowercasedQuery.contains("glow") || lowercasedQuery.contains("glass skin") {
-            return "glass skin tutorial incoming ✨ the 7 skin method goes HARD (layer toner 7 times no cap), snail mucin is chef's kiss, and facial oils before moisturizer!! also hydrate or diedrate bestie 💕"
+            return AppLanguageManager.shared.localized("Arisa fallback glow")
         } else if lowercasedQuery.contains("aging") || lowercasedQuery.contains("wrinkle") || lowercasedQuery.contains("fine line") {
-            return "anti-aging before 30? preventative queen behavior ✨ retinol is THAT girl but start at 0.25% or you'll be a flaky mess. also peptides + vitamin c + SPF = the holy trinity"
+            return AppLanguageManager.shared.localized("Arisa fallback aging")
         } else if lowercasedQuery.contains("product") || lowercasedQuery.contains("recommend") {
-            return "my ride or dies rn: cerave cleanser (she's reliable), the ordinary niacinamide (budget friendly icon), la roche posay SPF (french girls know wassup), and paula's choice BHA for texture!! start simple tho"
+            return AppLanguageManager.shared.localized("Arisa fallback products")
         } else if lowercasedQuery.contains("hi") || lowercasedQuery.contains("hello") || lowercasedQuery.contains("hey") {
-            return "hiii babe!! 💕 what's the skin sitch today? i can help with routines, product recs, or just decode those confusing ingredients. spill the tea!"
+            return AppLanguageManager.shared.localized("Arisa fallback hello")
         } else {
             let responses = [
-                "ooh good question bestie! what's your main skin concern rn? acne? dryness? or are we just trying to glow up? 💕",
-                "hmm interesting!! tell me more about your skin type so i can give you the tea ✨",
-                "okay but like consistency is everything fr! even the best routine won't work if you're not doing it daily",
-                "yesss let's talk about it! are you more of a 3-step girlie or do you want the full 10-step k-beauty moment?",
-                "no literally everyone's skin is so different! what works for one person might break someone else out 😭"
+                AppLanguageManager.shared.localized("Arisa fallback general 1"),
+                AppLanguageManager.shared.localized("Arisa fallback general 2"),
+                AppLanguageManager.shared.localized("Arisa fallback general 3"),
+                AppLanguageManager.shared.localized("Arisa fallback general 4"),
+                AppLanguageManager.shared.localized("Arisa fallback general 5")
             ]
-            return responses.randomElement() ?? "bestie i'm here for all your skin questions!! let's get you glowing ✨"
+            return responses.randomElement() ?? AppLanguageManager.shared.localized("Arisa fallback default")
         }
     }
 
@@ -224,7 +228,7 @@ struct ArisaAIView: View {
         messages = [
             ArisaChatMessage(
                 id: UUID(),
-                text: "heyy bestie!! 💕 i'm arisa, your skincare girlie~ ask me anything about getting that glass skin or spill the tea on your skin concerns ✨",
+                text: AppLanguageManager.shared.localized("Arisa welcome message"),
                 isUser: false,
                 timestamp: Date()
             )
@@ -253,18 +257,12 @@ struct ArisaMessageBubble: View {
                 .foregroundColor(message.isUser ? .white : Color(uiColor: .label))
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .background(
-                    message.isUser ?
-                    AnyView(
-                        LinearGradient(
-                            colors: [Color(hex: "FF91A4"), Color(hex: "FFB6C1")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    ) :
-                    AnyView(Color(uiColor: .systemGray6))
+                .background(message.isUser ? AnyShapeStyle(Theme.pinkButtonGradient) : AnyShapeStyle(Color.white.opacity(0.78)))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(message.isUser ? Color.clear : Color.white.opacity(0.72), lineWidth: 1)
                 )
-                .cornerRadius(18)
                 .overlay(
                     message.isUser ?
                     nil :
@@ -275,7 +273,7 @@ struct ArisaMessageBubble: View {
                         .clipShape(Circle())
                         .overlay(
                             Circle()
-                                .stroke(Color(hex: "FF91A4"), lineWidth: 2)
+                                .stroke(Theme.accent, lineWidth: 2)
                         )
                         .offset(x: -40, y: -20),
                     alignment: .topLeading
@@ -296,7 +294,7 @@ struct ArisaTypingIndicator: View {
             HStack(spacing: 4) {
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(Color(hex: "FF91A4"))
+                        .fill(Theme.accent)
                         .frame(width: 8, height: 8)
                         .scaleEffect(animationAmount)
                         .opacity(animationAmount)
@@ -310,8 +308,8 @@ struct ArisaTypingIndicator: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(uiColor: .systemGray6))
-            .cornerRadius(18)
+            .background(Color.white.opacity(0.78))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
             Spacer(minLength: 60)
         }

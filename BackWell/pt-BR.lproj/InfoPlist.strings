@@ -1,0 +1,5 @@
+"CFBundleDisplayName" = "SkinGlowing";
+"NSCameraUsageDescription" = "Usamos sua câmera para tirar fotos para análise da pele.";
+"NSPhotoLibraryUsageDescription" = "SkinGlowing precisa acessar sua biblioteca de fotos para enviar imagens para análise de pele com IA. Suas fotos são criptografadas e usadas apenas para recomendações personalizadas.";
+"NSUserTrackingUsageDescription" = "Isso nos ajuda a melhorar o SkinGlowing e mostrar ofertas mais relevantes.";
+"NSMicrophoneUsageDescription" = "SkinGlowing precisa acessar o microfone para recursos de voz.";

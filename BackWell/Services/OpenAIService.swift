@@ -15,13 +15,29 @@ struct OpenAIRequest: Codable {
     let messages: [OpenAIMessage]
     let maxTokens: Int?
     let temperature: Double?
+    let responseFormat: OpenAIResponseFormat?
 
     enum CodingKeys: String, CodingKey {
         case model
         case messages
         case maxTokens = "max_tokens"
         case temperature
+        case responseFormat = "response_format"
     }
+
+    init(model: String, messages: [OpenAIMessage], maxTokens: Int?, temperature: Double?, responseFormat: OpenAIResponseFormat? = nil) {
+        self.model = model
+        self.messages = messages
+        self.maxTokens = maxTokens
+        self.temperature = temperature
+        self.responseFormat = responseFormat
+    }
+}
+
+struct OpenAIResponseFormat: Codable {
+    let type: String
+
+    static let jsonObject = OpenAIResponseFormat(type: "json_object")
 }
 
 struct OpenAIMessage: Codable {
@@ -104,6 +120,15 @@ struct OpenAIFaceScanPayload: Codable {
     let underEyeMicro: String
     let glowAdvice: String
     let planFocus: [String]
+    let faceAreas: [OpenAIFaceAreaPayload]?
+}
+
+struct OpenAIFaceAreaPayload: Codable {
+    let area: String
+    let score: Int
+    let primaryConcern: String
+    let visibleSigns: String
+    let recommendation: String
 }
 
 struct OpenAIProductScanPayload: Codable {
@@ -179,12 +204,14 @@ class OpenAIService {
                 underEyeMicro: fallback.underEyeMicro ?? localize("Under-eye area looks a little tired."),
                 glowAdvice: fallback.glowAdvice,
                 planFocus: fallback.planFocus ?? [localize("Hydration"), localize("Texture"), localize("Glow")],
+                faceAreas: fallbackFaceAreas(from: fallback, localize: localize),
                 imageData: imageData
             )
             return fallback
         }
 
-        let base64Image = imageData.base64EncodedString()
+        let optimizedImageData = optimizedJPEGData(from: imageData)
+        let base64Image = optimizedImageData.base64EncodedString()
         let imageUrl = "data:image/jpeg;base64,\(base64Image)"
         let previousContext = previousScan.map {
             "Previous scan: skin age \($0.skinAge), glow \($0.glowScore ?? 0), texture \($0.textureScore ?? 0), redness \($0.rednessScore ?? 0), firmness \(String(format: "%.1f", $0.firmnessScore))."
@@ -192,6 +219,7 @@ class OpenAIService {
 
         let systemPrompt = """
         You are SkinGlowing's visual skin analysis engine. Analyze the face photo as consumer wellness guidance, not medical diagnosis.
+        Be specific to visible image signals. Avoid generic skincare copy. Each micro explanation must reference a visible zone or pattern from the photo.
         Return ONLY valid JSON with this exact structure:
         {
           "glowScore": 0-100,
@@ -216,9 +244,47 @@ class OpenAIService {
           "firmnessMicro": "short visual explanation",
           "underEyeScore": 0-100,
           "underEyeMicro": "short visual explanation",
-          "glowAdvice": "one short next step",
-          "planFocus": ["three focus areas for a 90 day plan"]
+          "glowAdvice": "one specific next step based on the visible scan",
+          "planFocus": ["three specific focus areas for a 90 day plan, ordered by priority"],
+          "faceAreas": [
+            {
+              "area": "Forehead",
+              "score": 0-100,
+              "primaryConcern": "main visible concern or strength",
+              "visibleSigns": "specific visible read for this zone",
+              "recommendation": "one zone-specific next step"
+            },
+            {
+              "area": "Under-eyes",
+              "score": 0-100,
+              "primaryConcern": "main visible concern or strength",
+              "visibleSigns": "specific visible read for this zone",
+              "recommendation": "one zone-specific next step"
+            },
+            {
+              "area": "Cheeks",
+              "score": 0-100,
+              "primaryConcern": "main visible concern or strength",
+              "visibleSigns": "specific visible read for this zone",
+              "recommendation": "one zone-specific next step"
+            },
+            {
+              "area": "Nose / T-zone",
+              "score": 0-100,
+              "primaryConcern": "main visible concern or strength",
+              "visibleSigns": "specific visible read for this zone",
+              "recommendation": "one zone-specific next step"
+            },
+            {
+              "area": "Chin / Jaw",
+              "score": 0-100,
+              "primaryConcern": "main visible concern or strength",
+              "visibleSigns": "specific visible read for this zone",
+              "recommendation": "one zone-specific next step"
+            }
+          ]
         }
+        Face area reads must be based on what is visible. If an area is partly hidden or lighting is weak, say that clearly in visibleSigns.
         Use consumer-safe language like visible, perceived, looks, may. Do not diagnose disease.
         User skin type: \(userSkinType.isEmpty ? "Not sure" : userSkinType).
         User goals/concerns: \(userConcerns.joined(separator: ", ")).
@@ -238,7 +304,8 @@ class OpenAIService {
                 ])
             ],
             maxTokens: 1200,
-            temperature: 0.2
+            temperature: 0.2,
+            responseFormat: .jsonObject
         )
 
         do {
@@ -246,7 +313,12 @@ class OpenAIService {
             guard let content = response.choices.first?.message.content,
                   let data = extractJSONData(from: content),
                   let payload = try? JSONDecoder().decode(OpenAIFaceScanPayload.self, from: data) else {
-                return SkinScoringEngine.shared.generateFaceScan(previousScan: previousScan)
+                return personalizedFallbackFaceScan(
+                    imageData: optimizedImageData,
+                    userConcerns: userConcerns,
+                    userSkinType: userSkinType,
+                    previousScan: previousScan
+                )
             }
 
             let tier = glassTier(from: payload.glassSkinTier, score: payload.glassSkinScore)
@@ -281,11 +353,17 @@ class OpenAIService {
                 underEyeMicro: payload.underEyeMicro,
                 glowAdvice: payload.glowAdvice,
                 planFocus: payload.planFocus,
-                imageData: imageData
+                faceAreas: normalizedFaceAreas(payload.faceAreas),
+                imageData: optimizedImageData
             )
         } catch {
             print("Face scan API failed: \(error)")
-            return SkinScoringEngine.shared.generateFaceScan(previousScan: previousScan)
+            return personalizedFallbackFaceScan(
+                imageData: optimizedImageData,
+                userConcerns: userConcerns,
+                userSkinType: userSkinType,
+                previousScan: previousScan
+            )
         }
     }
 
@@ -302,7 +380,8 @@ class OpenAIService {
             )
         }
 
-        let base64Image = imageData.base64EncodedString()
+        let optimizedImageData = optimizedJPEGData(from: imageData)
+        let base64Image = optimizedImageData.base64EncodedString()
         let imageUrl = "data:image/jpeg;base64,\(base64Image)"
         let scanContext = latestFaceScan.map {
             "Latest face scan: glow \($0.glowScore ?? 0), blemish score \($0.blemishScore ?? 0), redness \($0.rednessScore ?? 0), hydration look \($0.hydrationLookScore ?? 0), texture \($0.textureScore ?? 0)."
@@ -310,6 +389,7 @@ class OpenAIService {
 
         let systemPrompt = """
         You are SkinGlowing's cosmetic and ingredient compatibility engine. Read the product/package/ingredient photo and estimate fit for the user's skin profile.
+        Be specific to the visible package, product type, claims, and ingredients when readable. If text is unreadable, explicitly say what was inferred.
         Return ONLY valid JSON:
         {
           "productName": "best detected product name or Scanned Product",
@@ -346,7 +426,8 @@ class OpenAIService {
                 ])
             ],
             maxTokens: 1100,
-            temperature: 0.2
+            temperature: 0.2,
+            responseFormat: .jsonObject
         )
 
         do {
@@ -373,11 +454,30 @@ class OpenAIService {
                 makeupMatchScore: clamped(payload.makeupMatchScore, 0, 100),
                 flaggedIngredients: payload.flaggedIngredients.map { FlaggedIngredient(name: $0.name, concern: $0.concern) },
                 usageAdvice: payload.usageAdvice,
-                imageData: imageData
+                imageData: optimizedImageData
             )
         } catch {
             print("Product scan API failed: \(error)")
-            return SkinScoringEngine.shared.generateProductScan(productName: AppLanguageManager.shared.localized("Scanned Product"), userSkinType: userSkinType)
+            var fallback = SkinScoringEngine.shared.generateProductScan(productName: AppLanguageManager.shared.localized("Scanned Product"), userSkinType: userSkinType)
+            fallback = ProductScanResult(
+                productName: fallback.productName,
+                compatibilityScore: fallback.compatibilityScore,
+                compatibilityLabel: fallback.compatibilityLabel,
+                microExplanation: AppLanguageManager.shared.localized("AI could not finish the product read, so this is a temporary compatibility estimate."),
+                acneSafe: fallback.acneSafe,
+                hydrationFriendly: fallback.hydrationFriendly,
+                irritationRisk: fallback.irritationRisk,
+                breakoutRisk: fallback.breakoutRisk,
+                drynessRisk: fallback.drynessRisk,
+                poreCloggingRisk: fallback.poreCloggingRisk,
+                glowSupport: fallback.glowSupport,
+                glowSupportScore: fallback.glowSupportScore,
+                makeupMatchScore: fallback.makeupMatchScore,
+                flaggedIngredients: fallback.flaggedIngredients,
+                usageAdvice: fallback.usageAdvice,
+                imageData: optimizedImageData
+            )
+            return fallback
         }
     }
 
@@ -519,7 +619,7 @@ class OpenAIService {
 
     // MARK: - Chat (Arisa)
 
-    func sendChatMessage(_ message: String, context: [SkinChatMessage]) async throws -> String {
+    func sendChatMessage(_ message: String, context: [SkinChatMessage], profileContext: String = "") async throws -> String {
         // Check for user consent before sending data to OpenAI
         guard UserDefaults.standard.bool(forKey: "userDataSharingConsent") else {
             throw OpenAIError.noUserConsent
@@ -529,19 +629,20 @@ class OpenAIService {
         var messages: [OpenAIMessage] = [
             OpenAIMessage(role: "system", content: [
                 OpenAIContent(type: "text", text: """
-                You are Arisa, a zoomer skincare bestie who's obsessed with glass skin and K-beauty.
+                You are Arisa, SkinGlowing's AI skin companion.
+                Use the profile and scan context below whenever it is present. Give specific, actionable skincare guidance tied to the user's latest scores, focus areas, product scans, and 90-day plan.
 
-                Your personality:
-                - Super casual, uses gen-z slang naturally (bestie, slay, no cap, fr, lowkey, highkey, it's giving, tea)
-                - Excited about skincare but not preachy
-                - Short responses (2-3 sentences max usually)
-                - Uses emojis occasionally but not overdoing it (mostly ✨💕🥺😭)
-                - References TikTok skincare trends
-                - Says things like "okayy but like" "not me doing..." "the way I..."
-                - Supportive friend energy, hypes people up
+                Style:
+                - Warm, concise, and consumer-friendly.
+                - Specific enough to feel personalized, not generic.
+                - Use a light conversational tone, but do not overuse slang.
+                - Prefer step-by-step answers when the user asks what to do.
+                - Keep medical boundaries: you are not diagnosing disease, and serious symptoms should be directed to a dermatologist.
+                - If the user asks about a plan, mention exact days or next actions.
 
-                Keep responses SHORT and conversational. Like texting a friend, not writing an essay.
-                If it's medical/serious, still say "bestie maybe see a derm for that one 🥺"
+                Profile context:
+                \(profileContext.isEmpty ? "No saved profile context yet." : profileContext)
+
                 \(AppLanguageManager.shared.selectedLanguage.chatResponseInstruction)
                 """, imageUrl: nil)
             ])
@@ -629,6 +730,147 @@ class OpenAIService {
 
     private func clamped(_ value: Int, _ minValue: Int, _ maxValue: Int) -> Int {
         min(maxValue, max(minValue, value))
+    }
+
+    private func optimizedJPEGData(from imageData: Data) -> Data {
+        guard let image = UIImage(data: imageData) else { return imageData }
+        let maxDimension: CGFloat = 1280
+        let longestSide = max(image.size.width, image.size.height)
+        let outputImage: UIImage
+
+        if longestSide > maxDimension {
+            let scale = maxDimension / longestSide
+            let newSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
+            let renderer = UIGraphicsImageRenderer(size: newSize)
+            outputImage = renderer.image { _ in
+                image.draw(in: CGRect(origin: .zero, size: newSize))
+            }
+        } else {
+            outputImage = image
+        }
+
+        return outputImage.jpegData(compressionQuality: 0.74) ?? imageData
+    }
+
+    private func personalizedFallbackFaceScan(imageData: Data, userConcerns: [String], userSkinType: String, previousScan: FaceScanResult?) -> FaceScanResult {
+        let localize = AppLanguageManager.shared.localized
+        let fallback = SkinScoringEngine.shared.generateFaceScan(previousScan: previousScan)
+        let lower = userConcerns.map { $0.lowercased() }
+        let focus = planFocus(for: lower, skinType: userSkinType)
+
+        return FaceScanResult(
+            glowScore: fallback.glowScore ?? 72,
+            skinAge: fallback.skinAge,
+            skinAgeDelta: fallback.skinAgeDelta,
+            skinAgeMicro: localize("AI scan detail was unavailable. Use this as a temporary baseline until your next clear selfie scan."),
+            glassSkinTier: fallback.glassSkinTier,
+            glassSkinScore: fallback.glassSkinScore ?? 68,
+            glassSkinMicro: localize("Temporary glow estimate based on your saved profile and scan history."),
+            blemishSeverity: fallback.blemishSeverity,
+            blemishScore: fallback.blemishScore ?? 74,
+            blemishZone: fallback.blemishZone,
+            blemishMicro: localize("Temporary blemish estimate. Retake in bright, even light for stronger AI reads."),
+            textureScore: fallback.textureScore ?? 70,
+            textureMicro: localize("Temporary texture estimate from fallback analysis."),
+            rednessScore: fallback.rednessScore ?? 76,
+            rednessMicro: localize("Temporary redness estimate from fallback analysis."),
+            evenToneScore: fallback.evenToneScore ?? 72,
+            evenToneMicro: localize("Temporary tone estimate from fallback analysis."),
+            hydrationLookScore: fallback.hydrationLookScore ?? 70,
+            hydrationMicro: localize("Temporary hydration-look estimate from fallback analysis."),
+            firmnessScore: fallback.firmnessScore,
+            firmnessDelta: fallback.firmnessDelta,
+            firmnessMicro: fallback.firmnessMicro,
+            underEyeScore: fallback.underEyeScore ?? 69,
+            underEyeMicro: localize("Temporary under-eye estimate from fallback analysis."),
+            glowAdvice: localize("Retake the scan in front-facing natural light, then follow Day 1 of your plan."),
+            planFocus: focus,
+            faceAreas: fallbackFaceAreas(from: fallback, localize: localize),
+            imageData: imageData
+        )
+    }
+
+    private func normalizedFaceAreas(_ areas: [OpenAIFaceAreaPayload]?) -> [FaceAreaResult]? {
+        guard let areas, !areas.isEmpty else { return nil }
+        return areas.prefix(8).map {
+            FaceAreaResult(
+                area: $0.area,
+                score: clamped($0.score, 0, 100),
+                primaryConcern: $0.primaryConcern,
+                visibleSigns: $0.visibleSigns,
+                recommendation: $0.recommendation
+            )
+        }
+    }
+
+    private func fallbackFaceAreas(from result: FaceScanResult, localize: (String) -> String) -> [FaceAreaResult] {
+        [
+            FaceAreaResult(
+                area: localize("Forehead"),
+                score: result.textureScore ?? 70,
+                primaryConcern: localize("Texture balance"),
+                visibleSigns: localize("Fallback read: forehead texture needs a clearer scan for a precise zone score."),
+                recommendation: localize("Keep this area simple: cleanse gently and avoid adding new actives today.")
+            ),
+            FaceAreaResult(
+                area: localize("Under-eyes"),
+                score: result.underEyeScore ?? 69,
+                primaryConcern: localize("Tired look"),
+                visibleSigns: result.underEyeMicro ?? localize("Fallback read: under-eye detail is limited from this scan."),
+                recommendation: localize("Prioritize sleep, hydration, and a light moisturizer around the orbital area.")
+            ),
+            FaceAreaResult(
+                area: localize("Cheeks"),
+                score: result.rednessScore ?? 76,
+                primaryConcern: localize("Calm and tone"),
+                visibleSigns: result.rednessMicro ?? localize("Fallback read: cheek redness needs brighter, even lighting."),
+                recommendation: localize("Use barrier-supporting moisturizer and skip harsh exfoliation for 24 hours.")
+            ),
+            FaceAreaResult(
+                area: localize("Nose / T-zone"),
+                score: result.evenToneScore ?? 72,
+                primaryConcern: localize("Pores and shine"),
+                visibleSigns: localize("Fallback read: T-zone detail is limited, so this is a temporary estimate."),
+                recommendation: localize("Use gentle cleansing and avoid heavy layers if this zone gets shiny.")
+            ),
+            FaceAreaResult(
+                area: localize("Chin / Jaw"),
+                score: result.blemishScore ?? 74,
+                primaryConcern: localize("Blemish control"),
+                visibleSigns: result.blemishMicro,
+                recommendation: localize("Keep the area clean after sweating and avoid picking or over-scrubbing.")
+            )
+        ]
+    }
+
+    private func planFocus(for concerns: [String], skinType: String) -> [String] {
+        var focus: [String] = []
+        let joined = concerns.joined(separator: " ")
+
+        if joined.contains("acne") || joined.contains("breakout") || joined.contains("blemish") {
+            focus.append("Breakout Control")
+        }
+        if joined.contains("red") || joined.contains("sensitive") || skinType.lowercased().contains("sensitive") {
+            focus.append("Barrier Calm")
+        }
+        if joined.contains("dry") || joined.contains("hydration") || skinType.lowercased().contains("dry") {
+            focus.append("Hydration")
+        }
+        if joined.contains("texture") || joined.contains("pore") {
+            focus.append("Texture")
+        }
+        if joined.contains("dark") || joined.contains("spot") || joined.contains("tone") {
+            focus.append("Even Tone")
+        }
+        if joined.contains("glow") || focus.isEmpty {
+            focus.append("Glow")
+        }
+
+        for fallback in ["Hydration", "Texture", "Glow"] where focus.count < 3 && !focus.contains(fallback) {
+            focus.append(fallback)
+        }
+
+        return Array(focus.prefix(3))
     }
 
     // MARK: - Private API Call Method

@@ -489,22 +489,22 @@ struct GlowUpPlanView: View {
 
                     HStack(alignment: .center, spacing: 14) {
                         VStack(alignment: .leading, spacing: 3) {
-                            Text("Day 21")
+                            Text("Day \(currentDay)")
                                 .font(.system(size: 26, weight: .regular, design: .serif))
                                 .foregroundColor(Theme.accent)
-                            Text("You're on your way.")
+                            Text(planStatusText)
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(Theme.bodyText)
                         }
 
                         Spacer()
 
-                        Text("23%")
+                        Text("\(planProgress)%")
                             .font(.system(size: 30, weight: .regular, design: .serif))
                             .foregroundColor(Theme.accent)
                     }
 
-                    GlowPlanProgress()
+                    GlowPlanProgress(day: currentDay)
 
                     Text("Built from your onboarding answers, selfie scans, and product compatibility history.")
                         .font(.system(size: 15, weight: .medium))
@@ -512,6 +512,8 @@ struct GlowUpPlanView: View {
                 }
                 .padding(18)
                 .sgGlassCard()
+
+                dailyPlanCard
 
                 ForEach(planPhases.indices, id: \.self) { index in
                     PlanPhaseCard(phase: planPhases[index], index: index)
@@ -533,12 +535,68 @@ struct GlowUpPlanView: View {
         historyManager.latestFaceScan?.planFocus ?? ["Hydration", "Texture", "Glow"]
     }
 
+    private var skinType: String {
+        UserDefaults.standard.string(forKey: "sg_skinType") ?? "Not sure"
+    }
+
+    private var concerns: [String] {
+        let goals = UserDefaults.standard.array(forKey: "sg_goals") as? [String] ?? []
+        let concerns = UserDefaults.standard.array(forKey: "sg_concerns") as? [String] ?? []
+        return goals + concerns
+    }
+
+    private var currentDay: Int {
+        guard let scan = historyManager.latestFaceScan else { return 1 }
+        let days = Calendar.current.dateComponents([.day], from: scan.timestamp.startOfDay, to: Date().startOfDay).day ?? 0
+        return min(90, max(1, days + 1))
+    }
+
+    private var planProgress: Int {
+        Int(round(Double(currentDay) / 90.0 * 100.0))
+    }
+
+    private var planStatusText: String {
+        historyManager.latestFaceScan == nil ? "Start with your first scan." : "Sequential plan from your latest scan."
+    }
+
+    private var dailyTasks: [GlowPlanDay] {
+        GlowPlanBuilder.days(
+            focus: focus,
+            skinType: skinType,
+            concerns: concerns,
+            latestScan: historyManager.latestFaceScan,
+            productScan: historyManager.productScans.first
+        )
+    }
+
+    private var visibleDailyTasks: [GlowPlanDay] {
+        Array(dailyTasks.dropFirst(currentDay - 1).prefix(7))
+    }
+
+    private var dailyPlanCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Next 7 Days")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(Theme.headline)
+                    Text("Starts at Day 1 and updates after every scan.")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Theme.bodyText)
+                }
+                Spacer()
+            }
+
+            ForEach(visibleDailyTasks) { task in
+                GlowPlanDayRow(task: task, isToday: task.day == currentDay)
+            }
+        }
+        .padding(16)
+        .sgGlassCard()
+    }
+
     private var planPhases: [PlanPhase] {
-        [
-            PlanPhase(range: "Days 1-30", title: "Reset", focus: focus[safe: 0] ?? "Hydration", actions: ["Lock in SPF every morning", "Scan twice weekly", "Avoid products with high irritation risk"]),
-            PlanPhase(range: "Days 31-60", title: "Build", focus: focus[safe: 1] ?? "Texture", actions: ["Track texture and redness trends", "Keep one active consistent", "Scan new makeup before daily wear"]),
-            PlanPhase(range: "Days 61-90", title: "Optimize", focus: focus[safe: 2] ?? "Glow", actions: ["Compare glow score trend", "Refine products by fit score", "Ask Arisa for routine adjustments"])
-        ]
+        GlowPlanBuilder.phases(focus: focus, skinType: skinType, concerns: concerns, latestScan: historyManager.latestFaceScan, productScan: historyManager.productScans.first)
     }
 }
 
@@ -840,9 +898,26 @@ struct FaceResultSummary: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Latest Skin Results")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(Theme.headline)
+            HStack(alignment: .top, spacing: 14) {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Latest Skin Results")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(Theme.headline)
+                    Text(result.glowAdvice)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(Theme.bodyText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Text("\(result.glowScore ?? 0)")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 62, height: 62)
+                    .background(Theme.pinkButtonGradient)
+                    .clipShape(Circle())
+            }
 
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                 ResultPill(label: "Glow", value: "\(result.glowScore ?? 0)")
@@ -851,14 +926,118 @@ struct FaceResultSummary: View {
                 ResultPill(label: "Redness", value: "\(result.rednessScore ?? 0)")
                 ResultPill(label: "Even Tone", value: "\(result.evenToneScore ?? 0)")
                 ResultPill(label: "Under-Eye", value: "\(result.underEyeScore ?? 0)")
+                ResultPill(label: "Texture", value: "\(result.textureScore ?? 0)")
+                ResultPill(label: "Hydration", value: "\(result.hydrationLookScore ?? 0)")
             }
 
-            Text(result.glowAdvice)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(Theme.bodyText)
+            VStack(alignment: .leading, spacing: 10) {
+                ScanInsightRow(title: "Skin Age", value: "\(result.skinAge)", detail: result.skinAgeMicro)
+                ScanInsightRow(title: "Glass Skin", value: result.glassSkinTier.label, detail: result.glassSkinMicro)
+                ScanInsightRow(title: "Blemish Zone", value: result.blemishZone, detail: result.blemishMicro)
+                ScanInsightRow(title: "Texture", value: "\(result.textureScore ?? 0)", detail: result.textureMicro ?? "Texture detail unavailable.")
+                ScanInsightRow(title: "Redness", value: "\(result.rednessScore ?? 0)", detail: result.rednessMicro ?? "Redness detail unavailable.")
+                ScanInsightRow(title: "Hydration Look", value: "\(result.hydrationLookScore ?? 0)", detail: result.hydrationMicro ?? "Hydration detail unavailable.")
+                ScanInsightRow(title: "Under-Eye", value: "\(result.underEyeScore ?? 0)", detail: result.underEyeMicro ?? "Under-eye detail unavailable.")
+            }
+
+            if let faceAreas = result.faceAreas, !faceAreas.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Face Areas")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(Theme.headline)
+
+                    ForEach(faceAreas) { area in
+                        FaceAreaResultRow(area: area)
+                    }
+                }
+            }
+
+            if let focus = result.planFocus, !focus.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Plan Focus")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(Theme.headline)
+                    FlowTagList(items: focus)
+                }
+            }
         }
         .padding(16)
         .sgGlassCard()
+    }
+}
+
+struct FaceAreaResultRow: View {
+    let area: FaceAreaResult
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top, spacing: 10) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(area.area)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(Theme.headline)
+                    Text(area.primaryConcern)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(Theme.accent)
+                }
+
+                Spacer()
+
+                Text("\(area.score)")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 38, height: 38)
+                    .background(Theme.pinkButtonGradient)
+                    .clipShape(Circle())
+            }
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(area.visibleSigns)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Theme.bodyText)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text(area.recommendation)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(Theme.headline)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .background(Color.white.opacity(0.56))
+        .cornerRadius(8)
+    }
+}
+
+struct ScanInsightRow: View {
+    let title: String
+    let value: String
+    let detail: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(Theme.headline)
+                Text(detail)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Theme.bodyText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer()
+
+            Text(value)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Theme.accent)
+                .multilineTextAlignment(.trailing)
+                .lineLimit(2)
+                .minimumScaleFactor(0.75)
+        }
+        .padding(12)
+        .background(Color.white.opacity(0.56))
+        .cornerRadius(8)
     }
 }
 
@@ -936,6 +1115,167 @@ struct PlanPhase {
     let title: String
     let focus: String
     let actions: [String]
+}
+
+struct GlowPlanDay: Identifiable {
+    let id = UUID()
+    let day: Int
+    let title: String
+    let action: String
+    let reason: String
+}
+
+enum GlowPlanBuilder {
+    static func phases(focus: [String], skinType: String, concerns: [String], latestScan: FaceScanResult?, productScan: ProductScanResult?) -> [PlanPhase] {
+        let primary = focus[safe: 0] ?? "Hydration"
+        let secondary = focus[safe: 1] ?? "Texture"
+        let tertiary = focus[safe: 2] ?? "Glow"
+        let productAction = productScan == nil ? "Scan makeup or SPF before using it daily" : "Use product fit scores to avoid low-match products"
+
+        return [
+            PlanPhase(
+                range: "Days 1-30",
+                title: "Reset",
+                focus: primary,
+                actions: [
+                    action(for: primary, phase: 1, skinType: skinType, scan: latestScan),
+                    "Take baseline scans on Days 1, 7, 14, and 30",
+                    productAction
+                ]
+            ),
+            PlanPhase(
+                range: "Days 31-60",
+                title: "Build",
+                focus: secondary,
+                actions: [
+                    action(for: secondary, phase: 2, skinType: skinType, scan: latestScan),
+                    "Keep one active consistent for 3-4 weeks before judging it",
+                    "Compare texture, redness, and glow trend every Sunday"
+                ]
+            ),
+            PlanPhase(
+                range: "Days 61-90",
+                title: "Optimize",
+                focus: tertiary,
+                actions: [
+                    action(for: tertiary, phase: 3, skinType: skinType, scan: latestScan),
+                    "Refine routine based on the best-scoring scan weeks",
+                    "Ask Arisa for adjustments when a score stalls for 2 scans"
+                ]
+            )
+        ]
+    }
+
+    static func days(focus: [String], skinType: String, concerns: [String], latestScan: FaceScanResult?, productScan: ProductScanResult?) -> [GlowPlanDay] {
+        let focusList = focus.isEmpty ? ["Hydration", "Texture", "Glow"] : focus
+        return (1...90).map { day in
+            let activeFocus = focusList[(day - 1) % min(focusList.count, 3)]
+            return GlowPlanDay(
+                day: day,
+                title: dayTitle(for: day, focus: activeFocus),
+                action: dayAction(for: day, focus: activeFocus, skinType: skinType, latestScan: latestScan, productScan: productScan),
+                reason: dayReason(for: day, focus: activeFocus, latestScan: latestScan)
+            )
+        }
+    }
+
+    private static func dayTitle(for day: Int, focus: String) -> String {
+        if day == 1 { return "Baseline + \(focus)" }
+        if day % 7 == 0 { return "Weekly Check-In" }
+        if day % 14 == 0 { return "Progress Scan" }
+        return "\(focus) Day"
+    }
+
+    private static func dayAction(for day: Int, focus: String, skinType: String, latestScan: FaceScanResult?, productScan: ProductScanResult?) -> String {
+        if day == 1 {
+            return "Take your baseline selfie, save your current routine, and keep products unchanged for 7 days."
+        }
+        if day % 14 == 0 {
+            return "Retake your selfie scan in the same lighting and compare glow, redness, texture, and hydration."
+        }
+        if day % 7 == 0 {
+            return "Review the week: note irritation, breakouts, sleep, water, SPF, and any new products."
+        }
+        return action(for: focus, phase: day <= 30 ? 1 : day <= 60 ? 2 : 3, skinType: skinType, scan: latestScan)
+    }
+
+    private static func dayReason(for day: Int, focus: String, latestScan: FaceScanResult?) -> String {
+        if let scan = latestScan {
+            switch focus.lowercased() {
+            case let value where value.contains("red") || value.contains("barrier") || value.contains("calm"):
+                return "Your redness signal is \(scan.rednessScore ?? 0), so the plan protects barrier consistency."
+            case let value where value.contains("texture"):
+                return "Your texture signal is \(scan.textureScore ?? 0), so the plan favors steady, low-irritation improvement."
+            case let value where value.contains("hydration"):
+                return "Your hydration-look signal is \(scan.hydrationLookScore ?? 0), so the plan prioritizes plumpness and moisture retention."
+            case let value where value.contains("breakout") || value.contains("blemish"):
+                return "Your blemish signal is \(scan.blemishScore ?? 0), so the plan avoids product chaos."
+            default:
+                return "Your glow score is \(scan.glowScore ?? 0), so today's step supports visible radiance."
+            }
+        }
+        return "This builds a clean baseline before personalization gets stronger after your first scan."
+    }
+
+    private static func action(for focus: String, phase: Int, skinType: String, scan: FaceScanResult?) -> String {
+        let normalized = focus.lowercased()
+        if normalized.contains("breakout") || normalized.contains("blemish") {
+            return phase == 1 ? "Keep the routine simple: gentle cleanse, light moisturizer, SPF, no new actives today." : "Introduce only one acne-support step at night and track blemish score changes."
+        }
+        if normalized.contains("barrier") || normalized.contains("calm") || normalized.contains("red") {
+            return "Avoid exfoliation today; use a calming moisturizer and keep water lukewarm."
+        }
+        if normalized.contains("hydration") || skinType.lowercased().contains("dry") {
+            return "Layer hydration: damp skin, humectant serum, moisturizer, then SPF in the morning."
+        }
+        if normalized.contains("texture") || normalized.contains("pore") {
+            return phase == 1 ? "Do not exfoliate yet; stabilize cleansing and SPF first." : "Use a gentle texture step only if redness and dryness stayed calm this week."
+        }
+        if normalized.contains("tone") || normalized.contains("spot") {
+            return "Prioritize SPF and avoid picking; tone progress depends on daily UV consistency."
+        }
+        return "Protect the glow basics: cleanse gently, moisturize, SPF, and avoid adding new products today."
+    }
+}
+
+struct GlowPlanDayRow: View {
+    let task: GlowPlanDay
+    let isToday: Bool
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack(spacing: 2) {
+                Text("Day")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(isToday ? .white.opacity(0.82) : Theme.accent)
+                Text("\(task.day)")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(isToday ? .white : Theme.accent)
+            }
+            .frame(width: 48, height: 48)
+            .background(isToday ? AnyShapeStyle(Theme.pinkButtonGradient) : AnyShapeStyle(Color.white.opacity(0.70)))
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 5) {
+                Text(task.title)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(Theme.headline)
+                Text(task.action)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(Theme.bodyText)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(task.reason)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Theme.captionText)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(isToday ? Theme.accentSoft.opacity(0.72) : Color.white.opacity(0.52))
+        .cornerRadius(8)
+    }
 }
 
 struct PlanPhaseCard: View {
@@ -1104,20 +1444,23 @@ struct ScanStep: View {
 }
 
 struct GlowPlanProgress: View {
+    let day: Int
+
     var body: some View {
         VStack(spacing: 12) {
             GeometryReader { proxy in
+                let progress = min(1, max(0.01, Double(day) / 90.0))
                 ZStack(alignment: .leading) {
                     Capsule()
                         .fill(Theme.accent.opacity(0.14))
                     Capsule()
                         .fill(Theme.pinkButtonGradient)
-                        .frame(width: proxy.size.width * 0.23)
+                        .frame(width: proxy.size.width * progress)
                     Circle()
                         .fill(Color.white)
                         .frame(width: 18, height: 18)
                         .overlay(Circle().stroke(Theme.accent, lineWidth: 4))
-                        .offset(x: max(0, proxy.size.width * 0.23 - 9))
+                        .offset(x: max(0, proxy.size.width * progress - 9))
                 }
             }
             .frame(height: 9)
@@ -1164,6 +1507,12 @@ extension Array {
 extension String {
     var nilIfEmpty: String? {
         isEmpty ? nil : self
+    }
+}
+
+extension Date {
+    var startOfDay: Date {
+        Calendar.current.startOfDay(for: self)
     }
 }
 

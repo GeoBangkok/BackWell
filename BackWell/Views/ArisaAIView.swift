@@ -36,13 +36,22 @@ struct ArisaAIView: View {
                 VStack(spacing: 0) {
                     VStack(spacing: 8) {
                         SGBrandMark(size: 18)
-                        Text("Ask SkinGlowing anything.")
+                        Text("Ask Arisa anything.")
                             .font(.system(size: 32, weight: .regular, design: .serif))
                             .foregroundColor(Theme.headline)
+                            .multilineTextAlignment(.center)
+                        Text("She uses your latest scan, product checks, and GlowUp plan context.")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Theme.bodyText)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, 12)
                     .padding(.horizontal, 20)
+
+                    if messages.count <= 1 {
+                        quickPrompts
+                            .padding(.top, 12)
+                    }
 
                     // Chat messages
                     ScrollViewReader { proxy in
@@ -90,7 +99,7 @@ struct ArisaAIView: View {
                             }
 
                         Button(action: sendMessage) {
-                            Image(systemName: "mic.fill")
+                            Image(systemName: "paperplane.fill")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(messageText.isEmpty ? Theme.captionText : Theme.accent)
                                 .frame(width: 44, height: 44)
@@ -122,11 +131,29 @@ struct ArisaAIView: View {
         }
     }
 
+    private var quickPrompts: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                QuickPromptChip(title: "Fix my Day 1 plan") {
+                    sendQuickPrompt("Based on my latest scan and profile, what exactly should I do on Day 1?")
+                }
+                QuickPromptChip(title: "Explain my scan") {
+                    sendQuickPrompt("Explain my latest scan results and what matters most.")
+                }
+                QuickPromptChip(title: "Routine check") {
+                    sendQuickPrompt("Build a simple morning and night routine from my current skin signals.")
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+    }
+
     private func sendMessage() {
         guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard !isSending else { return } // Prevent multiple sends
 
-        // Add user message
+        let priorMessages = messages
+
         let userMessage = ArisaChatMessage(
             id: UUID(),
             text: messageText,
@@ -142,8 +169,7 @@ struct ArisaAIView: View {
         isTyping = true
         isSending = true
 
-        // Convert messages to SkinChatMessage format for API
-        let context = messages.map { msg in
+        let context = priorMessages.map { msg in
             SkinChatMessage(
                 content: msg.text,
                 isFromUser: msg.isUser,
@@ -154,14 +180,7 @@ struct ArisaAIView: View {
         // Call OpenAI API
         Task {
             do {
-                let enrichedQuery: String
-                if profileContext.isEmpty {
-                    enrichedQuery = userQuery
-                } else {
-                    enrichedQuery = "\(profileContext)\n\nUser question: \(userQuery)"
-                }
-
-                let response = try await OpenAIService.shared.sendChatMessage(enrichedQuery, context: context)
+                let response = try await OpenAIService.shared.sendChatMessage(userQuery, context: context, profileContext: profileContext)
 
                 await MainActor.run {
                     isTyping = false
@@ -233,6 +252,30 @@ struct ArisaAIView: View {
                 timestamp: Date()
             )
         ]
+    }
+
+    private func sendQuickPrompt(_ prompt: String) {
+        messageText = prompt
+        sendMessage()
+    }
+}
+
+struct QuickPromptChip: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 13, weight: .bold))
+                .foregroundColor(Theme.accent)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 9)
+                .background(Color.white.opacity(0.76))
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(Color.white.opacity(0.8), lineWidth: 1))
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
 

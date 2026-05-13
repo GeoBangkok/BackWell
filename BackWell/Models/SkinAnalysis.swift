@@ -93,6 +93,7 @@ struct FaceScanResult: Codable, Identifiable {
     let underEyeMicro: String?
     let glowAdvice: String
     let planFocus: [String]?
+    let faceAreas: [FaceAreaResult]?
     let imageData: Data?
     let timestamp: Date
 
@@ -108,7 +109,8 @@ struct FaceScanResult: Codable, Identifiable {
         hydrationLookScore: Int? = nil, hydrationMicro: String? = nil,
         firmnessScore: Double, firmnessDelta: Double? = nil, firmnessMicro: String,
         underEyeScore: Int? = nil, underEyeMicro: String? = nil,
-        glowAdvice: String, planFocus: [String]? = nil, imageData: Data? = nil, timestamp: Date = Date()
+        glowAdvice: String, planFocus: [String]? = nil, faceAreas: [FaceAreaResult]? = nil,
+        imageData: Data? = nil, timestamp: Date = Date()
     ) {
         self.id = id
         self.glowScore = glowScore
@@ -137,8 +139,34 @@ struct FaceScanResult: Codable, Identifiable {
         self.underEyeMicro = underEyeMicro
         self.glowAdvice = glowAdvice
         self.planFocus = planFocus
+        self.faceAreas = faceAreas
         self.imageData = imageData
         self.timestamp = timestamp
+    }
+}
+
+struct FaceAreaResult: Codable, Identifiable {
+    let id: UUID
+    let area: String
+    let score: Int
+    let primaryConcern: String
+    let visibleSigns: String
+    let recommendation: String
+
+    init(
+        id: UUID = UUID(),
+        area: String,
+        score: Int,
+        primaryConcern: String,
+        visibleSigns: String,
+        recommendation: String
+    ) {
+        self.id = id
+        self.area = area
+        self.score = score
+        self.primaryConcern = primaryConcern
+        self.visibleSigns = visibleSigns
+        self.recommendation = recommendation
     }
 }
 
